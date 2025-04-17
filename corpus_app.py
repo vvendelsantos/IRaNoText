@@ -4,6 +4,17 @@ import re
 import io
 from word2number import w2n
 
+### ⚙️ Principais funcionalidades:
+A aplicação realiza várias operações de normalização e limpeza de texto a partir de dados fornecidos em uma planilha Excel:
+
+1. **Conversão de números por extenso:** transforma expressões numéricas como "cinco" ou "doze" em "5" e "12".
+2. **Normalização de palavras compostas:** substitui expressões compostas conforme um dicionário fornecido.
+3. **Tratamento de flexões verbo-pronominais:** converte estruturas como "notou-se" em "se notou".
+4. **Substituição de siglas pelos significados completos:** substitui siglas identificadas por seus significados na forma extensa.
+5. **Remoção ou substituição de caracteres especiais:** substitui pontuações e símbolos por palavras equivalentes ou por sublinhados.
+6. **Geração de metadados:** cria metainformações em conformidade com os padrões exigidos pelo IRaMuTeQ.
+
+
 # Função para converter números por extenso para algarismos
 def converter_numeros_por_extenso(texto):
     unidades = {
@@ -95,23 +106,20 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
             continue
 
         texto_corrigido = texto.lower()
-        texto_corrigido = converter_numeros_por_extenso(texto_corrigido)  # Conversão dos números por extenso
-        texto_corrigido = processar_palavras_com_se(texto_corrigido)  # Processa palavras compostas com "-se"
+        texto_corrigido = converter_numeros_por_extenso(texto_corrigido)
+        texto_corrigido = processar_palavras_com_se(texto_corrigido)
         total_textos += 1
 
-        # Substitui siglas
         for sigla, significado in dict_siglas.items():
-            texto_corrigido = re.sub(rf"\({sigla}\)", "", texto_corrigido)  # Remove siglas entre parênteses
+            texto_corrigido = re.sub(rf"\({sigla}\)", "", texto_corrigido)
             texto_corrigido = re.sub(rf"\b{sigla}\b", significado, texto_corrigido, flags=re.IGNORECASE)
             total_siglas += 1
 
-        # Substitui palavras compostas
         for termo, substituto in dict_compostos.items():
             if termo in texto_corrigido:
                 texto_corrigido = re.sub(rf"\b{termo}\b", substituto, texto_corrigido, flags=re.IGNORECASE)
                 total_compostos += 1
 
-        # Remove caracteres especiais
         for char in caracteres_especiais:
             count = texto_corrigido.count(char)
             if count:
@@ -119,7 +127,6 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
                 contagem_caracteres[char] += count
                 total_remocoes += count
 
-        # Limpeza final de espaços extras
         texto_corrigido = re.sub(r"\s+", " ", texto_corrigido.strip())
 
         metadata = f"**** *ID_{id_val}"
@@ -138,7 +145,6 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
             estatisticas += f" - {nome} ({char}) : {contagem_caracteres[char]}\n"
 
     return corpus_final, estatisticas
-
 
 # Interface com Streamlit
 st.set_page_config(layout="wide")
@@ -173,7 +179,6 @@ if file:
         df_compostos = xls.parse("dic_palavras_compostas")
         df_siglas = xls.parse("dic_siglas")
 
-        # Padroniza nomes das colunas para evitar erros de maiúsculas/minúsculas
         df_textos.columns = [col.strip().lower() for col in df_textos.columns]
 
         if st.button("🚀 GERAR CORPUS TEXTUAL"):
@@ -192,7 +197,6 @@ if file:
     except Exception as e:
         st.error(f"Erro ao processar o arquivo: {e}")
 
-# Rodapé
 st.markdown("""
 ---
 👨‍🏫 **Sobre o autor**
