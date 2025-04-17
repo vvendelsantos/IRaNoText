@@ -46,14 +46,14 @@ def converter_numeros_por_extenso(texto):
 
     return " ".join(resultado)
 
-# Função para processar palavras compostas com "-se" (ex: "notou-se") e com "tornando-o"
-def processar_palavras_com_se(texto):
-    texto = re.sub(r"(\b\w+)-se\b", r"se \\1", texto)
-    texto = re.sub(r"(\btornando)-([ao]s?)\b", r"\2 \1", texto)  # tornando-o, tornando-a, tornando-os, tornando-as
-    texto = re.sub(r"\bo (tornando)\b", r"\1", texto)
-    texto = re.sub(r"\ba (tornando)\b", r"\1", texto)
-    texto = re.sub(r"\bos (tornando)\b", r"\1", texto)
-    texto = re.sub(r"\bas (tornando)\b", r"\1", texto)
+# Função para processar pronomes oblíquos pós-verbais
+def processar_pronomes_pospostos(texto):
+    texto = re.sub(r'\b(\w+)-se\b', r'se \1', texto)
+    texto = re.sub(r'\b(\w+)-([oa]s?)\b', r'\2 \1', texto)
+    texto = re.sub(r'\b(\w+)-(lhe|lhes)\b', r'\2 \1', texto)
+    texto = re.sub(r'\b(\w+)-(me|te|nos|vos)\b', r'\2 \1', texto)
+    texto = re.sub(r'\b(\w+)[áéíóúâêô]?-([oa]s?)\b', r'\2 \1', texto)
+    texto = re.sub(r'\b(\w+)[áéíóúâêô]-(lo|la|los|las)-ia\b', r'\2 \1ia', texto)
     return texto
 
 # Função principal para gerar o corpus
@@ -99,7 +99,7 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 
         texto_corrigido = texto.lower()
         texto_corrigido = converter_numeros_por_extenso(texto_corrigido)
-        texto_corrigido = processar_palavras_com_se(texto_corrigido)
+        texto_corrigido = processar_pronomes_pospostos(texto_corrigido)
         total_textos += 1
 
         for sigla, significado in dict_siglas.items():
@@ -119,7 +119,7 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
                 contagem_caracteres[char] += count
                 total_remocoes += count
 
-        texto_corrigido = re.sub(r"\\s+", " ", texto_corrigido.strip())
+        texto_corrigido = re.sub(r"\s+", " ", texto_corrigido.strip())
 
         metadata = f"**** *ID_{id_val}"
         for col in row.index:
@@ -138,13 +138,12 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 
     return corpus_final, estatisticas
 
-
 # Interface com Streamlit
 st.set_page_config(layout="wide")
 st.title("Gerador de corpus textual para IRaMuTeQ")
 
 st.markdown("""
-### 📌 Instruções para uso da planilha
+### 📌 Instruções
 
 Envie um arquivo do Excel **.xlsx** com a estrutura correta para que o corpus possa ser gerado automaticamente.
 
@@ -157,7 +156,7 @@ Sua planilha deve conter **três abas (planilhas internas)** com os seguintes no
 
 with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
     st.download_button(
-        label="🗕️ Baixar modelo de planilha",
+        label="📅 Baixar modelo de planilha",
         data=exemplo,
         file_name="gerar_corpus_iramuteq.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
