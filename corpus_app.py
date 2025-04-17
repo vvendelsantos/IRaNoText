@@ -31,60 +31,33 @@ def converter_numeros_por_extenso(texto):
         "bilhões": 1000000000
     }
 
-    tokens = texto.split()
+    palavras = texto.split()
     resultado = []
     buffer = []
+
+    def tentar_converter(buffer):
+        try:
+            return str(w2n.word_to_num(" ".join(buffer)))
+        except:
+            return None
+
     i = 0
-
-    def words_to_number(palavras):
-        total = 0
-        atual = 0
-        for p in palavras:
-            if p in unidades:
-                atual += unidades[p]
-            elif p in dezenas:
-                atual += dezenas[p]
-            elif p in centenas:
-                atual += centenas[p]
-            elif p in multiplicadores:
-                fator = multiplicadores[p]
-                if atual == 0:
-                    atual = 1
-                total += atual * fator
-                atual = 0
-            elif p == "e":
-                continue
-            else:
-                return None
-        return total + atual
-
-    while i < len(tokens):
-        buffer.append(tokens[i])
-        numero = words_to_number(buffer)
-        if numero is not None:
-            j = i + 1
-            while j < len(tokens):
-                nova_buffer = buffer + [tokens[j]]
-                novo_numero = words_to_number(nova_buffer)
-                if novo_numero is not None:
-                    numero = novo_numero
-                    buffer = nova_buffer
-                    i = j
-                    j += 1
-                else:
-                    break
-            resultado.append(str(numero))
+    while i < len(palavras):
+        palavra = palavras[i]
+        buffer.append(palavra)
+        convertido = tentar_converter(buffer)
+        if convertido:
+            resultado.append(convertido)
             buffer = []
-        else:
-            if len(buffer) > 1:
-                resultado.extend(buffer[:-1])
-                buffer = buffer[-1:]
-            else:
-                resultado.append(buffer[0])
-                buffer = []
         i += 1
 
-    resultado.extend(buffer)
+    if buffer:
+        convertido = tentar_converter(buffer)
+        if convertido:
+            resultado.append(convertido)
+        else:
+            resultado.extend(buffer)
+
     return " ".join(resultado)
 
 def gerar_corpus(df_textos, df_compostos, df_siglas):
@@ -131,9 +104,10 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
         texto_corrigido = converter_numeros_por_extenso(texto_corrigido)
         total_textos += 1
 
-        # Substituindo siglas, incluindo com parênteses, como "(INPI)"
+        # Substituindo siglas, incluindo com parênteses, como "(INPI)" ou "INPI"
         for sigla, significado in dict_siglas.items():
-            texto_corrigido = replace_with_pattern(texto_corrigido, rf"\({sigla}\)", f" {significado} ")
+            # Substituir siglas, incluindo casos como (sigla) ou sigla seguida de espaços
+            texto_corrigido = re.sub(rf"(\(|\s){re.escape(sigla)}(\)|\s|$)", r" \2", texto_corrigido)
             texto_corrigido = replace_full_word(texto_corrigido, sigla, significado)
             total_siglas += 1
 
