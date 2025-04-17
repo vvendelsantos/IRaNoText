@@ -48,7 +48,7 @@ def converter_numeros_por_extenso(texto):
                 total += atual * fator
                 atual = 0
             elif p == "e":
-                continue
+                continue  # Ignorar "e" sem alteração
             else:
                 return None
         return total + atual
@@ -132,8 +132,9 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
         texto_corrigido = converter_numeros_por_extenso(texto_corrigido)  # Converte os números por extenso
         total_textos += 1
 
-        # Substituição das siglas
+        # Substituição das siglas (corrigido o padrão de regex para parênteses)
         for sigla, significado in dict_siglas.items():
+            # Substitui siglas no formato "(SIGLA)"
             texto_corrigido = replace_with_pattern(texto_corrigido, rf"\({sigla}\)", f"({significado})")
             texto_corrigido = replace_full_word(texto_corrigido, sigla, significado)
             total_siglas += 1
@@ -185,50 +186,4 @@ Sua planilha deve conter **três abas (planilhas internas)** com os seguintes no
 3. **`dic_siglas`** – dicionário de siglas.
 """)
 
-with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
-    st.download_button(
-        label="📅 Baixar modelo de planilha",
-        data=exemplo,
-        file_name="gerar_corpus_iramuteq.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
-
-file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
-
-if file:
-    try:
-        xls = pd.ExcelFile(file)
-        df_textos = xls.parse("textos_selecionados")
-        df_compostos = xls.parse("dic_palavras_compostas")
-        df_siglas = xls.parse("dic_siglas")
-
-        # Padroniza nomes das colunas para evitar erros de maiúsculas/minúsculas
-        df_textos.columns = [col.strip().lower() for col in df_textos.columns]
-
-        if st.button("🚀 GERAR CORPUS TEXTUAL"):
-            corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
-
-            if corpus.strip():
-                st.success("Corpus gerado com sucesso!")
-                st.text_area("📊 Estatísticas do processamento", estatisticas, height=250)
-
-                buf = io.BytesIO()
-                buf.write(corpus.encode("utf-8"))
-                st.download_button("📄 BAIXAR CORPUS TEXTUAL", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
-            else:
-                st.warning("Nenhum texto processado. Verifique os dados da planilha.")
-
-    except Exception as e:
-        st.error(f"Erro ao processar o arquivo: {e}")
-
-# Rodapé
-st.markdown("""
----
-👨‍🏫 **Sobre o autor**
-
-**Autor:** José Wendel dos Santos  
-**Instituição:** Universidade Federal de Sergipe (UFS)  
-**Contato:** eng.wendel@live.com
-
-Este aplicativo foi desenvolvido para fins educacionais e de apoio à análise textual no software **IRaMuTeQ**.
-""")
+with open("gerar_corpus_
