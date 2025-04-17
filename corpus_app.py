@@ -1,72 +1,65 @@
-import streamlit as st
+import streamlit as st 
 import pandas as pd
 import re
 import io
 from word2number import w2n
 
-# Função para substituir siglas com significados
 def replace_full_word(text, term, replacement):
     return re.sub(rf"\b{re.escape(term)}\b", replacement, text, flags=re.IGNORECASE)
 
-def processar_siglas(texto, dict_siglas):
-    """
-    Remove siglas entre parênteses e substitui as siglas isoladas pelo seu significado.
-    """
-    # 1. Remover siglas entre parênteses
-    for sigla, significado in dict_siglas.items():
-        texto = re.sub(rf"\({re.escape(sigla)}\)", "", texto)  # Remover sigla entre parênteses
-        
-    # 2. Substituir siglas isoladas pelo seu significado
-    for sigla, significado in dict_siglas.items():
-        texto = replace_full_word(texto, sigla, significado)  # Substitui siglas isoladas
-        
-    return texto
+def replace_with_pattern(text, pattern, replacement):
+    return re.sub(pattern, replacement, text, flags=re.IGNORECASE)
 
-# Função para converter números por extenso para algarismos
 def converter_numeros_por_extenso(texto):
-    unidades = {
-        "zero": 0, "um": 1, "uma": 1, "dois": 2, "duas": 2, "três": 3, "quatro": 4, "cinco": 5,
-        "seis": 6, "sete": 7, "oito": 8, "nove": 9
-    }
-    dezenas = {
-        "dez": 10, "onze": 11, "doze": 12, "treze": 13, "quatorze": 14, "quinze": 15,
-        "dezesseis": 16, "dezessete": 17, "dezoito": 18, "dezenove": 19, "vinte": 20
-    }
-    centenas = {
-        "cem": 100, "cento": 100, "duzentos": 200, "trezentos": 300, "quatrocentos": 400,
-        "quinhentos": 500, "seiscentos": 600, "setecentos": 700, "oitocentos": 800, "novecentos": 900
-    }
-    multiplicadores = {
-        "mil": 1000, "milhão": 1000000, "milhões": 1000000, "bilhão": 1000000000,
-        "bilhões": 1000000000
-    }
-
-    def processar_palavra(palavra):
-        try:
-            return str(w2n.word_to_num(palavra))
-        except:
-            return palavra
-
+    ignorar = {"mais", "menos", "com", "sem", "de", "por", "para", "e", "ou"}
     palavras = texto.split()
     resultado = []
+    buffer = []
 
-    for palavra in palavras:
-        palavra_lower = palavra.lower()
-        
-        if palavra_lower in unidades:
-            resultado.append(str(unidades[palavra_lower]))
-        elif palavra_lower in dezenas:
-            resultado.append(str(dezenas[palavra_lower]))
-        elif palavra_lower in centenas:
-            resultado.append(str(centenas[palavra_lower]))
-        elif palavra_lower in multiplicadores:
-            resultado.append(str(multiplicadores[palavra_lower]))
+    def tentar_converter(buffer):
+        try:
+            return str(w2n.word_to_num(" ".join(buffer)))
+        except:
+            return None
+
+    i = 0
+    while i < len(palavras):
+        palavra = palavras[i]
+
+        if palavra.lower() in ignorar:
+            if buffer:
+                convertido = tentar_converter(buffer)
+                if convertido:
+                    resultado.append(convertido)
+                else:
+                    resultado.extend(buffer)
+                buffer = []
+            resultado.append(palavra)
         else:
-            resultado.append(processar_palavra(palavra))
+            buffer.append(palavra)
+            convertido = tentar_converter(buffer)
+            if convertido:
+                resultado.append(convertido)
+                buffer = []
+        i += 1
+
+    if buffer:
+        convertido = tentar_converter(buffer)
+        if convertido:
+            resultado.append(convertido)
+        else:
+            resultado.extend(buffer)
 
     return " ".join(resultado)
 
-# Função para gerar o corpus final
+def processar_palavras_com_se(texto):
+    """
+    Transformar palavras como "notou-se" em "se notou".
+    """
+    # Regex para identificar palavras que terminam com "-se" e inverter a posição
+    texto = re.sub(rf"(\b\w+)-se\b", r"se \1", texto)
+    return texto
+
 def gerar_corpus(df_textos, df_compostos, df_siglas):
     dict_compostos = {
         str(row["Palavra composta"]).lower(): str(row["Palavra normalizada"]).lower()
@@ -109,19 +102,21 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 
         texto_corrigido = texto.lower()
         texto_corrigido = converter_numeros_por_extenso(texto_corrigido)
+
+        # Processando palavras com "-se"
+        texto_corrigido = processar_palavras_com_se(texto_corrigido)
         total_textos += 1
 
-        # Processando siglas
-        texto_corrigido = processar_siglas(texto_corrigido, dict_siglas)
-        total_siglas += len(dict_siglas)
+        for sigla, significado in dict_siglas.items():
+            texto_corrigido = replace_with_pattern(texto_corrigido, rf"\({sigla}\)", "")
+            texto_corrigido = replace_full_word(texto_corrigido, sigla, significado)
+            total_siglas += 1
 
-        # Processando palavras compostas
         for termo, substituto in dict_compostos.items():
             if termo in texto_corrigido:
                 texto_corrigido = replace_full_word(texto_corrigido, termo, substituto)
                 total_compostos += 1
 
-        # Removendo caracteres especiais
         for char in caracteres_especiais:
             count = texto_corrigido.count(char)
             if count:
@@ -131,7 +126,6 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 
         texto_corrigido = re.sub(r"\s+", " ", texto_corrigido.strip())
 
-        # Adicionando metadados
         metadata = f"**** *ID_{id_val}"
         for col in row.index:
             if col.lower() not in ["id", "textos selecionados"]:
@@ -149,7 +143,7 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 
     return corpus_final, estatisticas
 
-# Interface no Streamlit
+# Interface
 st.set_page_config(layout="wide")
 st.title("Gerador de corpus textual para IRaMuTeQ")
 
