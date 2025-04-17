@@ -3,13 +3,29 @@ import pandas as pd
 import re
 import io
 
-# --- Funções de processamento ---
+# Função para definir o fundo
+def set_background(image_url):
+    st.markdown(
+        f"""
+        <style>
+        .stApp {{
+            background-image: url({image_url});
+            background-size: cover;
+            background-position: center;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+# Funções para processamento de texto
 def replace_full_word(text, term, replacement):
     return re.sub(rf"\b{re.escape(term)}\b", replacement, text, flags=re.IGNORECASE)
 
 def replace_with_pattern(text, pattern, replacement):
     return re.sub(pattern, replacement, text, flags=re.IGNORECASE)
 
+# Função para gerar o corpus
 def gerar_corpus(df_textos, df_compostos, df_siglas):
     dict_compostos = {
         str(row["Palavra composta"]).lower(): str(row["Palavra normalizada"]).lower()
@@ -44,7 +60,7 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
     corpus_final = ""
 
     for _, row in df_textos.iterrows():
-        texto = str(row.get("Textos selecionados", ""))
+        texto = str(row.get("textos selecionados", ""))
         id_val = row.get("id", "")
         if not texto.strip():
             continue
@@ -88,73 +104,56 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 
     return corpus_final, estatisticas
 
-# --- Estilo personalizado ---
-st.markdown("""
-    <style>
-        .main {
-            background-color: #f4f4f4;
-        }
-        .block-container {
-            padding-top: 2rem;
-            padding-bottom: 2rem;
-            background-color: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-        }
-    </style>
-""", unsafe_allow_html=True)
+# Definindo o fundo com imagem
+set_background("https://www.iramuteq.org/captures-decrans/resultats/exporter-dans-gephi")
 
-# --- Interface ---
-st.title("GERADOR DE CORPUS DE TEXTO PARA IRAMUTEQ")
+# Interface do usuário
+st.title("Gerador de corpus textual — IRaMuTeQ")
 
-st.markdown("""
-### 📌 Instruções para uso da planilha
+st.markdown(
+    """
+    📌 **Instruções para uso da planilha**
 
-Envie um arquivo do Excel `.xlsx` com a estrutura correta para que o corpus possa ser gerado automaticamente.
+    Envie um arquivo do Excel .xlsx com a estrutura correta para que o corpus possa ser gerado automaticamente.
 
-Sua planilha deve conter três abas (planilhas internas) com os seguintes nomes e finalidades:
+    Sua planilha deve conter três abas (planilhas internas) com os seguintes nomes e finalidades:
 
-1. **textos_selecionados** – onde ficam os textos a serem processados.  
-2. **dic_palavras_compostas** – dicionário de expressões compostas.  
-3. **dic_siglas** – dicionário de siglas.  
-""")
+    1. **textos_selecionados** – onde ficam os textos a serem processados.
+    2. **dic_palavras_compostas** – dicionário de expressões compostas.
+    3. **dic_siglas** – dicionário de siglas.
+    """
+)
 
-with open("gerar_corpus_iramuteq.xlsx", "rb") as f:
-    st.download_button("📥 Baixar modelo de planilha", f, file_name="gerar_corpus_iramuteq.xlsx")
+st.markdown(
+    """
+    **Sobre o autor**
 
-file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
+    Este aplicativo foi desenvolvido para fins educacionais e de apoio à análise textual no software **IRaMuTeQ**.
+
+    **Autor:** José Wendel dos Santos  
+    **Instituição:** Mestre em Ciência da Propriedade Intelectual (PPGPI) – Universidade Federal de Sergipe (UFS)  
+    **Contato:** eng.wendel@live.com
+    """
+)
+
+file = st.file_uploader("Envie o arquivo Excel com as abas 'textos_selecionados', 'dic_palavras_compostas' e 'dic_siglas'", type=["xlsx"])
 
 if file:
+    xls = pd.ExcelFile(file)
     try:
-        xls = pd.ExcelFile(file)
         df_textos = xls.parse("textos_selecionados")
         df_compostos = xls.parse("dic_palavras_compostas")
         df_siglas = xls.parse("dic_siglas")
 
-        if st.button(" 🚀 Gerar corpus textual"):
+        if st.button("🚀 Gerar corpus textual"):
             corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
 
-            if corpus.strip():
-                st.success("Corpus gerado com sucesso!")
-                st.text_area("Estatísticas do processamento", estatisticas, height=200)
+            st.success("Corpus gerado com sucesso!")
+            st.text_area("Estatísticas do processamento", estatisticas, height=200)
 
-                buf = io.BytesIO()
-                buf.write(corpus.encode("utf-8"))
-                st.download_button("Baixar Corpus", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
-            else:
-                st.warning("Nenhum texto processado. Verifique os dados da planilha.")
+            buf = io.BytesIO()
+            buf.write(corpus.encode("utf-8"))
+            st.download_button("Baixar Corpus", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
 
     except Exception as e:
         st.error(f"Erro ao processar o arquivo: {e}")
-
-# --- Rodapé ---
-st.markdown("""
----
-### Sobre o autor
-
-Este aplicativo foi desenvolvido para fins educacionais e de apoio à análise textual no software **IRaMuTeQ**.
-
-**Autor:** José Wendel dos Santos  
-**Instituição:** Universidade Federal de Sergipe (UFS)  
-**Contato:** [eng.wendel@live.com](mailto:eng.wendel@live.com)
-""")
