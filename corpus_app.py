@@ -1,4 +1,4 @@
-import streamlit as st
+import streamlit as st 
 import pandas as pd
 import re
 import io
@@ -134,3 +134,15 @@ if file:
 
     except Exception as e:
         st.error(f"Erro ao processar o arquivo: {e}")
+
+# Rodapé com informações do autor
+st.markdown("""
+    ---
+    👨‍🏫 **Sobre o autor**
+
+    Este aplicativo foi desenvolvido para fins educacionais e de apoio à análise textual no software **IRaMuTeQ**.
+
+    **Autor:** José Wendel dos Santos  
+    **Instituição:** Mestre em Ciência da Propriedade Intelectual (PPGPI) – Universidade Federal de Sergipe (UFS)  
+    **Contato:** eng.wendel@live.com  
+""")
