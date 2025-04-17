@@ -4,12 +4,12 @@ import re
 import io
 
 # --- Função para definir o fundo ---
-def set_background(http://www.iramuteq.org/captures-decrans/resultats/exporter-dans-gephi):
+def set_background("https://www.iramuteq.org/captures-decrans/resultats/exporter-dans-gephi"):
     st.markdown(
         f"""
         <style>
         .stApp {{
-            background-image: url({http://www.iramuteq.org/captures-decrans/resultats/exporter-dans-gephi});
+            background-image: url({image_url});
             background-size: cover;
             background-position: center;
         }}
