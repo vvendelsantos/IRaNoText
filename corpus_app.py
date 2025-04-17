@@ -134,7 +134,7 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 
         # Substituição das siglas (corrigido o padrão de regex para parênteses)
         for sigla, significado in dict_siglas.items():
-            # Substitui siglas no formato "(SIGLA)"
+            # Substitui siglas no formato "(SIGLA)" e siglas isoladas
             texto_corrigido = replace_with_pattern(texto_corrigido, rf"\({sigla}\)", f"({significado})")
             texto_corrigido = replace_full_word(texto_corrigido, sigla, significado)
             total_siglas += 1
@@ -221,3 +221,15 @@ if file:
 
     except Exception as e:
         st.error(f"Ocorreu um erro: {e}")
+
+# Rodapé
+st.markdown("""
+---
+👨‍🏫 **Sobre o autor**
+
+**Autor:** José Wendel dos Santos  
+**Instituição:** Universidade Federal de Sergipe (UFS)  
+**Contato:** eng.wendel@live.com
+
+Este aplicativo foi desenvolvido para fins educacionais e de apoio à análise textual no software **IRaMuTeQ**.
+""")
