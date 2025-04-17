@@ -1,13 +1,36 @@
-import streamlit as st 
+import streamlit as st
 import pandas as pd
 import re
 import io
+from word2number import w2n
 
 def replace_full_word(text, term, replacement):
     return re.sub(rf"\b{re.escape(term)}\b", replacement, text, flags=re.IGNORECASE)
 
 def replace_with_pattern(text, pattern, replacement):
     return re.sub(pattern, replacement, text, flags=re.IGNORECASE)
+
+def converter_numeros_por_extenso(texto):
+    palavras = texto.split()
+    resultado = []
+    buffer = []
+
+    for palavra in palavras:
+        buffer.append(palavra)
+        try:
+            # Tenta converter a sequência de palavras acumuladas em número
+            numero = w2n.word_to_num(" ".join(buffer))
+            resultado = resultado[:-len(buffer)+1] if len(buffer) > 1 else resultado
+            resultado.append(str(numero))
+            buffer = []
+        except ValueError:
+            # Se não conseguir converter, reinicia o buffer quando o número por extenso não for reconhecido
+            if len(buffer) > 1:
+                resultado.extend(buffer[:-1])
+            buffer = [palavra]
+
+    resultado.extend(buffer)  # Adiciona o restante das palavras não convertidas
+    return " ".join(resultado)
 
 def gerar_corpus(df_textos, df_compostos, df_siglas):
     dict_compostos = {
@@ -32,6 +55,7 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
         "(": "Parêntese esquerdo",
         ")": "Parêntese direito",
         "/": "Barra",
+        "%": "Porcentagem"
     }
     contagem_caracteres = {k: 0 for k in caracteres_especiais}
 
@@ -49,6 +73,7 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
             continue
 
         texto_corrigido = texto.lower()
+        texto_corrigido = converter_numeros_por_extenso(texto_corrigido)
         total_textos += 1
 
         for sigla, significado in dict_siglas.items():
@@ -88,6 +113,7 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
     return corpus_final, estatisticas
 
 # Interface
+st.set_page_config(layout="wide")
 st.title("Gerador de corpus textual para IRaMuTeQ")
 
 st.markdown("""
@@ -97,20 +123,20 @@ Envie um arquivo do Excel **.xlsx** com a estrutura correta para que o corpus po
 
 Sua planilha deve conter **três abas (planilhas internas)** com os seguintes nomes e finalidades:
 
-1. **textos_selecionados** – onde ficam os textos a serem processados.  
-2. **dic_palavras_compostas** – dicionário de expressões compostas.  
-3. **dic_siglas** – dicionário de siglas.
+1. **`textos_selecionados`** – onde ficam os textos a serem processados.  
+2. **`dic_palavras_compostas`** – dicionário de expressões compostas.  
+3. **`dic_siglas`** – dicionário de siglas.
 """)
 
 with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
     st.download_button(
-        label="📥 Baixar modelo de planilha",
+        label="📅 Baixar modelo de planilha",
         data=exemplo,
         file_name="gerar_corpus_iramuteq.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
-file = st.file_uploader("📤 Envie sua planilha preenchida", type=["xlsx"])
+file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
 
 if file:
     try:
@@ -140,10 +166,9 @@ st.markdown("""
     ---
     👨‍🏫 **Sobre o autor**
 
-    
     **Autor:** José Wendel dos Santos  
     **Instituição:** Universidade Federal de Sergipe (UFS)  
     **Contato:** eng.wendel@live.com
-    
+
     Este aplicativo foi desenvolvido para fins educacionais e de apoio à análise textual no software **IRaMuTeQ**.
 """)
