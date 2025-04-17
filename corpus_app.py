@@ -27,13 +27,15 @@ def converter_numeros_por_extenso(texto):
         try:
             return str(w2n.word_to_num(palavra))
         except:
-            return palavra
+            return palavra  # Se não for possível converter, retorna a palavra original.
 
+    # Verifica e substitui as palavras por algarismos
     palavras = texto.split()
     resultado = []
     for palavra in palavras:
         palavra_lower = palavra.lower()
 
+        # Verifica se a palavra pode ser convertida por extenso
         if palavra_lower in unidades:
             resultado.append(str(unidades[palavra_lower]))
         elif palavra_lower in dezenas:
@@ -47,9 +49,9 @@ def converter_numeros_por_extenso(texto):
 
     return " ".join(resultado)
 
-# Função para processar palavras compostas com "-se"
+# Função para processar palavras compostas com "-se" (ex: "notou-se")
 def processar_palavras_com_se(texto):
-    return re.sub(r"(\b\w+)-se\b", r"se \\1", texto)
+    return re.sub(r"(\b\w+)-se\b", r"se \1", texto)
 
 # Função principal para gerar o corpus
 def gerar_corpus(df_textos, df_compostos, df_siglas):
@@ -93,20 +95,23 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
             continue
 
         texto_corrigido = texto.lower()
-        texto_corrigido = converter_numeros_por_extenso(texto_corrigido)
-        texto_corrigido = processar_palavras_com_se(texto_corrigido)
+        texto_corrigido = converter_numeros_por_extenso(texto_corrigido)  # Conversão dos números por extenso
+        texto_corrigido = processar_palavras_com_se(texto_corrigido)  # Processa palavras compostas com "-se"
         total_textos += 1
 
+        # Substitui siglas
         for sigla, significado in dict_siglas.items():
-            texto_corrigido = re.sub(rf"\\({sigla}\\)", "", texto_corrigido)
-            texto_corrigido = re.sub(rf"\\b{sigla}\\b", significado, texto_corrigido, flags=re.IGNORECASE)
+            texto_corrigido = re.sub(rf"\({sigla}\)", "", texto_corrigido)  # Remove siglas entre parênteses
+            texto_corrigido = re.sub(rf"\b{sigla}\b", significado, texto_corrigido, flags=re.IGNORECASE)
             total_siglas += 1
 
+        # Substitui palavras compostas
         for termo, substituto in dict_compostos.items():
             if termo in texto_corrigido:
-                texto_corrigido = re.sub(rf"\\b{termo}\\b", substituto, texto_corrigido, flags=re.IGNORECASE)
+                texto_corrigido = re.sub(rf"\b{termo}\b", substituto, texto_corrigido, flags=re.IGNORECASE)
                 total_compostos += 1
 
+        # Remove caracteres especiais
         for char in caracteres_especiais:
             count = texto_corrigido.count(char)
             if count:
@@ -114,6 +119,7 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
                 contagem_caracteres[char] += count
                 total_remocoes += count
 
+        # Limpeza final de espaços extras
         texto_corrigido = re.sub(r"\s+", " ", texto_corrigido.strip())
 
         metadata = f"**** *ID_{id_val}"
@@ -133,23 +139,10 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 
     return corpus_final, estatisticas
 
+
 # Interface com Streamlit
 st.set_page_config(layout="wide")
 st.title("Gerador de corpus textual para IRaMuTeQ")
-
-st.markdown("""
-### ⚙️ Principais funcionalidades
-
-Esta aplicação realiza automaticamente operações de **normalização e limpeza de textos** para facilitar a preparação de um corpus compatível com o IRaMuTeQ, a partir de uma planilha Excel. Entre os principais recursos disponíveis:
-
-1. 🔢 **Conversão de números por extenso** para algarismos.
-2. 🧩 **Normalização de palavras compostas** conforme dicionário fornecido.
-3. 🔄 **Tratamento de flexões verbo-pronominais**, como "notou-se" → "se notou".
-4. 🧾 **Substituição de siglas** por seus significados completos.
-5. 🧹 **Remoção ou substituição de caracteres especiais**, como hífens, aspas, travessões etc.
-6. 🧠 **Geração automática de metadados** no formato exigido pelo IRaMuTeQ, com base nas colunas da planilha.
-
-""")
 
 st.markdown("""
 ### 📌 Instruções para uso da planilha
@@ -180,6 +173,7 @@ if file:
         df_compostos = xls.parse("dic_palavras_compostas")
         df_siglas = xls.parse("dic_siglas")
 
+        # Padroniza nomes das colunas para evitar erros de maiúsculas/minúsculas
         df_textos.columns = [col.strip().lower() for col in df_textos.columns]
 
         if st.button("🚀 GERAR CORPUS TEXTUAL"):
