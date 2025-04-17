@@ -18,16 +18,18 @@ def converter_numeros_por_extenso(texto):
     for palavra in palavras:
         buffer.append(palavra)
         try:
+            # Tenta converter a sequência de palavras acumuladas em número
             numero = w2n.word_to_num(" ".join(buffer))
             resultado = resultado[:-len(buffer)+1] if len(buffer) > 1 else resultado
             resultado.append(str(numero))
             buffer = []
-        except:
-            if len(buffer) > 3:
-                resultado.extend(buffer)
-                buffer = []
+        except ValueError:
+            # Se não conseguir converter, reinicia o buffer quando o número por extenso não for reconhecido
+            if len(buffer) > 1:
+                resultado.extend(buffer[:-1])
+            buffer = [palavra]
 
-    resultado.extend(buffer)
+    resultado.extend(buffer)  # Adiciona o restante das palavras não convertidas
     return " ".join(resultado)
 
 def gerar_corpus(df_textos, df_compostos, df_siglas):
@@ -45,15 +47,15 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 
     caracteres_especiais = {
         "-": "Hífen",
-    ";": "Ponto e vírgula",
-    '"': "Aspas duplas",
-    "'": "Aspas simples",
-    "…": "Reticências",
-    "–": "Travessão",
-    "(": "Parêntese esquerdo",
-    ")": "Parêntese direito",
-    "/": "Barra",
-    "%": "Porcentagem"
+        ";": "Ponto e vírgula",
+        '"': "Aspas duplas",
+        "'": "Aspas simples",
+        "…": "Reticências",
+        "–": "Travessão",
+        "(": "Parêntese esquerdo",
+        ")": "Parêntese direito",
+        "/": "Barra",
+        "%": "Porcentagem"
     }
     contagem_caracteres = {k: 0 for k in caracteres_especiais}
 
