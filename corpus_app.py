@@ -3,29 +3,33 @@ import pandas as pd
 import re
 import io
 
-# Função para definir o fundo
-def set_background(image_url):
+# Função para definir o fundo da página com upload
+def set_background(uploaded_image):
     st.markdown(
         f"""
         <style>
-        .stApp {{
-            background-image: url({image_url});
+        .reportview-container {{
+            background: url(data:image/jpeg;base64,{uploaded_image}) ;
             background-size: cover;
-            background-position: center;
+        }}
+        .main {{
+            max-width: 95%;  /* Ajusta a largura do conteúdo */
+            margin: 0 auto;
         }}
         </style>
-        """,
-        unsafe_allow_html=True,
+        """, 
+        unsafe_allow_html=True
     )
 
-# Funções para processamento de texto
+# Função para substituir palavras completas
 def replace_full_word(text, term, replacement):
     return re.sub(rf"\b{re.escape(term)}\b", replacement, text, flags=re.IGNORECASE)
 
+# Função para substituir com um padrão específico
 def replace_with_pattern(text, pattern, replacement):
     return re.sub(pattern, replacement, text, flags=re.IGNORECASE)
 
-# Função para gerar o corpus
+# Função principal para gerar o corpus
 def gerar_corpus(df_textos, df_compostos, df_siglas):
     dict_compostos = {
         str(row["Palavra composta"]).lower(): str(row["Palavra normalizada"]).lower()
@@ -60,7 +64,7 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
     corpus_final = ""
 
     for _, row in df_textos.iterrows():
-        texto = str(row.get("textos selecionados", ""))
+        texto = str(row.get("textos selecionados", ""))  # Ajuste o nome da coluna conforme necessário
         id_val = row.get("id", "")
         if not texto.strip():
             continue
@@ -68,16 +72,19 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
         texto_corrigido = texto.lower()
         total_textos += 1
 
+        # Substituir siglas
         for sigla, significado in dict_siglas.items():
             texto_corrigido = replace_with_pattern(texto_corrigido, rf"\\({sigla}\\)", "")
             texto_corrigido = replace_full_word(texto_corrigido, sigla, significado)
             total_siglas += 1
 
+        # Substituir palavras compostas
         for termo, substituto in dict_compostos.items():
             if termo in texto_corrigido:
                 texto_corrigido = replace_full_word(texto_corrigido, termo, substituto)
                 total_compostos += 1
 
+        # Remover caracteres especiais
         for char in caracteres_especiais:
             count = texto_corrigido.count(char)
             if count:
@@ -104,11 +111,8 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 
     return corpus_final, estatisticas
 
-# Definindo o fundo com imagem
-set_background("https://www.iramuteq.org/captures-decrans/resultats/exporter-dans-gephi")
-
-# Interface do usuário
-st.title("Gerador de corpus textual — IRaMuTeQ")
+# Interface Streamlit
+st.title("Gerador de Corpus IRaMuTeQ")
 
 st.markdown(
     """
@@ -126,17 +130,27 @@ st.markdown(
 
 st.markdown(
     """
-    **Sobre o autor**
+    👨‍🏫 **Sobre o autor**
 
     Este aplicativo foi desenvolvido para fins educacionais e de apoio à análise textual no software **IRaMuTeQ**.
 
     **Autor:** José Wendel dos Santos  
     **Instituição:** Mestre em Ciência da Propriedade Intelectual (PPGPI) – Universidade Federal de Sergipe (UFS)  
-    **Contato:** eng.wendel@live.com
+    **Contato:** eng.wendel@live.com  
     """
 )
 
-file = st.file_uploader("Envie o arquivo Excel com as abas 'textos_selecionados', 'dic_palavras_compostas' e 'dic_siglas'", type=["xlsx"])
+# Upload da imagem de fundo
+uploaded_bg = st.file_uploader("Faça o upload da imagem de fundo", type=["jpg", "jpeg", "png"])
+
+# Se o usuário subir a imagem, converte para base64 e aplica como fundo
+if uploaded_bg is not None:
+    import base64
+    img_bytes = uploaded_bg.read()
+    img_base64 = base64.b64encode(img_bytes).decode()
+    set_background(img_base64)
+
+file = st.file_uploader("Envie o arquivo Excel", type=["xlsx"])
 
 if file:
     xls = pd.ExcelFile(file)
@@ -145,7 +159,7 @@ if file:
         df_compostos = xls.parse("dic_palavras_compostas")
         df_siglas = xls.parse("dic_siglas")
 
-        if st.button("🚀 Gerar corpus textual"):
+        if st.button("Gerar Corpus"):
             corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
 
             st.success("Corpus gerado com sucesso!")
