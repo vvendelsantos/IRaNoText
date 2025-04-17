@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import re
 import io
+from word2number import w2n
 
 def replace_full_word(text, term, replacement):
     return re.sub(rf"\b{re.escape(term)}\b", replacement, text, flags=re.IGNORECASE)
@@ -9,57 +10,46 @@ def replace_full_word(text, term, replacement):
 def replace_with_pattern(text, pattern, replacement):
     return re.sub(pattern, replacement, text, flags=re.IGNORECASE)
 
-def converter_numeros_ptbr(texto):
-    unidades = {
-        "zero": 0, "um": 1, "uma": 1, "dois": 2, "duas": 2, "três": 3, "quatro": 4,
-        "cinco": 5, "seis": 6, "sete": 7, "oito": 8, "nove": 9
-    }
-
-    dezenas = {
-        "dez": 10, "onze": 11, "doze": 12, "treze": 13, "quatorze": 14, "catorze": 14,
-        "quinze": 15, "dezesseis": 16, "dezessete": 17, "dezoito": 18, "dezenove": 19,
-        "vinte": 20, "trinta": 30, "quarenta": 40, "cinquenta": 50, "sessenta": 60,
-        "setenta": 70, "oitenta": 80, "noventa": 90
-    }
-
-    centenas = {
-        "cem": 100, "cento": 100, "duzentos": 200, "trezentos": 300, "quatrocentos": 400,
-        "quinhentos": 500, "seiscentos": 600, "setecentos": 700, "oitocentos": 800, "novecentos": 900
-    }
-
-    def parse_num_extenso(palavras):
-        total = 0
-        buffer = []
-        for p in palavras:
-            if p in unidades:
-                buffer.append(unidades[p])
-            elif p in dezenas:
-                buffer.append(dezenas[p])
-            elif p in centenas:
-                buffer.append(centenas[p])
-            elif p == "e":
-                continue
-            else:
-                return None
-        if not buffer:
-            return None
-        total = sum(buffer)
-        return total
-
+def converter_numeros_por_extenso(texto):
+    ignorar = {"mais", "menos", "com", "sem", "de", "por", "para", "e", "ou"}
     palavras = texto.split()
-    i = 0
     resultado = []
+    buffer = []
+
+    def tentar_converter(buffer):
+        try:
+            return str(w2n.word_to_num(" ".join(buffer)))
+        except:
+            return None
+
+    i = 0
     while i < len(palavras):
-        for j in range(5, 0, -1):  # Tenta combinações de 5 a 1 palavra
-            grupo = palavras[i:i + j]
-            numero = parse_num_extenso(grupo)
-            if numero is not None:
-                resultado.append(str(numero))
-                i += j
-                break
+        palavra = palavras[i]
+
+        if palavra.lower() in ignorar:
+            if buffer:
+                convertido = tentar_converter(buffer)
+                if convertido:
+                    resultado.append(convertido)
+                else:
+                    resultado.extend(buffer)
+                buffer = []
+            resultado.append(palavra)
         else:
-            resultado.append(palavras[i])
-            i += 1
+            buffer.append(palavra)
+            convertido = tentar_converter(buffer)
+            if convertido:
+                resultado.append(convertido)
+                buffer = []
+        i += 1
+
+    if buffer:
+        convertido = tentar_converter(buffer)
+        if convertido:
+            resultado.append(convertido)
+        else:
+            resultado.extend(buffer)
+
     return " ".join(resultado)
 
 def gerar_corpus(df_textos, df_compostos, df_siglas):
@@ -76,16 +66,24 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
     }
 
     caracteres_especiais = {
-        "-": "Hífen", ";": "Ponto e vírgula", '"': "Aspas duplas", "'": "Aspas simples",
-        "…": "Reticências", "–": "Travessão", "(": "Parêntese esquerdo", ")": "Parêntese direito",
-        "/": "Barra", "%": "Porcentagem"
+        "-": "Hífen",
+        ";": "Ponto e vírgula",
+        '"': "Aspas duplas",
+        "'": "Aspas simples",
+        "…": "Reticências",
+        "–": "Travessão",
+        "(": "Parêntese esquerdo",
+        ")": "Parêntese direito",
+        "/": "Barra",
+        "%": "Porcentagem"
     }
-
     contagem_caracteres = {k: 0 for k in caracteres_especiais}
+
     total_textos = 0
     total_siglas = 0
     total_compostos = 0
     total_remocoes = 0
+
     corpus_final = ""
 
     for _, row in df_textos.iterrows():
@@ -95,7 +93,7 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
             continue
 
         texto_corrigido = texto.lower()
-        texto_corrigido = converter_numeros_ptbr(texto_corrigido)
+        texto_corrigido = converter_numeros_por_extenso(texto_corrigido)
         total_textos += 1
 
         for sigla, significado in dict_siglas.items():
@@ -134,7 +132,7 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 
     return corpus_final, estatisticas
 
-# Interface Streamlit
+# Interface
 st.set_page_config(layout="wide")
 st.title("Gerador de corpus textual para IRaMuTeQ")
 
