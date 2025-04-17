@@ -3,33 +3,12 @@ import pandas as pd
 import re
 import io
 
-# Função para definir o fundo da página com upload
-def set_background(uploaded_image):
-    st.markdown(
-        f"""
-        <style>
-        .reportview-container {{
-            background: url(data:image/jpeg;base64,{uploaded_image}) ;
-            background-size: cover;
-        }}
-        .main {{
-            max-width: 95%;  /* Ajusta a largura do conteúdo */
-            margin: 0 auto;
-        }}
-        </style>
-        """, 
-        unsafe_allow_html=True
-    )
-
-# Função para substituir palavras completas
 def replace_full_word(text, term, replacement):
     return re.sub(rf"\b{re.escape(term)}\b", replacement, text, flags=re.IGNORECASE)
 
-# Função para substituir com um padrão específico
 def replace_with_pattern(text, pattern, replacement):
     return re.sub(pattern, replacement, text, flags=re.IGNORECASE)
 
-# Função principal para gerar o corpus
 def gerar_corpus(df_textos, df_compostos, df_siglas):
     dict_compostos = {
         str(row["Palavra composta"]).lower(): str(row["Palavra normalizada"]).lower()
@@ -64,7 +43,7 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
     corpus_final = ""
 
     for _, row in df_textos.iterrows():
-        texto = str(row.get("textos selecionados", ""))  # Ajuste o nome da coluna conforme necessário
+        texto = str(row.get("Textos selecionados", ""))
         id_val = row.get("id", "")
         if not texto.strip():
             continue
@@ -72,19 +51,16 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
         texto_corrigido = texto.lower()
         total_textos += 1
 
-        # Substituir siglas
         for sigla, significado in dict_siglas.items():
-            texto_corrigido = replace_with_pattern(texto_corrigido, rf"\\({sigla}\\)", "")
+            texto_corrigido = replace_with_pattern(texto_corrigido, rf"\({sigla}\)", "")
             texto_corrigido = replace_full_word(texto_corrigido, sigla, significado)
             total_siglas += 1
 
-        # Substituir palavras compostas
         for termo, substituto in dict_compostos.items():
             if termo in texto_corrigido:
                 texto_corrigido = replace_full_word(texto_corrigido, termo, substituto)
                 total_compostos += 1
 
-        # Remover caracteres especiais
         for char in caracteres_especiais:
             count = texto_corrigido.count(char)
             if count:
@@ -111,63 +87,50 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 
     return corpus_final, estatisticas
 
-# Interface Streamlit
-st.title("Gerador de Corpus IRaMuTeQ")
+# Interface
+st.title("Gerador de Corpus para IRaMuTeQ")
 
-st.markdown(
-    """
-    📌 **Instruções para uso da planilha**
+st.markdown("""
+### 📌 Instruções para uso da planilha
 
-    Envie um arquivo do Excel .xlsx com a estrutura correta para que o corpus possa ser gerado automaticamente.
+Envie um arquivo do Excel **.xlsx** com a estrutura correta para que o corpus possa ser gerado automaticamente.
 
-    Sua planilha deve conter três abas (planilhas internas) com os seguintes nomes e finalidades:
+Sua planilha deve conter **três abas (planilhas internas)** com os seguintes nomes e finalidades:
 
-    1. **textos_selecionados** – onde ficam os textos a serem processados.
-    2. **dic_palavras_compostas** – dicionário de expressões compostas.
-    3. **dic_siglas** – dicionário de siglas.
-    """
-)
+1. **`textos_selecionados`** – onde ficam os textos a serem processados.  
+2. **`dic_palavras_compostas`** – dicionário de expressões compostas.  
+3. **`dic_siglas`** – dicionário de siglas.
+""")
 
-st.markdown(
-    """
-    👨‍🏫 **Sobre o autor**
+with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
+    st.download_button(
+        label="📥 Baixar modelo de planilha",
+        data=exemplo,
+        file_name="gerar_corpus_iramuteq.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
 
-    Este aplicativo foi desenvolvido para fins educacionais e de apoio à análise textual no software **IRaMuTeQ**.
-
-    **Autor:** José Wendel dos Santos  
-    **Instituição:** Mestre em Ciência da Propriedade Intelectual (PPGPI) – Universidade Federal de Sergipe (UFS)  
-    **Contato:** eng.wendel@live.com  
-    """
-)
-
-# Upload da imagem de fundo
-uploaded_bg = st.file_uploader("Faça o upload da imagem de fundo", type=["jpg", "jpeg", "png"])
-
-# Se o usuário subir a imagem, converte para base64 e aplica como fundo
-if uploaded_bg is not None:
-    import base64
-    img_bytes = uploaded_bg.read()
-    img_base64 = base64.b64encode(img_bytes).decode()
-    set_background(img_base64)
-
-file = st.file_uploader("Envie o arquivo Excel", type=["xlsx"])
+file = st.file_uploader("📤 Envie sua planilha preenchida", type=["xlsx"])
 
 if file:
-    xls = pd.ExcelFile(file)
     try:
+        xls = pd.ExcelFile(file)
         df_textos = xls.parse("textos_selecionados")
         df_compostos = xls.parse("dic_palavras_compostas")
         df_siglas = xls.parse("dic_siglas")
 
-        if st.button("Gerar Corpus"):
+        if st.button("🚀 Gerar Corpus"):
             corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
 
-            st.success("Corpus gerado com sucesso!")
-            st.text_area("Estatísticas do processamento", estatisticas, height=200)
+            if corpus.strip():
+                st.success("Corpus gerado com sucesso!")
+                st.text_area("📊 Estatísticas do processamento", estatisticas, height=250)
 
-            buf = io.BytesIO()
-            buf.write(corpus.encode("utf-8"))
-            st.download_button("Baixar Corpus", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
+                buf = io.BytesIO()
+                buf.write(corpus.encode("utf-8"))
+                st.download_button("📄 Baixar Corpus", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
+            else:
+                st.warning("Nenhum texto processado. Verifique os dados da planilha.")
 
     except Exception as e:
         st.error(f"Erro ao processar o arquivo: {e}")
