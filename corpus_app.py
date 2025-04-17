@@ -88,7 +88,7 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
     return corpus_final, estatisticas
 
 # Interface
-st.title("Gerador de Corpus para IRaMuTeQ")
+st.title("Gerador de corpus textual para IRaMuTeQ")
 
 st.markdown("""
 ### 📌 Instruções para uso da planilha
