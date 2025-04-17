@@ -27,7 +27,7 @@ def converter_numeros_por_extenso(texto):
         try:
             return str(w2n.word_to_num(palavra))
         except:
-            return palavra
+            return palavra  # Se não for possível converter, retorna a palavra original.
 
     palavras = texto.split()
     resultado = []
@@ -45,6 +45,10 @@ def converter_numeros_por_extenso(texto):
             resultado.append(processar_palavra(palavra))
 
     return " ".join(resultado)
+
+# Função para processar palavras compostas com "-se"
+def processar_palavras_com_se(texto):
+    return re.sub(r"(\b\w+)-se\b", r"se \1", texto)
 
 # Função para processar pronomes oblíquos pós-verbais
 def processar_pronomes_pospostos(texto):
@@ -99,6 +103,7 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 
         texto_corrigido = texto.lower()
         texto_corrigido = converter_numeros_por_extenso(texto_corrigido)
+        texto_corrigido = processar_palavras_com_se(texto_corrigido)
         texto_corrigido = processar_pronomes_pospostos(texto_corrigido)
         total_textos += 1
 
@@ -143,7 +148,7 @@ st.set_page_config(layout="wide")
 st.title("Gerador de corpus textual para IRaMuTeQ")
 
 st.markdown("""
-### 📌 Instruções
+### 📌 Instruções para uso da planilha
 
 Envie um arquivo do Excel **.xlsx** com a estrutura correta para que o corpus possa ser gerado automaticamente.
 
@@ -189,7 +194,6 @@ if file:
     except Exception as e:
         st.error(f"Erro ao processar o arquivo: {e}")
 
-# Rodapé
 st.markdown("""
 ---
 👨‍🏫 **Sobre o autor**
