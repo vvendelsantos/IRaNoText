@@ -1,63 +1,15 @@
-import streamlit as st 
-import pandas as pd
-import re
-import io
-from word2number import w2n
-
-def replace_full_word(text, term, replacement):
-    return re.sub(rf"\b{re.escape(term)}\b", replacement, text, flags=re.IGNORECASE)
-
-def replace_with_pattern(text, pattern, replacement):
-    return re.sub(pattern, replacement, text, flags=re.IGNORECASE)
-
-def converter_numeros_por_extenso(texto):
-    ignorar = {"mais", "menos", "com", "sem", "de", "por", "para", "e", "ou"}
-    palavras = texto.split()
-    resultado = []
-    buffer = []
-
-    def tentar_converter(buffer):
-        try:
-            return str(w2n.word_to_num(" ".join(buffer)))
-        except:
-            return None
-
-    i = 0
-    while i < len(palavras):
-        palavra = palavras[i]
-
-        if palavra.lower() in ignorar:
-            if buffer:
-                convertido = tentar_converter(buffer)
-                if convertido:
-                    resultado.append(convertido)
-                else:
-                    resultado.extend(buffer)
-                buffer = []
-            resultado.append(palavra)
-        else:
-            buffer.append(palavra)
-            convertido = tentar_converter(buffer)
-            if convertido:
-                resultado.append(convertido)
-                buffer = []
-        i += 1
-
-    if buffer:
-        convertido = tentar_converter(buffer)
-        if convertido:
-            resultado.append(convertido)
-        else:
-            resultado.extend(buffer)
-
-    return " ".join(resultado)
-
-def processar_palavras_com_se(texto):
+def processar_siglas(texto, dict_siglas):
     """
-    Transformar palavras como "notou-se" em "se notou".
+    Processa as siglas no texto, removendo as que estão entre parênteses e substituindo as isoladas pelo significado.
     """
-    # Regex para identificar palavras que terminam com "-se" e inverter a posição
-    texto = re.sub(rf"(\b\w+)-se\b", r"se \1", texto)
+    # Remove siglas entre parênteses
+    for sigla, _ in dict_siglas.items():
+        texto = re.sub(rf"\({sigla}\)", "", texto, flags=re.IGNORECASE)
+    
+    # Substitui as siglas isoladas pelo seu significado
+    for sigla, significado in dict_siglas.items():
+        texto = replace_full_word(texto, sigla, significado)
+    
     return texto
 
 def gerar_corpus(df_textos, df_compostos, df_siglas):
@@ -95,7 +47,7 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
     corpus_final = ""
 
     for _, row in df_textos.iterrows():
-        texto = str(row.get("textos selecionados", ""))
+        texto = str(row.get("textos selecionados", "")) 
         id_val = row.get("id", "")
         if not texto.strip():
             continue
@@ -105,12 +57,11 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 
         # Processando palavras com "-se"
         texto_corrigido = processar_palavras_com_se(texto_corrigido)
-        total_textos += 1
 
-        for sigla, significado in dict_siglas.items():
-            texto_corrigido = replace_with_pattern(texto_corrigido, rf"\({sigla}\)", "")
-            texto_corrigido = replace_full_word(texto_corrigido, sigla, significado)
-            total_siglas += 1
+        # Processando siglas
+        texto_corrigido = processar_siglas(texto_corrigido, dict_siglas)
+
+        total_textos += 1
 
         for termo, substituto in dict_compostos.items():
             if termo in texto_corrigido:
@@ -142,67 +93,3 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
             estatisticas += f" - {nome} ({char}) : {contagem_caracteres[char]}\n"
 
     return corpus_final, estatisticas
-
-# Interface
-st.set_page_config(layout="wide")
-st.title("Gerador de corpus textual para IRaMuTeQ")
-
-st.markdown("""
-### 📌 Instruções para uso da planilha
-
-Envie um arquivo do Excel **.xlsx** com a estrutura correta para que o corpus possa ser gerado automaticamente.
-
-Sua planilha deve conter **três abas (planilhas internas)** com os seguintes nomes e finalidades:
-
-1. **`textos_selecionados`** – onde ficam os textos a serem processados.  
-2. **`dic_palavras_compostas`** – dicionário de expressões compostas.  
-3. **`dic_siglas`** – dicionário de siglas.
-""")
-
-with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
-    st.download_button(
-        label="📅 Baixar modelo de planilha",
-        data=exemplo,
-        file_name="gerar_corpus_iramuteq.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
-
-file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
-
-if file:
-    try:
-        xls = pd.ExcelFile(file)
-        df_textos = xls.parse("textos_selecionados")
-        df_compostos = xls.parse("dic_palavras_compostas")
-        df_siglas = xls.parse("dic_siglas")
-
-        # Padroniza nomes das colunas para evitar erros de maiúsculas/minúsculas
-        df_textos.columns = [col.strip().lower() for col in df_textos.columns]
-
-        if st.button("🚀 GERAR CORPUS TEXTUAL"):
-            corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
-
-            if corpus.strip():
-                st.success("Corpus gerado com sucesso!")
-                st.text_area("📊 Estatísticas do processamento", estatisticas, height=250)
-
-                buf = io.BytesIO()
-                buf.write(corpus.encode("utf-8"))
-                st.download_button("📄 BAIXAR CORPUS TEXTUAL", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
-            else:
-                st.warning("Nenhum texto processado. Verifique os dados da planilha.")
-
-    except Exception as e:
-        st.error(f"Erro ao processar o arquivo: {e}")
-
-# Rodapé
-st.markdown("""
----
-👨‍🏫 **Sobre o autor**
-
-**Autor:** José Wendel dos Santos  
-**Instituição:** Universidade Federal de Sergipe (UFS)  
-**Contato:** eng.wendel@live.com
-
-Este aplicativo foi desenvolvido para fins educacionais e de apoio à análise textual no software **IRaMuTeQ**.
-""")
