@@ -42,6 +42,9 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 
     corpus_final = ""
 
+    # padroniza nomes de colunas
+    df_textos.columns = [col.lower().strip() for col in df_textos.columns]
+
     for _, row in df_textos.iterrows():
         texto = str(row.get("textos selecionados", ""))
         id_val = row.get("id", "")
@@ -52,7 +55,7 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
         total_textos += 1
 
         for sigla, significado in dict_siglas.items():
-            texto_corrigido = replace_with_pattern(texto_corrigido, rf"\\({sigla}\\)", "")
+            texto_corrigido = replace_with_pattern(texto_corrigido, rf"\({sigla}\)", "")
             texto_corrigido = replace_full_word(texto_corrigido, sigla, significado)
             total_siglas += 1
 
@@ -72,10 +75,13 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 
         metadata = f"**** *ID_{id_val}"
         for col in row.index:
-            if col.lower() not in ["id", "textos selecionados"]:
+            if col not in ["id", "textos selecionados"]:
                 metadata += f" *{col.replace(' ', '_')}_{str(row[col]).replace(' ', '_')}"
 
         corpus_final += f"{metadata}\n{texto_corrigido}\n"
+
+    if not corpus_final:
+        raise ValueError("Nenhum texto processado. Verifique os dados.")
 
     estatisticas = f"Textos processados: {total_textos}\n"
     estatisticas += f"Siglas removidas/substituídas: {total_siglas}\n"
@@ -94,31 +100,19 @@ file = st.file_uploader("Envie o arquivo Excel com as abas 'textos_selecionados'
 if file:
     xls = pd.ExcelFile(file)
     try:
-        # Carregar os dados das planilhas
         df_textos = xls.parse("textos_selecionados")
         df_compostos = xls.parse("dic_palavras_compostas")
         df_siglas = xls.parse("dic_siglas")
 
-        # Exibir as primeiras linhas das planilhas para diagnóstico
-        st.write("Planilha de textos selecionados:", df_textos.head())
-        st.write("Planilha de compostos:", df_compostos.head())
-        st.write("Planilha de siglas:", df_siglas.head())
-
-        # Verificar se a coluna 'textos selecionados' tem dados
-        st.write("Coluna 'textos selecionados' possui dados?", not df_textos['textos selecionados'].isnull().all())
-
         if st.button("Gerar Corpus"):
             corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
 
-            if not corpus:  # Se o corpus estiver vazio
-                st.error("Nenhum texto processado. Verifique os dados.")
-            else:
-                st.success("Corpus gerado com sucesso!")
-                st.text_area("Estatísticas do processamento", estatisticas, height=200)
+            st.success("Corpus gerado com sucesso!")
+            st.text_area("Estatísticas do processamento", estatisticas, height=200)
 
-                buf = io.BytesIO()
-                buf.write(corpus.encode("utf-8"))
-                st.download_button("Baixar Corpus", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
+            buf = io.BytesIO()
+            buf.write(corpus.encode("utf-8"))
+            st.download_button("Baixar Corpus", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
 
     except Exception as e:
         st.error(f"Erro ao processar o arquivo: {e}")
