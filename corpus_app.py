@@ -5,12 +5,15 @@ import io
 from word2number import w2n
 
 def replace_full_word(text, term, replacement):
+    # Substitui as palavras inteiras sem alterar parte da palavra
     return re.sub(rf"\b{re.escape(term)}\b", replacement, text, flags=re.IGNORECASE)
 
 def replace_with_pattern(text, pattern, replacement):
+    # Substitui todas as ocorrências de um padrão usando expressão regular
     return re.sub(pattern, replacement, text, flags=re.IGNORECASE)
 
 def converter_numeros_por_extenso(texto):
+    # Dicionários para conversão de números por extenso
     unidades = {
         "zero": 0, "um": 1, "uma": 1, "dois": 2, "duas": 2, "três": 3, "quatro": 4, "cinco": 5,
         "seis": 6, "sete": 7, "oito": 8, "nove": 9
@@ -106,8 +109,9 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 
         # Substituindo siglas, incluindo com parênteses, como "(INPI)" ou "INPI"
         for sigla, significado in dict_siglas.items():
-            # Substituir siglas dentro de parênteses ou siglas isoladas
-            texto_corrigido = re.sub(rf"(\(|\s){re.escape(sigla)}(\)|\s|$)", r" \2", texto_corrigido)
+            # Substituir siglas dentro de parênteses, removendo a sigla e o conteúdo dos parênteses
+            texto_corrigido = re.sub(rf"\({re.escape(sigla)}\)", "", texto_corrigido)
+            # Substituir siglas que não estão entre parênteses
             texto_corrigido = replace_full_word(texto_corrigido, sigla, significado)
             total_siglas += 1
 
