@@ -99,10 +99,13 @@ if file:
         df_compostos = xls.parse("dic_palavras_compostas")
         df_siglas = xls.parse("dic_siglas")
 
-        # Exibir os dados carregados para diagnóstico
+        # Exibir as primeiras linhas das planilhas para diagnóstico
         st.write("Planilha de textos selecionados:", df_textos.head())
         st.write("Planilha de compostos:", df_compostos.head())
         st.write("Planilha de siglas:", df_siglas.head())
+
+        # Verificar se a coluna 'textos selecionados' tem dados
+        st.write("Coluna 'textos selecionados' possui dados?", not df_textos['textos selecionados'].isnull().all())
 
         if st.button("Gerar Corpus"):
             corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
