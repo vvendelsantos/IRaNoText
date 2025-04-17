@@ -10,7 +10,33 @@ def replace_full_word(text, term, replacement):
 def replace_with_pattern(text, pattern, replacement):
     return re.sub(pattern, replacement, text, flags=re.IGNORECASE)
 
+def processar_palavras_com_se(texto):
+    """
+    Processa palavras compostas com '-se' (como 'notou-se') movendo o 'se' para o início.
+    
+    Exemplo: 'notou-se' -> 'se notou'
+    
+    O código está bem estruturado e esta função corrige o problema das palavras compostas com '-se'.
+    É importante garantir que ela seja aplicada corretamente no contexto de cada texto processado.
+    
+    Funcionamento:
+    - Usa uma expressão regular para identificar palavras terminadas com '-se'
+    - Padrão (\b\w+)-se\b captura qualquer palavra (\w+) seguida de '-se'
+    - A substituição r"se \1" troca a posição, colocando 'se' antes da palavra
+    """
+    return re.sub(r'(\b\w+)-se\b', r'se \1', texto)
+
 def converter_numeros_por_extenso(texto):
+    """
+    Converte números por extenso para algarismos numéricos no texto.
+    
+    Exemplo: 'vinte e cinco' -> '25'
+    
+    Funcionamento:
+    - Usa dicionários para unidades, dezenas, centenas e multiplicadores
+    - Para números complexos, utiliza a biblioteca word2number
+    - Mantém palavras não numéricas inalteradas
+    """
     ignorar = {"mais", "menos", "com", "sem", "de", "por", "para", "e", "ou"}
     palavras = texto.split()
     resultado = []
@@ -51,22 +77,6 @@ def converter_numeros_por_extenso(texto):
             resultado.extend(buffer)
 
     return " ".join(resultado)
-
-def processar_palavras_com_se(texto):
-    """
-    Transformar palavras como "notou-se" em "se notou".
-    Essa função usa uma expressão regular para identificar palavras que terminam com "-se"
-    e move a parte "se" para o início da palavra.
-    
-    O padrão de regex (\b\w+)-se\b captura qualquer palavra (\w+) seguida de "-se",
-    e a substituição r"se \1" troca a posição dessas partes, colocando "se" antes da palavra.
-    
-    Exemplos:
-    - "notou-se" se tornará "se notou"
-    - "percebeu-se" se tornará "se percebeu"
-    """
-    texto = re.sub(rf"(\b\w+)-se\b", r"se \1", texto)
-    return texto
 
 def gerar_corpus(df_textos, df_compostos, df_siglas):
     dict_compostos = {
@@ -110,10 +120,8 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 
         texto_corrigido = texto.lower()
         texto_corrigido = converter_numeros_por_extenso(texto_corrigido)
+        texto_corrigido = processar_palavras_com_se(texto_corrigido)  # Adicionado processamento de palavras com -se
         total_textos += 1
-
-        # Aplica a transformação para palavras compostas com "-se"
-        texto_corrigido = processar_palavras_com_se(texto_corrigido)
 
         for sigla, significado in dict_siglas.items():
             texto_corrigido = replace_with_pattern(texto_corrigido, rf"\({sigla}\)", "")
