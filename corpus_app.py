@@ -4,7 +4,12 @@ import re
 import io
 from word2number import w2n
 
-# Função aprimorada para converter números por extenso para algarismos
+def replace_full_word(text, term, replacement):
+    return re.sub(rf"\b{re.escape(term)}\b", replacement, text, flags=re.IGNORECASE)
+
+def replace_with_pattern(text, pattern, replacement):
+    return re.sub(pattern, replacement, text, flags=re.IGNORECASE)
+
 def converter_numeros_por_extenso(texto):
     unidades = {
         "zero": 0, "um": 1, "uma": 1, "dois": 2, "duas": 2, "três": 3, "quatro": 4, "cinco": 5,
@@ -48,7 +53,7 @@ def converter_numeros_por_extenso(texto):
                 total += atual * fator
                 atual = 0
             elif p == "e":
-                continue  # Ignorar "e" sem alteração
+                continue
             else:
                 return None
         return total + atual
@@ -81,12 +86,6 @@ def converter_numeros_por_extenso(texto):
 
     resultado.extend(buffer)
     return " ".join(resultado)
-
-def replace_full_word(text, term, replacement):
-    return re.sub(rf"\b{re.escape(term)}\b", replacement, text, flags=re.IGNORECASE)
-
-def replace_with_pattern(text, pattern, replacement):
-    return re.sub(pattern, replacement, text, flags=re.IGNORECASE)
 
 def gerar_corpus(df_textos, df_compostos, df_siglas):
     dict_compostos = {
@@ -129,13 +128,11 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
             continue
 
         texto_corrigido = texto.lower()
-        texto_corrigido = converter_numeros_por_extenso(texto_corrigido)  # Converte os números por extenso
+        texto_corrigido = converter_numeros_por_extenso(texto_corrigido)
         total_textos += 1
 
-        # Substituição das siglas (corrigido o padrão de regex para parênteses)
         for sigla, significado in dict_siglas.items():
-            # Substitui siglas no formato "(SIGLA)" e siglas isoladas
-            texto_corrigido = replace_with_pattern(texto_corrigido, rf"\({sigla}\)", f"({significado})")
+            texto_corrigido = replace_with_pattern(texto_corrigido, rf"\({sigla}\)", "")
             texto_corrigido = replace_full_word(texto_corrigido, sigla, significado)
             total_siglas += 1
 
@@ -220,7 +217,7 @@ if file:
                 st.warning("Nenhum texto processado. Verifique os dados da planilha.")
 
     except Exception as e:
-        st.error(f"Ocorreu um erro: {e}")
+        st.error(f"Erro ao processar o arquivo: {e}")
 
 # Rodapé
 st.markdown("""
