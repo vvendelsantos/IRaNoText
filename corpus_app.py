@@ -3,29 +3,13 @@ import pandas as pd
 import re
 import io
 
-# Função para definir o fundo da página
-def set_background(image_url):
-    st.markdown(
-        f"""
-        <style>
-        .reportview-container {{
-            background: url({image_url});
-            background-size: cover;
-        }}
-        </style>
-        """, 
-        unsafe_allow_html=True
-    )
-
-# Função para substituir palavras completas
+# --- Funções de processamento ---
 def replace_full_word(text, term, replacement):
     return re.sub(rf"\b{re.escape(term)}\b", replacement, text, flags=re.IGNORECASE)
 
-# Função para substituir com um padrão específico
 def replace_with_pattern(text, pattern, replacement):
     return re.sub(pattern, replacement, text, flags=re.IGNORECASE)
 
-# Função principal para gerar o corpus
 def gerar_corpus(df_textos, df_compostos, df_siglas):
     dict_compostos = {
         str(row["Palavra composta"]).lower(): str(row["Palavra normalizada"]).lower()
@@ -60,7 +44,7 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
     corpus_final = ""
 
     for _, row in df_textos.iterrows():
-        texto = str(row.get("textos selecionados", ""))  # Ajuste o nome da coluna conforme necessário
+        texto = str(row.get("Textos selecionados", ""))
         id_val = row.get("id", "")
         if not texto.strip():
             continue
@@ -68,19 +52,16 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
         texto_corrigido = texto.lower()
         total_textos += 1
 
-        # Substituir siglas
         for sigla, significado in dict_siglas.items():
             texto_corrigido = replace_with_pattern(texto_corrigido, rf"\\({sigla}\\)", "")
             texto_corrigido = replace_full_word(texto_corrigido, sigla, significado)
             total_siglas += 1
 
-        # Substituir palavras compostas
         for termo, substituto in dict_compostos.items():
             if termo in texto_corrigido:
                 texto_corrigido = replace_full_word(texto_corrigido, termo, substituto)
                 total_compostos += 1
 
-        # Remover caracteres especiais
         for char in caracteres_especiais:
             count = texto_corrigido.count(char)
             if count:
@@ -107,56 +88,73 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 
     return corpus_final, estatisticas
 
-# Definir o fundo
-set_background("https://www.iramuteq.org/captures-decrans/resultats/exporter-dans-gephi")
+# --- Estilo personalizado ---
+st.markdown("""
+    <style>
+        .main {
+            background-color: #f4f4f4;
+        }
+        .block-container {
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+    </style>
+""", unsafe_allow_html=True)
 
-# Interface Streamlit
-st.title("Gerador de Corpus IRaMuTeQ")
+# --- Interface ---
+st.title("GERADOR DE CORPUS DE TEXTO PARA IRAMUTEQ")
 
-st.markdown(
-    """
-    📌 **Instruções para uso da planilha**
+st.markdown("""
+### 📌 Instruções para uso da planilha
 
-    Envie um arquivo do Excel .xlsx com a estrutura correta para que o corpus possa ser gerado automaticamente.
+Envie um arquivo do Excel `.xlsx` com a estrutura correta para que o corpus possa ser gerado automaticamente.
 
-    Sua planilha deve conter três abas (planilhas internas) com os seguintes nomes e finalidades:
+Sua planilha deve conter três abas (planilhas internas) com os seguintes nomes e finalidades:
 
-    1. **textos_selecionados** – onde ficam os textos a serem processados.
-    2. **dic_palavras_compostas** – dicionário de expressões compostas.
-    3. **dic_siglas** – dicionário de siglas.
-    """
-)
+1. **textos_selecionados** – onde ficam os textos a serem processados.  
+2. **dic_palavras_compostas** – dicionário de expressões compostas.  
+3. **dic_siglas** – dicionário de siglas.  
+""")
 
-st.markdown(
-    """
-    **Sobre o autor**
+with open("gerar_corpus_iramuteq.xlsx", "rb") as f:
+    st.download_button("📥 Baixar modelo de planilha", f, file_name="gerar_corpus_iramuteq.xlsx")
 
-    Este aplicativo foi desenvolvido para fins educacionais e de apoio à análise textual no software **IRaMuTeQ**.
-
-    **Autor:** [José Wendel dos Santos]  
-    **Instituição:** [Mestre em Ciência da Propriedade Intelectual (PPGPI) – Universidade Federal de Sergipe (UFS)]  
-    **Contato:** [eng.wendel@live.com]  
-    """
-)
-
-file = st.file_uploader("Envie o arquivo Excel", type=["xlsx"])
+file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
 
 if file:
-    xls = pd.ExcelFile(file)
     try:
+        xls = pd.ExcelFile(file)
         df_textos = xls.parse("textos_selecionados")
         df_compostos = xls.parse("dic_palavras_compostas")
         df_siglas = xls.parse("dic_siglas")
 
-        if st.button("Gerar Corpus"):
+        if st.button(" 🚀 Gerar corpus textual"):
             corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
 
-            st.success("Corpus gerado com sucesso!")
-            st.text_area("Estatísticas do processamento", estatisticas, height=200)
+            if corpus.strip():
+                st.success("Corpus gerado com sucesso!")
+                st.text_area("Estatísticas do processamento", estatisticas, height=200)
 
-            buf = io.BytesIO()
-            buf.write(corpus.encode("utf-8"))
-            st.download_button("Baixar Corpus", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
+                buf = io.BytesIO()
+                buf.write(corpus.encode("utf-8"))
+                st.download_button("Baixar Corpus", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
+            else:
+                st.warning("Nenhum texto processado. Verifique os dados da planilha.")
 
     except Exception as e:
         st.error(f"Erro ao processar o arquivo: {e}")
+
+# --- Rodapé ---
+st.markdown("""
+---
+### Sobre o autor
+
+Este aplicativo foi desenvolvido para fins educacionais e de apoio à análise textual no software **IRaMuTeQ**.
+
+**Autor:** José Wendel dos Santos  
+**Instituição:** Universidade Federal de Sergipe (UFS)  
+**Contato:** [eng.wendel@live.com](mailto:eng.wendel@live.com)
+""")
