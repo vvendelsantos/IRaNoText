@@ -9,10 +9,17 @@ def replace_full_word(text, term, replacement):
     return re.sub(rf"\b{re.escape(term)}\b", replacement, text, flags=re.IGNORECASE)
 
 def processar_siglas(texto, dict_siglas):
-    # Substituindo siglas entre parênteses
+    """
+    Remove siglas entre parênteses e substitui as siglas isoladas pelo seu significado.
+    """
+    # 1. Remover siglas entre parênteses
     for sigla, significado in dict_siglas.items():
-        texto = re.sub(rf"\({re.escape(sigla)}\)", "", texto)  # Remove siglas entre parênteses
-        texto = replace_full_word(texto, sigla, significado)  # Substitui siglas isoladas pelo significado
+        texto = re.sub(rf"\({re.escape(sigla)}\)", "", texto)  # Remover sigla entre parênteses
+        
+    # 2. Substituir siglas isoladas pelo seu significado
+    for sigla, significado in dict_siglas.items():
+        texto = replace_full_word(texto, sigla, significado)  # Substitui siglas isoladas
+        
     return texto
 
 # Função para converter números por extenso para algarismos
