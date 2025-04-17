@@ -1,118 +1,113 @@
 
 import streamlit as st
+import pandas as pd
+import re
+import io
 
-def gerar_corpus(textos_selecionados, dic_palavras_compostas, dic_siglas):
-    # dicionários para armazenar as palavras compostas e siglas
-    dict_compostos = {}
-    dict_siglas = {}
+def replace_full_word(text, term, replacement):
+    return re.sub(rf"\b{re.escape(term)}\b", replacement, text, flags=re.IGNORECASE)
 
-    # Adicionar palavras compostas ao dicionário
-    for i in range(len(dic_palavras_compostas)):
-        if dic_palavras_compostas[i][0] and dic_palavras_compostas[i][1]:
-            dict_compostos[dic_palavras_compostas[i][0].lower()] = dic_palavras_compostas[i][1].lower()
+def replace_with_pattern(text, pattern, replacement):
+    return re.sub(pattern, replacement, text, flags=re.IGNORECASE)
 
-    # Adicionar siglas ao dicionário
-    for i in range(len(dic_siglas)):
-        if dic_siglas[i][0] and dic_siglas[i][1]:
-            dict_siglas[dic_siglas[i][0].lower()] = dic_siglas[i][1].lower()
+def gerar_corpus(df_textos, df_compostos, df_siglas):
+    dict_compostos = {
+        str(row["Palavra composta"]).lower(): str(row["Palavra normalizada"]).lower()
+        for _, row in df_compostos.iterrows()
+        if pd.notna(row["Palavra composta"]) and pd.notna(row["Palavra normalizada"])
+    }
 
-    # Variáveis de controle para o número de alterações
+    dict_siglas = {
+        str(row["Sigla"]).lower(): str(row["Significado"])
+        for _, row in df_siglas.iterrows()
+        if pd.notna(row["Sigla"]) and pd.notna(row["Significado"])
+    }
+
+    caracteres_especiais = {
+        "-": "Hífen",
+        ";": "Ponto e vírgula",
+        '"': "Aspas duplas",
+        "'": "Aspas simples",
+        "…": "Reticências",
+        "–": "Travessão",
+        "(": "Parêntese esquerdo",
+        ")": "Parêntese direito",
+        "/": "Barra",
+    }
+    contagem_caracteres = {k: 0 for k in caracteres_especiais}
+
     total_textos = 0
-    total_siglas_removidas = 0
-    total_substituicoes_compostas = 0
-    total_caracteres_removidos = 0
+    total_siglas = 0
+    total_compostos = 0
+    total_remocoes = 0
 
     corpus_final = ""
 
-    for texto in textos_selecionados:
-        texto_original = texto
+    for _, row in df_textos.iterrows():
+        texto = str(row.get("textos selecionados", ""))
+        id_val = row.get("id", "")
+        if not texto.strip():
+            continue
+
         texto_corrigido = texto.lower()
         total_textos += 1
 
-        # Remover siglas entre parênteses
-        for sigla, descricao in dict_siglas.items():
-            texto_corrigido = texto_corrigido.replace(f"({sigla})", "")
-            total_siglas_removidas += 1
+        for sigla, significado in dict_siglas.items():
+            texto_corrigido = replace_with_pattern(texto_corrigido, rf"\\({sigla}\\)", "")
+            texto_corrigido = replace_full_word(texto_corrigido, sigla, significado)
+            total_siglas += 1
 
-        # Substituir siglas isoladas
-        for sigla, descricao in dict_siglas.items():
-            texto_corrigido = texto_corrigido.replace(f" {sigla} ", f" {descricao} ")
-            total_siglas_removidas += 1
-
-        # Substituir palavras compostas
         for termo, substituto in dict_compostos.items():
             if termo in texto_corrigido:
-                texto_corrigido = texto_corrigido.replace(termo, substituto)
-                total_substituicoes_compostas += 1
+                texto_corrigido = replace_full_word(texto_corrigido, termo, substituto)
+                total_compostos += 1
 
-        # Remover caracteres especiais
-        caracteres = {"-": "Hífen", ";": "Ponto e vírgula", '"': "Aspas duplas", "'": "Aspas simples",
-                      "…": "Reticências", "–": "Travessão", "(": "Parêntese esquerdo", ")": "Parêntese direito", "/": "Barra"}
+        for char in caracteres_especiais:
+            count = texto_corrigido.count(char)
+            if count:
+                texto_corrigido = texto_corrigido.replace(char, "_" if char == "/" else "")
+                contagem_caracteres[char] += count
+                total_remocoes += count
 
-        for caractere, nome in caracteres.items():
-            while caractere in texto_corrigido:
-                texto_corrigido = texto_corrigido.replace(caractere, "_")
-                total_caracteres_removidos += 1
+        texto_corrigido = re.sub(r"\s+", " ", texto_corrigido.strip())
 
-        # Remover quebras de linha
-        texto_corrigido = texto_corrigido.replace("
-", " ")
+        metadata = f"**** *ID_{id_val}"
+        for col in row.index:
+            if col.lower() not in ["id", "textos selecionados"]:
+                metadata += f" *{col.replace(' ', '_')}_{str(row[col]).replace(' ', '_')}"
 
-        # Montar a linha final do corpus
-        corpus_linha = "**** *ID_" + str(textos_selecionados.index(texto) + 1)
-        corpus_linha += " " + texto_corrigido + "
-"
+        corpus_final += f"{metadata}\n{texto_corrigido}\n"
 
-        corpus_final += corpus_linha
+    estatisticas = f"Textos processados: {total_textos}\n"
+    estatisticas += f"Siglas removidas/substituídas: {total_siglas}\n"
+    estatisticas += f"Palavras compostas substituídas: {total_compostos}\n"
+    estatisticas += f"Caracteres especiais removidos: {total_remocoes}\n"
+    for char, nome in caracteres_especiais.items():
+        if contagem_caracteres[char] > 0:
+            estatisticas += f" - {nome} ({char}) : {contagem_caracteres[char]}\n"
 
-    # Estatísticas
-    detalhes_caracteres = "
-"
-    for caractere, nome in caracteres.items():
-        if texto_corrigido.count(caractere) > 0:
-            detalhes_caracteres += f" - {nome} ({caractere}) : {texto_corrigido.count(caractere)}"
+    return corpus_final, estatisticas
 
-    resultado = f"""
-    Corpus textual gerado com sucesso.
+st.title("Gerador de Corpus IRaMuTeQ")
 
-    Estatísticas do processamento:
-    • Textos processados: {total_textos}
-    • Siglas removidas/substituídas: {total_siglas_removidas}
-    • Palavras compostas substituídas: {total_substituicoes_compostas}
-    • Caracteres especiais removidos: {total_caracteres_removidos}
-    {detalhes_caracteres}
-    """
+file = st.file_uploader("Envie o arquivo Excel com as abas 'textos_selecionados', 'dic_palavras_compostas' e 'dic_siglas'", type=["xlsx"])
 
-    return corpus_final, resultado
+if file:
+    xls = pd.ExcelFile(file)
+    try:
+        df_textos = xls.parse("textos_selecionados")
+        df_compostos = xls.parse("dic_palavras_compostas")
+        df_siglas = xls.parse("dic_siglas")
 
+        if st.button("Gerar Corpus"):
+            corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
 
-def main():
-    st.title("Gerador de Corpus IRaMuTeQ")
+            st.success("Corpus gerado com sucesso!")
+            st.text_area("Estatísticas do processamento", estatisticas, height=200)
 
-    st.write("Insira os textos selecionados, dic_palavras_compostas e dic_siglas para gerar o corpus.")
+            buf = io.BytesIO()
+            buf.write(corpus.encode("utf-8"))
+            st.download_button("Baixar Corpus", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
 
-    # Exemplo de entrada de dados
-    textos_selecionados = [
-        "O exemplo de sigla é (ABC) e a palavra composta é testando-completo.",
-        "Outra sigla pode ser (DEF) e outra palavra composta como exemplo-composto."
-    ]
-    dic_palavras_compostas = [
-        ("testando-completo", "teste completo"),
-        ("exemplo-composto", "exemplo composto")
-    ]
-    dic_siglas = [
-        ("ABC", "ABC Significado"),
-        ("DEF", "DEF Significado")
-    ]
-
-    corpus, resultado = gerar_corpus(textos_selecionados, dic_palavras_compostas, dic_siglas)
-
-    st.subheader("Corpus gerado:")
-    st.text(corpus)
-
-    st.subheader("Resultado do processamento:")
-    st.text(resultado)
-
-
-if __name__ == "__main__":
-    main()
+    except Exception as e:
+        st.error(f"Erro ao processar o arquivo: {e}")
