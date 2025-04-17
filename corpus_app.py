@@ -45,14 +45,15 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 
     caracteres_especiais = {
         "-": "Hífen",
-        ";": "Ponto e vírgula",
-        '"': "Aspas duplas",
-        "'": "Aspas simples",
-        "…": "Reticências",
-        "–": "Travessão",
-        "(": "Parêntese esquerdo",
-        ")": "Parêntese direito",
-        "/": "Barra",
+    ";": "Ponto e vírgula",
+    '"': "Aspas duplas",
+    "'": "Aspas simples",
+    "…": "Reticências",
+    "–": "Travessão",
+    "(": "Parêntese esquerdo",
+    ")": "Parêntese direito",
+    "/": "Barra",
+    "%": "Porcentagem"
     }
     contagem_caracteres = {k: 0 for k in caracteres_especiais}
 
