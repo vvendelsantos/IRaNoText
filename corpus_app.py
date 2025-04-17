@@ -107,11 +107,11 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
         texto_corrigido = converter_numeros_por_extenso(texto_corrigido)
         total_textos += 1
 
-        # Substituindo siglas, incluindo com parênteses, como "(INPI)" ou "INPI"
+        # Substituindo siglas
         for sigla, significado in dict_siglas.items():
-            # Substituir siglas dentro de parênteses, removendo a sigla e o conteúdo dos parênteses
+            # Remover siglas entre parênteses
             texto_corrigido = re.sub(rf"\({re.escape(sigla)}\)", "", texto_corrigido)
-            # Substituir siglas que não estão entre parênteses
+            # Substituir siglas soltas por seu significado
             texto_corrigido = replace_full_word(texto_corrigido, sigla, significado)
             total_siglas += 1
 
