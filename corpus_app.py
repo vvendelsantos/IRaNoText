@@ -27,7 +27,7 @@ def converter_numeros_por_extenso(texto):
         try:
             return str(w2n.word_to_num(palavra))
         except:
-            return palavra  # Se não for possível converter, retorna a palavra original.
+            return palavra
 
     palavras = texto.split()
     resultado = []
@@ -60,7 +60,7 @@ def processar_pronomes_pospostos(texto):
     texto = re.sub(r'\b(\w+)[áéíóúâêô]-(lo|la|los|las)-ia\b', r'\2 \1ia', texto)
     return texto
 
-# Função principal para gerar o corpus
+# Função principal
 def gerar_corpus(df_textos, df_compostos, df_siglas):
     dict_compostos = {
         str(row["Palavra composta"]).lower(): str(row["Palavra normalizada"]).lower()
@@ -75,24 +75,15 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
     }
 
     caracteres_especiais = {
-        "-": "Hífen",
-        ";": "Ponto e vírgula",
-        '"': "Aspas duplas",
-        "'": "Aspas simples",
-        "…": "Reticências",
-        "–": "Travessão",
-        "(": "Parêntese esquerdo",
-        ")": "Parêntese direito",
-        "/": "Barra",
-        "%": "Porcentagem"
+        "-": "Hífen", ";": "Ponto e vírgula", '"': "Aspas duplas", "'": "Aspas simples",
+        "…": "Reticências", "–": "Travessão", "(": "Parêntese esquerdo", ")": "Parêntese direito",
+        "/": "Barra", "%": "Porcentagem"
     }
     contagem_caracteres = {k: 0 for k in caracteres_especiais}
-
     total_textos = 0
     total_siglas = 0
     total_compostos = 0
     total_remocoes = 0
-
     corpus_final = ""
 
     for _, row in df_textos.iterrows():
@@ -108,13 +99,13 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
         total_textos += 1
 
         for sigla, significado in dict_siglas.items():
-            texto_corrigido = re.sub(rf"\\({sigla}\\)", "", texto_corrigido)
-            texto_corrigido = re.sub(rf"\\b{sigla}\\b", significado, texto_corrigido, flags=re.IGNORECASE)
+            texto_corrigido = re.sub(rf"\({sigla}\)", "", texto_corrigido)
+            texto_corrigido = re.sub(rf"\b{sigla}\b", significado, texto_corrigido, flags=re.IGNORECASE)
             total_siglas += 1
 
         for termo, substituto in dict_compostos.items():
             if termo in texto_corrigido:
-                texto_corrigido = re.sub(rf"\\b{termo}\\b", substituto, texto_corrigido, flags=re.IGNORECASE)
+                texto_corrigido = re.sub(rf"\b{termo}\b", substituto, texto_corrigido, flags=re.IGNORECASE)
                 total_compostos += 1
 
         for char in caracteres_especiais:
@@ -143,7 +134,7 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 
     return corpus_final, estatisticas
 
-# Interface com Streamlit
+# Interface Streamlit
 st.set_page_config(layout="wide")
 st.title("Gerador de corpus textual para IRaMuTeQ")
 
@@ -175,7 +166,6 @@ if file:
         df_textos = xls.parse("textos_selecionados")
         df_compostos = xls.parse("dic_palavras_compostas")
         df_siglas = xls.parse("dic_siglas")
-
         df_textos.columns = [col.strip().lower() for col in df_textos.columns]
 
         if st.button("🚀 GERAR CORPUS TEXTUAL"):
