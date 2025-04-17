@@ -119,7 +119,7 @@ if file:
         df_compostos = xls.parse("dic_palavras_compostas")
         df_siglas = xls.parse("dic_siglas")
 
-        if st.button("🚀 Gerar Corpus"):
+        if st.button("🚀 GERAR CORPUS TEXTUAL"):
             corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
 
             if corpus.strip():
