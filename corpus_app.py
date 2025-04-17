@@ -10,68 +10,73 @@ def replace_full_word(text, term, replacement):
 def replace_with_pattern(text, pattern, replacement):
     return re.sub(pattern, replacement, text, flags=re.IGNORECASE)
 
+# Função para converter números por extenso para algarismos
 def converter_numeros_por_extenso(texto):
-    """
-    Converte números por extenso em palavras para algarismos.
-    Exemplo: 'cinco' se torna '5'.
-    """
-    ignorar = {"mais", "menos", "com", "sem", "de", "por", "para", "e", "ou"}
+    unidades = {
+        "zero": 0, "um": 1, "uma": 1, "dois": 2, "duas": 2, "três": 3, "quatro": 4, "cinco": 5,
+        "seis": 6, "sete": 7, "oito": 8, "nove": 9
+    }
+    dezenas = {
+        "dez": 10, "onze": 11, "doze": 12, "treze": 13, "quatorze": 14, "quinze": 15,
+        "dezesseis": 16, "dezessete": 17, "dezoito": 18, "dezenove": 19, "vinte": 20
+    }
+    centenas = {
+        "cem": 100, "cento": 100, "duzentos": 200, "trezentos": 300, "quatrocentos": 400,
+        "quinhentos": 500, "seiscentos": 600, "setecentos": 700, "oitocentos": 800, "novecentos": 900
+    }
+    multiplicadores = {
+        "mil": 1000, "milhão": 1000000, "milhões": 1000000, "bilhão": 1000000000,
+        "bilhões": 1000000000
+    }
+
+    def processar_palavra(palavra):
+        try:
+            return str(w2n.word_to_num(palavra))
+        except:
+            return palavra
+
     palavras = texto.split()
     resultado = []
     buffer = []
 
-    def tentar_converter(buffer):
+    def processar_buffer(buffer):
         try:
-            # Tenta converter as palavras acumuladas no buffer para número
             return str(w2n.word_to_num(" ".join(buffer)))
-        except ValueError:
-            return None
+        except:
+            return " ".join(buffer)
 
-    i = 0
-    while i < len(palavras):
-        palavra = palavras[i]
+    for palavra in palavras:
+        palavra_lower = palavra.lower()
 
-        if palavra.lower() in ignorar:
-            if buffer:
-                convertido = tentar_converter(buffer)
-                if convertido:
-                    resultado.append(convertido)
-                else:
-                    resultado.extend(buffer)
-                buffer = []
-            resultado.append(palavra)
+        # Verificar unidades
+        if palavra_lower in unidades:
+            resultado.append(str(unidades[palavra_lower]))
+        # Verificar dezenas
+        elif palavra_lower in dezenas:
+            resultado.append(str(dezenas[palavra_lower]))
+        # Verificar centenas
+        elif palavra_lower in centenas:
+            resultado.append(str(centenas[palavra_lower]))
+        # Verificar multiplicadores
+        elif palavra_lower in multiplicadores:
+            resultado.append(str(multiplicadores[palavra_lower]))
         else:
+            # Acumular palavras para processar juntas
             buffer.append(palavra)
-            convertido = tentar_converter(buffer)
-            if convertido:
+            convertido = processar_buffer(buffer)
+            if convertido != " ".join(buffer):  # Se conseguiu converter
                 resultado.append(convertido)
-                buffer = []
-        i += 1
+                buffer = []  # Limpar buffer após conversão
 
+    # Caso ainda tenha algo no buffer que não foi processado
     if buffer:
-        convertido = tentar_converter(buffer)
-        if convertido:
-            resultado.append(convertido)
-        else:
-            resultado.extend(buffer)
+        resultado.append(" ".join(buffer))
 
     return " ".join(resultado)
 
+# Função para processar palavras compostas com "-se" (ex: "notou-se")
 def processar_palavras_com_se(texto):
-    """
-    Transformar palavras como "notou-se" em "se notou".
-    Essa função usa uma expressão regular para identificar palavras que terminam com "-se"
-    e move a parte "se" para o início da palavra.
-    
-    O padrão de regex (\b\w+)-se\b captura qualquer palavra (\w+) seguida de "-se",
-    e a substituição r"se \1" troca a posição dessas partes, colocando "se" antes da palavra.
-    
-    Exemplos:
-    - "notou-se" se tornará "se notou"
-    - "percebeu-se" se tornará "se percebeu"
-    """
-    texto = re.sub(rf"(\b\w+)-se\b", r"se \1", texto)
-    return texto
+    return re.sub(r"(\b\w+)-se\b", r"se \1", texto)
 
 def gerar_corpus(df_textos, df_compostos, df_siglas):
     dict_compostos = {
@@ -114,13 +119,8 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
             continue
 
         texto_corrigido = texto.lower()
-
-        # Converte números por extenso em algarismos
         texto_corrigido = converter_numeros_por_extenso(texto_corrigido)
-
-        # Aplica a transformação para palavras compostas com "-se"
         texto_corrigido = processar_palavras_com_se(texto_corrigido)
-
         total_textos += 1
 
         for sigla, significado in dict_siglas.items():
