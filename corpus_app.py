@@ -92,16 +92,16 @@ st.title("Gerador de Corpus IRaMuTeQ")
 
 # Botão para baixar modelo da planilha
 try:
-    with open("modelo_planilha.xlsx", "rb") as modelo_file:
+    with open("gerar_corpus_iramuteq.xlsx", "rb") as modelo_file:
         modelo_bytes = modelo_file.read()
         st.download_button(
             label="📥 Baixar modelo de planilha (.xlsx)",
             data=modelo_bytes,
-            file_name="modelo_IRaMuTeQ.xlsx",
+            file_name="gerar_corpus_iramuteq.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
 except Exception as e:
-    st.warning("Arquivo de modelo não encontrado. Envie o modelo_planilha.xlsx para a raiz do projeto.")
+    st.warning("Arquivo de modelo não encontrado. Envie 'gerar_corpus_iramuteq.xlsx' para a raiz do projeto.")
 
 file = st.file_uploader("Envie o arquivo Excel com as abas 'textos_selecionados', 'dic_palavras_compostas' e 'dic_siglas'", type=["xlsx"])
 
