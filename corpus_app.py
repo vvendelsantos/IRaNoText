@@ -87,43 +87,50 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 
     return corpus_final, estatisticas
 
-# === Interface ===
-st.title("Gerador de Corpus IRaMuTeQ")
+# Interface
+st.title("Gerador de Corpus para IRaMuTeQ")
 
-# Botão para baixar modelo da planilha
-try:
-    with open("gerar_corpus_iramuteq.xlsx", "rb") as modelo_file:
-        modelo_bytes = modelo_file.read()
-        st.download_button(
-            label="📥 Baixar modelo de planilha (.xlsx)",
-            data=modelo_bytes,
-            file_name="gerar_corpus_iramuteq.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
-except Exception as e:
-    st.warning("Arquivo de modelo não encontrado. Envie 'gerar_corpus_iramuteq.xlsx' para a raiz do projeto.")
+st.markdown("""
+### 📌 Instruções para uso da planilha
 
-file = st.file_uploader("Envie o arquivo Excel com as abas 'textos_selecionados', 'dic_palavras_compostas' e 'dic_siglas'", type=["xlsx"])
+Envie um arquivo do Excel **.xlsx** com a estrutura correta para que o corpus possa ser gerado automaticamente.
+
+Sua planilha deve conter **três abas (planilhas internas)** com os seguintes nomes e finalidades:
+
+1. **`textos_selecionados`** – onde ficam os textos a serem processados.  
+2. **`dic_palavras_compostas`** – dicionário de expressões compostas.  
+3. **`dic_siglas`** – dicionário de siglas.
+""")
+
+with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
+    st.download_button(
+        label="📥 Baixar modelo de planilha",
+        data=exemplo,
+        file_name="gerar_corpus_iramuteq.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
+file = st.file_uploader("📤 Envie sua planilha preenchida", type=["xlsx"])
 
 if file:
-    xls = pd.ExcelFile(file)
     try:
+        xls = pd.ExcelFile(file)
         df_textos = xls.parse("textos_selecionados")
         df_compostos = xls.parse("dic_palavras_compostas")
         df_siglas = xls.parse("dic_siglas")
 
-        if st.button("Gerar Corpus"):
+        if st.button("🚀 Gerar Corpus"):
             corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
 
             if corpus.strip():
                 st.success("Corpus gerado com sucesso!")
-                st.text_area("Estatísticas do processamento", estatisticas, height=200)
+                st.text_area("📊 Estatísticas do processamento", estatisticas, height=250)
 
                 buf = io.BytesIO()
                 buf.write(corpus.encode("utf-8"))
-                st.download_button("Baixar Corpus", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
+                st.download_button("📄 Baixar Corpus", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
             else:
-                st.warning("Nenhum texto processado. Verifique se a aba 'textos_selecionados' possui conteúdo válido.")
+                st.warning("Nenhum texto processado. Verifique os dados da planilha.")
 
     except Exception as e:
         st.error(f"Erro ao processar o arquivo: {e}")
