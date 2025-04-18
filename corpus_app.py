@@ -195,41 +195,26 @@ st.markdown("""
 **Contato:** eng.wendel@gmail.com
 """)
 
-# Caixa flutuante com funcionalidades (canto inferior direito)
-st.markdown("""
-    <style>
-    .floating-box {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        width: 300px;
-        background-color: rgba(255, 255, 255, 0.9);
-        padding: 15px 20px;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        z-index: 9999;
-    }
-    .floating-box h4 {
-        margin-top: 0;
-        font-size: 16px;
-    }
-    .floating-box ul {
-        margin: 10px 0 0 20px;
-        padding-left: 0;
-        font-size: 14px;
-    }
-    </style>
+# Caixa com funcionalidades no canto inferior direito
+with st.container():
+    col1, col2 = st.columns([3, 1])
 
-    <div class="floating-box">
-        <h4>⏱️ Funcionalidades atuais</h4>
-        <ul>
-            <li>Conversão de números por extenso</li>
-            <li>Normalização de palavras compostas</li>
-            <li>Substituição de siglas</li>
-            <li>Remoção/substituição de caracteres especiais</li>
-            <li>Tratamento de flexões verbo-pronominais</li>
-            <li>Geração automática de linhas de comando</li>
-            <li>Inclusão de variáveis como metadados</li>
-        </ul>
-    </div>
-""", unsafe_allow_html=True)
+    with col2:
+        st.markdown(
+            """
+            <div style="background-color: rgba(255, 255, 255, 0.85); padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-top: 50px;">
+                <h5 style="margin-top: 0;">⏱️ Funcionalidades atuais</h5>
+                <ul style="padding-left: 18px; margin-top: 10px;">
+                    <li>Conversão de números por extenso</li>
+                    <li>Normalização de palavras compostas</li>
+                    <li>Substituição de siglas</li>
+                    <li>Remoção/substituição de caracteres especiais</li>
+                    <li>Tratamento de flexões verbo-pronominais</li>
+                    <li>Geração automática de linhas de comando</li>
+                    <li>Inclusão de variáveis como metadados</li>
+                </ul>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
