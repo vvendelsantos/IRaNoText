@@ -139,15 +139,17 @@ st.set_page_config(layout="wide")
 st.title("Gerador de corpus textual para IRaMuTeQ")
 
 st.markdown("""
-### 📌 Instruções para uso da planilha
+### 📌 Instruções
+
+Esta ferramenta foi desenvolvida para facilitar a geração de corpus textual compatível com o IRaMuTeQ.
 
 Envie um arquivo do Excel **.xlsx** com a estrutura correta para que o corpus possa ser gerado automaticamente.
 
 Sua planilha deve conter **três abas (planilhas internas)** com os seguintes nomes e finalidades:
 
-1. **`textos_selecionados`** – onde ficam os textos a serem processados.  
-2. **`dic_palavras_compostas`** – dicionário de expressões compostas.  
-3. **`dic_siglas`** – dicionário de siglas.
+1. **`textos_selecionados`** : coleção de textos que serão transformados de acordo com as regras de normalização definidas. Variáveis podem ser incorporadas ao corpus gerado como metadados.  
+2. **`dic_palavras_compostas`** : permite substituir palavras ou termos compostos por suas formas normalizadas, garantindo uma maior consistência no corpus textual gerado.  
+3. **`dic_siglas`** : tem a finalidade de expandir siglas ou acrônimos para suas formas completas, aumentando a legibilidade e a clareza do texto..
 """)
 
 with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
