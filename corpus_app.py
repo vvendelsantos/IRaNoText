@@ -50,7 +50,7 @@ def converter_numeros_por_extenso(texto):
 def processar_palavras_com_se(texto):
     return re.sub(r"(\b\w+)-se\b", r"se \1", texto)
 
-# Função para processar pronomes obíquos pós-verbais
+# Função para processar pronomes oblíquos pós-verbais
 def processar_pronomes_pospostos(texto):
     texto = re.sub(r'\b(\w+)-se\b', r'se \1', texto)
     texto = re.sub(r'\b(\w+)-([oa]s?)\b', r'\2 \1', texto)
@@ -99,7 +99,7 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
         total_textos += 1
 
         for sigla, significado in dict_siglas.items():
-            texto_corrigido = re.sub(rf"\\({sigla}\\)", "", texto_corrigido)
+            texto_corrigido = re.sub(rf"\({sigla}\)", "", texto_corrigido)
             texto_corrigido = re.sub(rf"\b{sigla}\b", significado, texto_corrigido, flags=re.IGNORECASE)
             total_siglas += 1
 
@@ -147,7 +147,7 @@ Envie um arquivo do Excel **.xlsx** com a estrutura correta para que o corpus po
 
 Sua planilha deve conter **três abas (planilhas internas)** com os seguintes nomes e finalidades:
 
-1. **`textos_selecionados`** : coluna com os textos a serem processados. O conteúdo dessa coluna será analisado e transformado conforme as regras de normalização.  
+1. **`textos_selecionados`** : coleção de textos que serão transformados de acordo com as regras de normalização.  
 2. **`dic_palavras_compostas`** : permite substituir palavras compostas por suas formas normalizadas, garantindo uma maior consistência no corpus textual gerado.  
 3. **`dic_siglas`** : tem a finalidade de expandir siglas para suas formas completas, aumentando a legibilidade e a clareza do texto.
 """)
@@ -194,27 +194,3 @@ st.markdown("""
 **Instituição:** Universidade Federal de Sergipe (UFS)  
 **Contato:** eng.wendel@gmail.com
 """)
-
-# Caixa com funcionalidades no canto inferior direito
-with st.container():
-    col1, col2 = st.columns([3, 1])
-
-    with col2:
-        st.markdown(
-            """
-            <div style="background-color: rgba(255, 255, 255, 0.85); padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-top: 50px;">
-                <h5 style="margin-top: 0;">⏱️ Funcionalidades atuais</h5>
-                <ul style="padding-left: 18px; margin-top: 10px;">
-                    <li>Conversão de números por extenso</li>
-                    <li>Normalização de palavras compostas</li>
-                    <li>Substituição de siglas</li>
-                    <li>Remoção/substituição de caracteres especiais</li>
-                    <li>Tratamento de flexões verbo-pronominais</li>
-                    <li>Geração automática de linhas de comando</li>
-                    <li>Inclusão de variáveis como metadados</li>
-                </ul>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
