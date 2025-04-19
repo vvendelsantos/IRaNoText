@@ -50,16 +50,22 @@ def converter_numeros_por_extenso(texto):
 
 # Função para detectar e substituir siglas por seus significados
 def processar_siglas(texto, dic_siglas):
+    siglas_detectadas = []
     for sigla, significado in dic_siglas.items():
-        texto = re.sub(rf"\({sigla}\)", "", texto)
-        texto = re.sub(rf"\b{sigla}\b", significado, texto, flags=re.IGNORECASE)
-    return texto
+        if re.search(rf"\b{sigla}\b", texto, flags=re.IGNORECASE):
+            siglas_detectadas.append((sigla, significado))
+            texto = re.sub(rf"\({sigla}\)", "", texto)
+            texto = re.sub(rf"\b{sigla}\b", significado, texto, flags=re.IGNORECASE)
+    return texto, siglas_detectadas
 
-# Função para detectar e substituir palavras compostas
-def processar_palavras_compostas(texto, dict_compostos):
-    for termo, substituto in dict_compostos.items():
-        texto = re.sub(rf"\b{termo}\b", substituto, texto, flags=re.IGNORECASE)
-    return texto
+# Função para detectar e sugerir palavras compostas
+def sugerir_palavras_compostas(texto, dict_compostos):
+    palavras = texto.split()
+    palavras_compostas_detectadas = []
+    for termo in dict_compostos:
+        if termo in texto:
+            palavras_compostas_detectadas.append(termo)
+    return palavras_compostas_detectadas
 
 # Função para gerar bigramas e trigramas
 def gerar_ngramas(texto, n=2):
@@ -106,8 +112,9 @@ def gerar_corpus(df_textos, df_compostos, df_siglas, texto_inserido=None):
 
         texto_corrigido = texto.lower()
         texto_corrigido = converter_numeros_por_extenso(texto_corrigido)
-        texto_corrigido = processar_siglas(texto_corrigido, dict_siglas)
-        texto_corrigido = processar_palavras_compostas(texto_corrigido, dict_compostos)
+        texto_corrigido, siglas_detectadas = processar_siglas(texto_corrigido, dict_siglas)
+        palavras_compostas_detectadas = sugerir_palavras_compostas(texto_corrigido, dict_compostos)
+        
         total_textos += 1
 
         for char in caracteres_especiais:
@@ -131,13 +138,13 @@ def gerar_corpus(df_textos, df_compostos, df_siglas, texto_inserido=None):
 
     estatisticas = f"Textos processados: {total_textos}\n"
     estatisticas += f"Siglas removidas/substituídas: {total_siglas}\n"
-    estatisticas += f"Palavras compostas substituídas: {total_compostos}\n"
+    estatisticas += f"Palavras compostas sugeridas: {', '.join(palavras_compostas_detectadas) if palavras_compostas_detectadas else 'Nenhuma'}\n"
     estatisticas += f"Caracteres especiais removidos: {total_remocoes}\n"
     for char, nome in caracteres_especiais.items():
         if contagem_caracteres[char] > 0:
             estatisticas += f" - {nome} ({char}) : {contagem_caracteres[char]}\n"
 
-    return corpus_final, estatisticas
+    return corpus_final, estatisticas, siglas_detectadas, palavras_compostas_detectadas
 
 # Interface Streamlit
 st.set_page_config(layout="wide")
@@ -174,11 +181,19 @@ if file:
         df_textos.columns = [col.strip().lower() for col in df_textos.columns]
 
         if st.button("🚀 GERAR CORPUS TEXTUAL"):
-            corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas, texto_manual)
+            corpus, estatisticas, siglas_detectadas, palavras_compostas_detectadas = gerar_corpus(df_textos, df_compostos, df_siglas, texto_manual)
 
             if corpus.strip():
                 st.success("Corpus gerado com sucesso!")
                 st.text_area("📊 Estatísticas do processamento", estatisticas, height=250)
+
+                st.write("### 💡 Siglas detectadas:")
+                for sigla, significado in siglas_detectadas:
+                    st.write(f"{sigla} -> {significado}")
+
+                st.write("### 💡 Palavras compostas sugeridas:")
+                for termo in palavras_compostas_detectadas:
+                    st.write(termo)
 
                 buf = io.BytesIO()
                 buf.write(corpus.encode("utf-8"))
