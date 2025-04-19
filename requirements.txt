@@ -1,5 +1,5 @@
-streamlit
-pandas
-openpyxl
-word2number
-nltk
+streamlit==1.20.0
+pandas==2.0.0
+nltk==3.8.1
+word2number==1.1
+openpyxl==3.1.2
