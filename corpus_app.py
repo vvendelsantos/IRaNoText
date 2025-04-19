@@ -182,7 +182,7 @@ with st.expander("📂 **Gerador de Corpus para IRaMuTeQ**", expanded=True):
         corpus_final = ""
 
         for _, row in df_textos.iterrows():
-            texto = str(row.get("textos selecionados", ""))
+            texto = str(row.get("textos selecionados", "")) 
             id_val = row.get("id", "")
             if not texto.strip():
                 continue
@@ -258,40 +258,20 @@ with st.expander("📂 **Gerador de Corpus para IRaMuTeQ**", expanded=True):
                             "Conteúdo do Corpus Gerado",
                             corpus,
                             height=300,
-                            help="Visualize o corpus gerado antes de baixar"
+                            help="Visualize o corpus gerado para IRaMuTeQ"
                         )
                     
                     with tab2:
                         st.text_area(
                             "Estatísticas do Processamento",
                             estatisticas,
-                            height=300,
-                            disabled=True
+                            height=200,
+                            help="Detalhes sobre o processamento realizado"
                         )
 
-                    buf = io.BytesIO()
-                    buf.write(corpus.encode("utf-8"))
-                    st.download_button(
-                        "💾 Baixar Corpus Textual",
-                        data=buf.getvalue(),
-                        file_name="corpus_IRaMuTeQ.txt",
-                        mime="text/plain",
-                        help="Clique para baixar o arquivo de corpus no formato TXT"
-                    )
-                else:
-                    st.warning("⚠️ Nenhum texto foi processado. Verifique os dados da planilha.")
-
         except Exception as e:
-            st.error(f"❌ Erro ao processar o arquivo: {str(e)}")
-            st.info("ℹ️ Verifique se a planilha contém todas as abas necessárias com os nomes corretos.")
+            st.error(f"Erro ao processar a planilha: {e}")
 
 # Rodapé
 st.markdown("---")
-footer = """
-<div style="text-align: center; padding: 10px; background-color: #f0f2f6; border-radius: 5px;">
-    <p style="margin: 0;">👨‍💻 <strong>Desenvolvido por:</strong> José Wendel dos Santos</p>
-    <p style="margin: 0;">🏛️ <strong>Instituição:</strong> Universidade Federal de Sergipe (UFS)</p>
-    <p style="margin: 0;">📧 <strong>Contato:</strong> eng.wendel@gmail.com</p>
-</div>
-"""
-st.markdown(footer, unsafe_allow_html=True)
+st.markdown("<h5 style='text-align:center;'>© 2025 Seu Nome | Todos os direitos reservados</h5>", unsafe_allow_html=True)
