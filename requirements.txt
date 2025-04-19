@@ -3,3 +3,4 @@ pandas
 openpyxl
 word2number
 nltk
+python-docx
