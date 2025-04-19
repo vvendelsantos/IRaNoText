@@ -7,22 +7,20 @@ from word2number import w2n
 # Função para converter números por extenso para algarismos
 def converter_numeros_por_extenso(texto):
     unidades = {
-        "zero": 0, "um": 1, "dois": 2, "duas": 2, "três": 3, "quatro": 4,
-        "cinco": 5, "seis": 6, "sete": 7, "oito": 8, "nove": 9
+        "zero": 0, "dois": 2, "duas": 2, "três": 3, "quatro": 4, "cinco": 5,
+        "seis": 6, "sete": 7, "oito": 8, "nove": 9
     }
     dezenas = {
-        "dez": 10, "onze": 11, "doze": 12, "treze": 13, "quatorze": 14,
-        "quinze": 15, "dezesseis": 16, "dezessete": 17, "dezoito": 18,
-        "dezenove": 19, "vinte": 20
+        "dez": 10, "onze": 11, "doze": 12, "treze": 13, "quatorze": 14, "quinze": 15,
+        "dezesseis": 16, "dezessete": 17, "dezoito": 18, "dezenove": 19, "vinte": 20
     }
     centenas = {
-        "cem": 100, "cento": 100, "duzentos": 200, "trezentos": 300,
-        "quatrocentos": 400, "quinhentos": 500, "seiscentos": 600,
-        "setecentos": 700, "oitocentos": 800, "novecentos": 900
+        "cem": 100, "cento": 100, "duzentos": 200, "trezentos": 300, "quatrocentos": 400,
+        "quinhentos": 500, "seiscentos": 600, "setecentos": 700, "oitocentos": 800, "novecentos": 900
     }
     multiplicadores = {
-        "mil": 1000, "milhão": 1000000, "milhões": 1000000,
-        "bilhão": 1000000000, "bilhões": 1000000000
+        "mil": 1000, "milhão": 1000000, "milhões": 1000000, "bilhão": 1000000000,
+        "bilhões": 1000000000
     }
 
     def processar_palavra(palavra):
@@ -62,7 +60,20 @@ def processar_pronomes_pospostos(texto):
     texto = re.sub(r'\b(\w+)[áéíóúâêô]-(lo|la|los|las)-ia\b', r'\2 \1ia', texto)
     return texto
 
-# Função principal para gerar corpus
+# Função para detectar palavras compostas e siglas
+def detectar_palavras_compostas_e_siglas(texto):
+    palavras_compostas = []
+    siglas = []
+
+    # Expressão regular para detectar palavras compostas
+    palavras_compostas_regex = re.findall(r'\b\w+-\w+\b', texto)
+
+    # Expressão regular para detectar siglas (de duas ou mais letras em maiúsculas)
+    siglas_regex = re.findall(r'\b[A-Z]{2,}\b', texto)
+
+    return palavras_compostas_regex, siglas_regex
+
+# Função para gerar o corpus
 def gerar_corpus(df_textos, df_compostos, df_siglas):
     dict_compostos = {
         str(row["Palavra composta"]).lower(): str(row["Palavra normalizada"]).lower()
@@ -113,6 +124,7 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
         for char in caracteres_especiais:
             count = texto_corrigido.count(char)
             if count:
+                # Se o caractere for '%' não substituímos por '_', apenas removemos
                 if char == "%":
                     texto_corrigido = texto_corrigido.replace(char, "")
                 else:
@@ -139,78 +151,45 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 
     return corpus_final, estatisticas
 
-# Funções para análise de texto
-def detectar_siglas(texto):
-    """Detecta siglas no formato 'AB' ou 'ABC' (2+ letras maiúsculas)"""
-    try:
-        siglas = re.findall(r'\b[A-Z]{2,}\b', texto)
-        return list(set(siglas))
-    except Exception as e:
-        st.error(f"Erro ao detectar siglas: {e}")
-        return []
-
-def sugerir_palavras_compostas(texto):
-    """Sugere combinações de palavras com iniciais maiúsculas"""
-    try:
-        candidatos = re.findall(r'\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)\b', texto)
-        compostos_sugeridos = []
-        
-        for termo in candidatos:
-            if len(termo.split()) >= 2 and len(termo) > 5:
-                compostos_sugeridos.append(termo)
-        
-        return list(set(compostos_sugeridos))
-    except Exception as e:
-        st.error(f"Erro ao sugerir palavras compostas: {e}")
-        return []
-
 # Interface Streamlit
 st.set_page_config(layout="wide")
-st.title("Gerador de corpus textual para IRaMuTeQ")
+st.title("Analisador de Texto - Detecção de Siglas e Palavras Compostas")
 
-# Seção de pré-análise
-with st.expander("🔍 Pré-análise de texto (opcional)", expanded=True):
-    texto_usuario = st.text_area(
-        "Cole seu texto aqui para detectar siglas e palavras compostas:",
-        height=150,
-        placeholder="Ex: A UFS oferece cursos em Inteligência Artificial..."
-    )
+# Texto sobre o autor
+st.markdown(
+    """
+    Este sistema foi desenvolvido para auxiliar na análise de textos, detectando siglas e palavras compostas,
+    e gerando um corpus textual compatível com o IRaMuTeQ.
+    """
+)
+
+# Caixa de entrada para o usuário inserir o texto
+texto_usuario = st.text_area("📝 Insira o texto para análise:")
+
+# Botão para realizar a análise
+if st.button("🔍 Analisar Texto"):
+    # Detectar palavras compostas e siglas
+    palavras_compostas_detectadas, siglas_detectadas = detectar_palavras_compostas_e_siglas(texto_usuario.lower())
+
+    # Exibir resultados lado a lado
+    col1, col2 = st.columns(2)
+    with col1:
+        st.subheader("🔤 Palavras Compostas Detectadas")
+        if palavras_compostas_detectadas:
+            st.write(", ".join(palavras_compostas_detectadas))
+        else:
+            st.write("Nenhuma palavra composta detectada.")
     
-    if st.button("Analisar 🔍", key="analisar_texto"):
-        if texto_usuario.strip():
-            siglas = detectar_siglas(texto_usuario)
-            compostos = sugerir_palavras_compostas(texto_usuario)
-            
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                st.subheader("Palavras compostas detectadas")
-                if compostos:
-                    for composto in compostos:
-                        st.write(f"- {composto}")
-                else:
-                    st.write("Nenhuma palavra composta detectada")
-            
-            with col2:
-                st.subheader("Siglas detectadas")
-                if siglas:
-                    for sigla in siglas:
-                        st.write(f"- {sigla}")
-                else:
-                    st.write("Nenhuma sigla detectada")
+    with col2:
+        st.subheader("🔤 Siglas Detectadas")
+        if siglas_detectadas:
+            st.write(", ".join(siglas_detectadas))
+        else:
+            st.write("Nenhuma sigla detectada.")
 
-# Seção principal de upload
-st.markdown("---")
-st.markdown("### 📌 Envie sua planilha completa para gerar o corpus")
-
-with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
-    st.download_button(
-        label="📅 Baixar modelo de planilha",
-        data=exemplo,
-        file_name="gerar_corpus_iramuteq.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
-
+# Botão para o usuário enviar a planilha após a análise do texto
+st.markdown("""---""")
+st.subheader("📁 Envie a planilha para gerar o corpus textual")
 file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
 
 if file:
@@ -230,24 +209,8 @@ if file:
 
                 buf = io.BytesIO()
                 buf.write(corpus.encode("utf-8"))
-                st.download_button(
-                    "📄 BAIXAR CORPUS TEXTUAL", 
-                    data=buf.getvalue(), 
-                    file_name="corpus_IRaMuTeQ.txt", 
-                    mime="text/plain"
-                )
+                st.download_button("📄 BAIXAR CORPUS TEXTUAL", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
             else:
                 st.warning("Nenhum texto processado. Verifique os dados da planilha.")
-
     except Exception as e:
         st.error(f"Erro ao processar o arquivo: {e}")
-
-# Rodapé
-st.markdown("""
----
-👨‍🏫 **Sobre o autor**
-
-**Autor:** José Wendel dos Santos  
-**Instituição:** Universidade Federal de Sergipe (UFS)  
-**Contato:** eng.wendel@gmail.com
-""")
