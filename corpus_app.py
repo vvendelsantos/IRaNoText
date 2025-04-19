@@ -1,68 +1,10 @@
 import streamlit as st
 import pandas as pd
 import re
-import io
-from word2number import w2n
 import spacy
 
 # Carregar o modelo spaCy para NER
 nlp = spacy.load("pt_core_news_sm")
-
-# Função para converter números por extenso para algarismos
-def converter_numeros_por_extenso(texto):
-    unidades = {
-        "zero": 0, "dois": 2, "duas": 2, "três": 3, "quatro": 4, "cinco": 5,
-        "seis": 6, "sete": 7, "oito": 8, "nove": 9
-    }
-    dezenas = {
-        "dez": 10, "onze": 11, "doze": 12, "treze": 13, "quatorze": 14, "quinze": 15,
-        "dezesseis": 16, "dezessete": 17, "dezoito": 18, "dezenove": 19, "vinte": 20
-    }
-    centenas = {
-        "cem": 100, "cento": 100, "duzentos": 200, "trezentos": 300, "quatrocentos": 400,
-        "quinhentos": 500, "seiscentos": 600, "setecentos": 700, "oitocentos": 800, "novecentos": 900
-    }
-    multiplicadores = {
-        "mil": 1000, "milhão": 1000000, "milhões": 1000000, "bilhão": 1000000000,
-        "bilhões": 1000000000
-    }
-
-    def processar_palavra(palavra):
-        try:
-            return str(w2n.word_to_num(palavra))
-        except:
-            return palavra
-
-    palavras = texto.split()
-    resultado = []
-    for palavra in palavras:
-        palavra_lower = palavra.lower()
-        if palavra_lower in unidades:
-            resultado.append(str(unidades[palavra_lower]))
-        elif palavra_lower in dezenas:
-            resultado.append(str(dezenas[palavra_lower]))
-        elif palavra_lower in centenas:
-            resultado.append(str(centenas[palavra_lower]))
-        elif palavra_lower in multiplicadores:
-            resultado.append(str(multiplicadores[palavra_lower]))
-        else:
-            resultado.append(processar_palavra(palavra))
-
-    return " ".join(resultado)
-
-# Função para processar palavras compostas com "-se"
-def processar_palavras_com_se(texto):
-    return re.sub(r"(\b\w+)-se\b", r"se \1", texto)
-
-# Função para processar pronomes oblíquos pós-verbais
-def processar_pronomes_pospostos(texto):
-    texto = re.sub(r'\b(\w+)-se\b', r'se \1', texto)
-    texto = re.sub(r'\b(\w+)-([oa]s?)\b', r'\2 \1', texto)
-    texto = re.sub(r'\b(\w+)-(lhe|lhes)\b', r'\2 \1', texto)
-    texto = re.sub(r'\b(\w+)-(me|te|nos|vos)\b', r'\2 \1', texto)
-    texto = re.sub(r'\b(\w+)[áéíóúâêô]?-([oa]s?)\b', r'\2 \1', texto)
-    texto = re.sub(r'\b(\w+)[áéíóúâêô]-(lo|la|los|las)-ia\b', r'\2 \1ia', texto)
-    return texto
 
 # Função para detectar siglas
 def detectar_siglas(texto):
@@ -89,7 +31,7 @@ def detectar_palavras_compostas(texto):
 
     return sorted(set(compostas))
 
-# Função principal para gerar o corpus
+# Função para gerar o corpus
 def gerar_corpus(df_textos, df_compostos, df_siglas):
     dict_compostos = {
         str(row["Palavra composta"]).lower(): str(row["Palavra normalizada"]).lower()
@@ -122,9 +64,7 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
             continue
 
         texto_corrigido = texto.lower()
-        texto_corrigido = converter_numeros_por_extenso(texto_corrigido)
-        texto_corrigido = processar_palavras_com_se(texto_corrigido)
-        texto_corrigido = processar_pronomes_pospostos(texto_corrigido)
+
         total_textos += 1
 
         for sigla, significado in dict_siglas.items():
@@ -166,11 +106,12 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 
     return corpus_final, estatisticas
 
+
 # Interface Streamlit
 st.set_page_config(layout="wide")
 st.title("Gerador de corpus textual para IRaMuTeQ")
 
-# Caixa de texto para o usuário inserir o texto
+# Parte 1 - Análise de texto inserido pelo usuário
 texto_input = st.text_area("Insira o texto a ser analisado:")
 
 # Botão para iniciar a análise
@@ -192,7 +133,7 @@ if st.button("🔍 Analisar texto"):
     else:
         st.warning("Por favor, insira um texto para análise.")
 
-# Se o arquivo for enviado
+# Parte 2 - Upload da planilha e geração do corpus
 uploaded_file = st.file_uploader("Faça upload da planilha de textos e palavras compostas", type=["csv", "xlsx"])
 
 if uploaded_file:
@@ -213,3 +154,9 @@ if uploaded_file:
 
     st.subheader("Corpus Final")
     st.text_area("Texto final para o corpus:", corpus_final, height=300)
+
+# Rodapé com informações sobre o autor
+st.markdown("""
+---
+Criado por [Seu Nome](https://www.seu-portfolio.com) | Todos os direitos reservados.
+""")
