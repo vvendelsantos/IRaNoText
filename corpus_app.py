@@ -1,12 +1,11 @@
-import streamlit as st
 import pandas as pd
 import re
-import io
-from word2number import w2n
+import streamlit as st
 from collections import Counter
-from itertools import tee
+from nltk.util import ngrams
+from word2number import w2n
 
-# Funções auxiliares
+# Função para converter números por extenso para algarismos
 def converter_numeros_por_extenso(texto):
     unidades = {
         "zero": 0, "dois": 2, "duas": 2, "três": 3, "quatro": 4, "cinco": 5,
@@ -24,11 +23,13 @@ def converter_numeros_por_extenso(texto):
         "mil": 1000, "milhão": 1000000, "milhões": 1000000, "bilhão": 1000000000,
         "bilhões": 1000000000
     }
+
     def processar_palavra(palavra):
         try:
             return str(w2n.word_to_num(palavra))
         except:
             return palavra
+
     palavras = texto.split()
     resultado = []
     for palavra in palavras:
@@ -43,11 +44,27 @@ def converter_numeros_por_extenso(texto):
             resultado.append(str(multiplicadores[palavra_lower]))
         else:
             resultado.append(processar_palavra(palavra))
+
     return " ".join(resultado)
 
-def processar_palavras_com_se(texto):
-    return re.sub(r"(\b\w+)-se\b", r"se \1", texto)
+# Função para detectar siglas
+def detectar_siglas(texto):
+    palavras = re.findall(r'\b[A-Z]{2,}\b', texto)  # Detecta palavras com 2 ou mais letras maiúsculas
+    return sorted(set(palavras))  # Retorna siglas únicas, sem duplicatas
 
+# Função para gerar bigramas
+def gerar_bigramas(texto):
+    palavras = texto.split()  # Divide o texto em palavras
+    bigramas = ngrams(palavras, 2)  # Cria bigramas (pares de palavras)
+    return ["_".join(bi) for bi in bigramas]  # Une as palavras do bigrama com "_"
+
+# Função para gerar trigramas
+def gerar_trigramas(texto):
+    palavras = texto.split()  # Divide o texto em palavras
+    trigramas = ngrams(palavras, 3)  # Cria trigramas (sequências de 3 palavras)
+    return ["_".join(tri) for tri in trigramas]  # Une as palavras do trigramas com "_"
+
+# Função para processar pronomes oblíquos pós-verbais
 def processar_pronomes_pospostos(texto):
     texto = re.sub(r'\b(\w+)-se\b', r'se \1', texto)
     texto = re.sub(r'\b(\w+)-([oa]s?)\b', r'\2 \1', texto)
@@ -57,17 +74,20 @@ def processar_pronomes_pospostos(texto):
     texto = re.sub(r'\b(\w+)[áéíóúâêô]-(lo|la|los|las)-ia\b', r'\2 \1ia', texto)
     return texto
 
+# Função principal para gerar o corpus
 def gerar_corpus(df_textos, df_compostos, df_siglas):
     dict_compostos = {
         str(row["Palavra composta"]).lower(): str(row["Palavra normalizada"]).lower()
         for _, row in df_compostos.iterrows()
         if pd.notna(row["Palavra composta"]) and pd.notna(row["Palavra normalizada"])
     }
+
     dict_siglas = {
         str(row["Sigla"]).lower(): str(row["Significado"])
         for _, row in df_siglas.iterrows()
         if pd.notna(row["Sigla"]) and pd.notna(row["Significado"])
     }
+
     caracteres_especiais = {
         "-": "Hífen", ";": "Ponto e vírgula", '"': "Aspas duplas", "'": "Aspas simples",
         "…": "Reticências", "–": "Travessão", "(": "Parêntese esquerdo", ")": "Parêntese direito",
@@ -79,39 +99,56 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
     total_compostos = 0
     total_remocoes = 0
     corpus_final = ""
+
     for _, row in df_textos.iterrows():
         texto = str(row.get("textos selecionados", ""))
         id_val = row.get("id", "")
         if not texto.strip():
             continue
+
         texto_corrigido = texto.lower()
         texto_corrigido = converter_numeros_por_extenso(texto_corrigido)
-        texto_corrigido = processar_palavras_com_se(texto_corrigido)
         texto_corrigido = processar_pronomes_pospostos(texto_corrigido)
         total_textos += 1
+
         for sigla, significado in dict_siglas.items():
-            texto_corrigido = re.sub(rf"\\({sigla}\\)", "", texto_corrigido)
-            texto_corrigido = re.sub(rf"\\b{sigla}\\b", significado, texto_corrigido, flags=re.IGNORECASE)
+            texto_corrigido = re.sub(rf"\({sigla}\)", "", texto_corrigido)
+            texto_corrigido = re.sub(rf"\b{sigla}\b", significado, texto_corrigido, flags=re.IGNORECASE)
             total_siglas += 1
+
         for termo, substituto in dict_compostos.items():
             if termo in texto_corrigido:
-                texto_corrigido = re.sub(rf"\\b{termo}\\b", substituto, texto_corrigido, flags=re.IGNORECASE)
+                texto_corrigido = re.sub(rf"\b{termo}\b", substituto, texto_corrigido, flags=re.IGNORECASE)
                 total_compostos += 1
+
         for char in caracteres_especiais:
             count = texto_corrigido.count(char)
             if count:
+                # Se o caractere for '%' não substituímos por '_', apenas removemos
                 if char == "%":
                     texto_corrigido = texto_corrigido.replace(char, "")
                 else:
                     texto_corrigido = texto_corrigido.replace(char, "_")
                 contagem_caracteres[char] += count
                 total_remocoes += count
+
         texto_corrigido = re.sub(r"\s+", " ", texto_corrigido.strip())
+
         metadata = f"**** *ID_{id_val}"
         for col in row.index:
             if col.lower() not in ["id", "textos selecionados"]:
                 metadata += f" *{col.replace(' ', '_')}_{str(row[col]).replace(' ', '_')}"
+        
+        # Gerar bigramas e trigramas
+        bigramas = gerar_bigramas(texto_corrigido)
+        trigramas = gerar_trigramas(texto_corrigido)
+
+        # Contagem de bigramas e trigramas
+        bigramas_freq = Counter(bigramas)
+        trigramas_freq = Counter(trigramas)
+
         corpus_final += f"{metadata}\n{texto_corrigido}\n"
+
     estatisticas = f"Textos processados: {total_textos}\n"
     estatisticas += f"Siglas removidas/substituídas: {total_siglas}\n"
     estatisticas += f"Palavras compostas substituídas: {total_compostos}\n"
@@ -119,68 +156,41 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
     for char, nome in caracteres_especiais.items():
         if contagem_caracteres[char] > 0:
             estatisticas += f" - {nome} ({char}) : {contagem_caracteres[char]}\n"
-    return corpus_final, estatisticas
 
-# Interface
+    return corpus_final, estatisticas, bigramas_freq, trigramas_freq
+
+# Interface Streamlit
 st.set_page_config(layout="wide")
 st.title("Gerador de corpus textual para IRaMuTeQ")
 
-col1, col2 = st.columns(2)
-
-with col1:
-    texto_exemplo = st.text_area("Cole um trecho de texto para sugestões", height=300)
-
-with col2:
-    if texto_exemplo:
-        palavras = re.findall(r"\b\w+\b", texto_exemplo.lower())
-        bigramas = zip(palavras, palavras[1:])
-        triplas = zip(palavras, palavras[1:], palavras[2:])
-        bigramas_validos = ["_".join(b) for b in bigramas if all(w not in ["de", "a", "o", "e", "em"] for w in b)]
-        triplas_validas = ["_".join(t) for t in triplas if all(w not in ["de", "a", "o", "e", "em"] for w in t)]
-        freq_bi = Counter(bigramas_validos).most_common(10)
-        freq_tri = Counter(triplas_validas).most_common(10)
-        st.markdown("### 🔍 Sugestões de palavras compostas")
-        st.write("**Bigramas**")
-        st.table(freq_bi)
-        st.write("**Trigramas**")
-        st.table(freq_tri)
-
-st.markdown("---")
-
-with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
-    st.download_button(
-        label="📅 Baixar modelo de planilha",
-        data=exemplo,
-        file_name="gerar_corpus_iramuteq.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
-
-file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
-if file:
-    try:
-        xls = pd.ExcelFile(file)
-        df_textos = xls.parse("textos_selecionados")
-        df_compostos = xls.parse("dic_palavras_compostas")
-        df_siglas = xls.parse("dic_siglas")
-        df_textos.columns = [col.strip().lower() for col in df_textos.columns]
-        if st.button("🚀 GERAR CORPUS TEXTUAL"):
-            corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
-            if corpus.strip():
-                st.success("Corpus gerado com sucesso!")
-                st.text_area("📊 Estatísticas do processamento", estatisticas, height=250)
-                buf = io.BytesIO()
-                buf.write(corpus.encode("utf-8"))
-                st.download_button("📄 BAIXAR CORPUS TEXTUAL", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
-            else:
-                st.warning("Nenhum texto processado. Verifique os dados da planilha.")
-    except Exception as e:
-        st.error(f"Erro ao processar o arquivo: {e}")
-
 st.markdown("""
----
-👨‍🏫 **Sobre o autor**
+### 📌 Instruções
 
-**Autor:** José Wendel dos Santos  
-**Instituição:** Universidade Federal de Sergipe (UFS)  
-**Contato:** eng.wendel@gmail.com
+Esta ferramenta foi desenvolvida para facilitar a geração de corpus textual compatível com o IRaMuTeQ.
 """)
+
+file = st.file_uploader("Carregue sua planilha (Excel ou CSV)", type=["xlsx", "csv"])
+
+if file:
+    df = pd.read_excel(file) if file.name.endswith("xlsx") else pd.read_csv(file)
+
+    df_compostos = st.file_uploader("Carregue a planilha de palavras compostas", type=["xlsx", "csv"])
+    df_siglas = st.file_uploader("Carregue a planilha de siglas", type=["xlsx", "csv"])
+
+    if df_compostos and df_siglas:
+        df_compostos = pd.read_excel(df_compostos) if df_compostos.name.endswith("xlsx") else pd.read_csv(df_compostos)
+        df_siglas = pd.read_excel(df_siglas) if df_siglas.name.endswith("xlsx") else pd.read_csv(df_siglas)
+        
+        corpus, estatisticas, bigramas_freq, trigramas_freq = gerar_corpus(df, df_compostos, df_siglas)
+
+        st.subheader("📊 Estatísticas de Processamento")
+        st.text(estatisticas)
+
+        st.subheader("📈 Bigramas")
+        st.write(pd.DataFrame(bigramas_freq.most_common(), columns=["Bigramas", "Frequência"]))
+
+        st.subheader("📈 Trigramas")
+        st.write(pd.DataFrame(trigramas_freq.most_common(), columns=["Trigramas", "Frequência"]))
+
+        st.subheader("📄 Corpus Final")
+        st.text(corpus)
