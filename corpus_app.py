@@ -96,17 +96,6 @@ texto_usuario = st.text_area("📄 Insira o seu texto aqui:", height=200)
 # Adicionando botão para análise
 if st.button("🔍 Analisar"):
     if texto_usuario:
-        # Exemplo de dicionário de palavras compostas e siglas para teste
-        dict_compostos = {
-            "mestre de obras": "mestre-de-obras",
-            "engenheiro civil": "engenheiro-civil"
-        }
-        
-        dict_siglas = {
-            "ufse": "Universidade Federal de Sergipe",
-            "usa": "United States of America"
-        }
-
         # Detectando palavras compostas e siglas no texto
         palavras_compostas_detectadas = detectar_palavras_compostas(texto_usuario.lower(), dict_compostos)
         siglas_detectadas = detectar_siglas(texto_usuario.lower(), dict_siglas)
