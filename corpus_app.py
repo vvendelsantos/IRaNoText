@@ -12,7 +12,7 @@ def converter_numeros_por_extenso(texto):
     }
     dezenas = {
         "dez": 10, "onze": 11, "doze": 12, "treze": 13, "quatorze": 14, "quinze": 15,
-        "dezesseis": 16, "dezessete": 17, "dezoito": 18, "vinte": 20
+        "dezesseis": 16, "dezessete": 17, "dezoito": 18, "dezenove": 19, "vinte": 20
     }
     centenas = {
         "cem": 100, "cento": 100, "duzentos": 200, "trezentos": 300, "quatrocentos": 400,
@@ -60,22 +60,24 @@ def processar_pronomes_pospostos(texto):
     texto = re.sub(r'\b(\w+)[áéíóúâêô]-(lo|la|los|las)-ia\b', r'\2 \1ia', texto)
     return texto
 
-# Função para detectar siglas e palavras compostas
-def detectar_siglas_e_palavras_compostas(texto, dict_compostos, dict_siglas):
+# Função para detectar siglas e sugerir palavras compostas
+def detectar_siglas_e_sugerir_palavras_compostas(texto, dic_siglas, dic_compostos):
     siglas_detectadas = []
-    palavras_compostas_detectadas = []
+    palavras_compostas_sugeridas = []
     
-    for sigla in dict_siglas.keys():
-        if sigla.lower() in texto.lower():
-            siglas_detectadas.append(sigla)
-    
-    for termo in dict_compostos.keys():
-        if termo.lower() in texto.lower():
-            palavras_compostas_detectadas.append(termo)
+    for sigla, significado in dic_siglas.items():
+        if sigla in texto:
+            siglas_detectadas.append(f"{sigla} → {significado}")
+            texto = texto.replace(sigla, significado)
 
-    return siglas_detectadas, palavras_compostas_detectadas
+    for termo, substituto in dic_compostos.items():
+        if termo in texto:
+            palavras_compostas_sugeridas.append(f"{termo} → {substituto}")
+            texto = texto.replace(termo, substituto)
 
-# Função principal para gerar corpus
+    return siglas_detectadas, palavras_compostas_sugeridas, texto
+
+# Função principal
 def gerar_corpus(df_textos, df_compostos, df_siglas):
     dict_compostos = {
         str(row["Palavra composta"]).lower(): str(row["Palavra normalizada"]).lower()
@@ -126,7 +128,6 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
         for char in caracteres_especiais:
             count = texto_corrigido.count(char)
             if count:
-                # Se o caractere for '%' não substituímos por '_', apenas removemos
                 if char == "%":
                     texto_corrigido = texto_corrigido.replace(char, "")
                 else:
@@ -157,56 +158,52 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 st.set_page_config(layout="wide")
 st.title("Gerador de corpus textual para IRaMuTeQ")
 
-# Campo para o usuário inserir texto
-texto_usuario = st.text_area("📜 Insira o texto aqui:")
+st.markdown("""
+### 📌 Instruções
 
-if texto_usuario:
-    # Analisar botão para detectar siglas e palavras compostas
-    if st.button("🔍 Analisar"):
-        # Exemplo de dicionários para siglas e palavras compostas
-        dict_compostos = {
-            "inteligência artificial": "IA",
-            "instituto federal de sergipe": "IFS"
+Esta ferramenta foi desenvolvida para facilitar a geração de corpus textual compatível com o IRaMuTeQ.
+
+Envie um arquivo do Excel **.xlsx** com a estrutura correta para que o corpus possa ser gerado automaticamente.
+
+Sua planilha deve conter **três abas (planilhas internas)** com os seguintes nomes e finalidades:
+
+1. **textos_selecionados** : coleção de textos que serão transformados de acordo com as regras de normalização.  
+2. **dic_palavras_compostas** : permite substituir palavras compostas por suas formas normalizadas, garantindo uma maior consistência no corpus textual gerado.  
+3. **dic_siglas** : tem a finalidade de expandir siglas para suas formas completas, aumentando a legibilidade e a clareza do texto.
+""")
+
+# Campo para o usuário inserir o texto
+texto_usuario = st.text_area("Insira o texto a ser analisado:", "")
+
+# Botão de análise
+if st.button("🔍 Analisar"):
+    if texto_usuario.strip():
+        # Carregar dicionários de siglas e palavras compostas
+        dic_siglas = {
+            'ifes': 'Instituto Federal do Espírito Santo',  # Exemplo de sigla
+            # Adicionar mais siglas conforme necessário
         }
-        dict_siglas = {
-            "ia": "Inteligência Artificial",
-            "ifs": "Instituto Federal de Sergipe"
+        dic_compostos = {
+            'inteligência artificial': 'IA',
+            'instituto federal de sergipe': 'IFS',
+            # Adicionar mais palavras compostas conforme necessário
         }
-        
-        siglas_detectadas, palavras_compostas_detectadas = detectar_siglas_e_palavras_compostas(texto_usuario, dict_compostos, dict_siglas)
-        
-        # Exibir resultados lado a lado
+
+        # Detectar siglas e sugerir palavras compostas
+        siglas_detectadas, palavras_compostas, texto_corrigido = detectar_siglas_e_sugerir_palavras_compostas(
+            texto_usuario, dic_siglas, dic_compostos
+        )
+
+        # Mostrar resultados em janelas lado a lado
         col1, col2 = st.columns(2)
+
         with col1:
             st.subheader("Siglas Detectadas")
-            st.write(siglas_detectadas)
+            st.write("\n".join(siglas_detectadas))
+
         with col2:
-            st.subheader("Palavras Compostas Detectadas")
-            st.write(palavras_compostas_detectadas)
+            st.subheader("Palavras Compostas Sugeridas")
+            st.write("\n".join(palavras_compostas))
 
-# O código do upload da planilha e processamento permanece o mesmo
-file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
-
-if file:
-    try:
-        xls = pd.ExcelFile(file)
-        df_textos = xls.parse("textos_selecionados")
-        df_compostos = xls.parse("dic_palavras_compostas")
-        df_siglas = xls.parse("dic_siglas")
-        df_textos.columns = [col.strip().lower() for col in df_textos.columns]
-
-        if st.button("🚀 GERAR CORPUS TEXTUAL"):
-            corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
-
-            if corpus.strip():
-                st.success("Corpus gerado com sucesso!")
-                st.text_area("📊 Estatísticas do processamento", estatisticas, height=250)
-
-                buf = io.BytesIO()
-                buf.write(corpus.encode("utf-8"))
-                st.download_button("📄 BAIXAR CORPUS TEXTUAL", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
-            else:
-                st.warning("Nenhum texto processado. Verifique os dados da planilha.")
-
-    except Exception as e:
-        st.error(f"Erro ao processar o arquivo: {e}")
+    else:
+        st.warning("Por favor, insira um texto para análise.")
