@@ -10,9 +10,8 @@ nlp = spacy.load("pt_core_news_sm")
 
 # Funções da parte 1
 def detectar_siglas(texto):
-    tokens = texto.split()
-    siglas = [token for token in tokens if token.isupper() and len(token) > 1]
-    return list(set(siglas))
+    tokens = re.findall(r"\b[A-Z]{2,}\b", texto)
+    return sorted(set(tokens))
 
 def detectar_palavras_compostas(texto):
     doc = nlp(texto)
@@ -45,7 +44,6 @@ if st.button("🔍 Analisar texto"):
                     st.write(f"- {sigla}")
             else:
                 st.info("Nenhuma sigla encontrada.")
-
     else:
         st.warning("Por favor, insira um texto antes de analisar.")
 
