@@ -77,7 +77,7 @@ def sugerir_palavras_compostas(texto, palavras_compostas):
     return sugestoes
 
 # Função principal
-def gerar_corpus(df_textos, df_compostos, df_siglas):
+def gerar_corpus(df_textos, df_compostos, df_siglas, texto_usuario):
     dict_compostos = {
         str(row["Palavra composta"]).lower(): str(row["Palavra normalizada"]).lower()
         for _, row in df_compostos.iterrows()
@@ -102,49 +102,38 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
     total_remocoes = 0
     corpus_final = ""
 
-    for _, row in df_textos.iterrows():
-        texto = str(row.get("textos selecionados", ""))
+    # Processar o texto do usuário
+    texto_corrigido = texto_usuario.lower()
+    texto_corrigido = converter_numeros_por_extenso(texto_corrigido)
+    texto_corrigido = processar_palavras_com_se(texto_corrigido)
+    texto_corrigido = processar_pronomes_pospostos(texto_corrigido)
 
-        if not texto.strip():
-            continue
+    # Detectar siglas
+    texto_corrigido = detectar_siglas(texto_corrigido, dict_siglas)
 
-        texto_corrigido = texto.lower()
-        texto_corrigido = converter_numeros_por_extenso(texto_corrigido)
-        texto_corrigido = processar_palavras_com_se(texto_corrigido)
-        texto_corrigido = processar_pronomes_pospostos(texto_corrigido)
+    # Substituir palavras compostas
+    for termo, substituto in dict_compostos.items():
+        texto_corrigido = re.sub(rf"\b{termo}\b", substituto, texto_corrigido, flags=re.IGNORECASE)
 
-        # Detectar siglas
-        texto_corrigido = detectar_siglas(texto_corrigido, dict_siglas)
+    for char in caracteres_especiais:
+        count = texto_corrigido.count(char)
+        if count:
+            if char == "%":
+                texto_corrigido = texto_corrigido.replace(char, "")
+            else:
+                texto_corrigido = texto_corrigido.replace(char, "_")
+            contagem_caracteres[char] += count
+            total_remocoes += count
 
-        # Substituir palavras compostas
-        for termo, substituto in dict_compostos.items():
-            texto_corrigido = re.sub(rf"\b{termo}\b", substituto, texto_corrigido, flags=re.IGNORECASE)
+    texto_corrigido = re.sub(r"\s+", " ", texto_corrigido.strip())
 
-        for char in caracteres_especiais:
-            count = texto_corrigido.count(char)
-            if count:
-                if char == "%":
-                    texto_corrigido = texto_corrigido.replace(char, "")
-                else:
-                    texto_corrigido = texto_corrigido.replace(char, "_")
-                contagem_caracteres[char] += count
-                total_remocoes += count
+    # Sugestões de palavras compostas
+    sugestoes = sugerir_palavras_compostas(texto_corrigido, dict_compostos)
+    if sugestoes:
+        st.write(f"Sugestões de palavras compostas: {', '.join(sugestoes)}")
 
-        texto_corrigido = re.sub(r"\s+", " ", texto_corrigido.strip())
-
-        metadata = f"**** *ID_{row.get('id', '')}"
-        for col in row.index:
-            if col.lower() not in ["id", "textos selecionados"]:
-                metadata += f" *{col.replace(' ', '_')}_{str(row[col]).replace(' ', '_')}"
-
-        corpus_final += f"{metadata}\n{texto_corrigido}\n"
-
-        # Sugestões de palavras compostas
-        sugestoes = sugerir_palavras_compostas(texto_corrigido, dict_compostos)
-        if sugestoes:
-            st.write(f"Sugestões de palavras compostas para o texto {row.get('id', '')}: {', '.join(sugestoes)}")
-
-        total_textos += 1
+    corpus_final += texto_corrigido + "\n"
+    total_textos += 1
 
     estatisticas = f"Textos processados: {total_textos}\n"
     estatisticas += f"Siglas substituídas: {total_siglas}\n"
@@ -160,22 +149,17 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 st.set_page_config(layout="wide")
 st.title("Gerador de corpus textual para IRaMuTeQ")
 
+# Caixa de texto para o usuário colar o texto
+texto_usuario = st.text_area("📋 Insira ou cole seu texto aqui para análise", height=300)
+
 st.markdown("""
 ### 📌 Instruções
-Envie um arquivo do Excel **.xlsx** com a estrutura correta para que o corpus possa ser gerado automaticamente.
+Digite ou cole seu texto na caixa acima. O texto será analisado para sugerir palavras compostas, siglas e outras modificações.
 """)
-
-with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
-    st.download_button(
-        label="📅 Baixar modelo de planilha",
-        data=exemplo,
-        file_name="gerar_corpus_iramuteq.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
 
 file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
 
-if file:
+if file and texto_usuario:
     try:
         xls = pd.ExcelFile(file)
         df_textos = xls.parse("textos_selecionados")
@@ -184,7 +168,7 @@ if file:
         df_textos.columns = [col.strip().lower() for col in df_textos.columns]
 
         if st.button("🚀 GERAR CORPUS TEXTUAL"):
-            corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
+            corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas, texto_usuario)
 
             if corpus.strip():
                 st.success("Corpus gerado com sucesso!")
