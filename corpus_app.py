@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import re
-import io
 from word2number import w2n
 
 # Função para converter números por extenso para algarismos
@@ -46,38 +45,30 @@ def converter_numeros_por_extenso(texto):
 
     return " ".join(resultado)
 
-# Função para processar palavras compostas com "-se"
-def processar_palavras_com_se(texto):
-    return re.sub(r"(\b\w+)-se\b", r"se \1", texto)
-
-# Função para processar pronomes oblíquos pós-verbais
-def processar_pronomes_pospostos(texto):
-    texto = re.sub(r'\b(\w+)-se\b', r'se \1', texto)
-    texto = re.sub(r'\b(\w+)-([oa]s?)\b', r'\2 \1', texto)
-    texto = re.sub(r'\b(\w+)-(lhe|lhes)\b', r'\2 \1', texto)
-    texto = re.sub(r'\b(\w+)-(me|te|nos|vos)\b', r'\2 \1', texto)
-    texto = re.sub(r'\b(\w+)[áéíóúâêô]?-([oa]s?)\b', r'\2 \1', texto)
-    texto = re.sub(r'\b(\w+)[áéíóúâêô]-(lo|la|los|las)-ia\b', r'\2 \1ia', texto)
-    return texto
+# Função para sugerir palavras compostas
+def sugerir_palavras_compostas(texto):
+    stopwords = set(["de", "a", "o", "da", "na", "em", "para", "com", "que", "por", "e"])
+    palavras = texto.split()
+    compostas = []
+    
+    for i in range(len(palavras)-1):
+        palavra1 = palavras[i]
+        palavra2 = palavras[i+1]
+        if palavra1 not in stopwords and palavra2 not in stopwords:
+            compostas.append(f"{palavra1}_{palavra2}")
+    
+    return compostas
 
 # Função para detectar siglas
-def detectar_siglas(texto, dic_siglas):
-    for sigla, significado in dic_siglas.items():
-        texto = re.sub(rf"\b{sigla}\b", significado, texto, flags=re.IGNORECASE)
-    return texto
-
-# Função para sugerir palavras compostas
-def sugerir_palavras_compostas(texto, palavras_compostas):
-    sugestoes = []
-    palavras = texto.split()
-    for i in range(len(palavras)-1):
-        combinacao = palavras[i] + "_" + palavras[i+1]
-        if combinacao in palavras_compostas:
-            sugestoes.append(combinacao)
-    return sugestoes
+def detectar_siglas(texto, siglas_dict):
+    siglas_encontradas = []
+    for sigla, significado in siglas_dict.items():
+        if sigla.lower() in texto.lower():
+            siglas_encontradas.append((sigla, significado))
+    return siglas_encontradas
 
 # Função principal
-def gerar_corpus(df_textos, df_compostos, df_siglas, texto_usuario):
+def gerar_corpus(df_textos, df_compostos, df_siglas):
     dict_compostos = {
         str(row["Palavra composta"]).lower(): str(row["Palavra normalizada"]).lower()
         for _, row in df_compostos.iterrows()
@@ -90,103 +81,46 @@ def gerar_corpus(df_textos, df_compostos, df_siglas, texto_usuario):
         if pd.notna(row["Sigla"]) and pd.notna(row["Significado"])
     }
 
-    caracteres_especiais = {
-        "-": "Hífen", ";": "Ponto e vírgula", '"': "Aspas duplas", "'": "Aspas simples",
-        "…": "Reticências", "–": "Travessão", "(": "Parêntese esquerdo", ")": "Parêntese direito",
-        "/": "Barra", "%": "Porcentagem"
-    }
-    contagem_caracteres = {k: 0 for k in caracteres_especiais}
-    total_textos = 0
-    total_siglas = 0
-    total_compostos = 0
-    total_remocoes = 0
     corpus_final = ""
+    for _, row in df_textos.iterrows():
+        texto = str(row.get("textos selecionados", ""))
+        if not texto.strip():
+            continue
 
-    # Processar o texto do usuário
-    texto_corrigido = texto_usuario.lower()
-    texto_corrigido = converter_numeros_por_extenso(texto_corrigido)
-    texto_corrigido = processar_palavras_com_se(texto_corrigido)
-    texto_corrigido = processar_pronomes_pospostos(texto_corrigido)
+        texto_corrigido = texto.lower()
+        texto_corrigido = converter_numeros_por_extenso(texto_corrigido)
 
-    # Detectar siglas
-    texto_corrigido = detectar_siglas(texto_corrigido, dict_siglas)
+        # Sugestão de palavras compostas
+        palavras_compostas = sugerir_palavras_compostas(texto_corrigido)
+        
+        # Detecção de siglas
+        siglas_detectadas = detectar_siglas(texto_corrigido, dict_siglas)
 
-    # Substituir palavras compostas
-    for termo, substituto in dict_compostos.items():
-        texto_corrigido = re.sub(rf"\b{termo}\b", substituto, texto_corrigido, flags=re.IGNORECASE)
+        corpus_final += f"Texto original:\n{texto}\n\nPalavras compostas sugeridas: {palavras_compostas}\n"
+        corpus_final += f"Siglas detectadas: {siglas_detectadas}\n\n"
 
-    for char in caracteres_especiais:
-        count = texto_corrigido.count(char)
-        if count:
-            if char == "%":
-                texto_corrigido = texto_corrigido.replace(char, "")
-            else:
-                texto_corrigido = texto_corrigido.replace(char, "_")
-            contagem_caracteres[char] += count
-            total_remocoes += count
-
-    texto_corrigido = re.sub(r"\s+", " ", texto_corrigido.strip())
-
-    # Sugestões de palavras compostas
-    sugestoes = sugerir_palavras_compostas(texto_corrigido, dict_compostos)
-    if sugestoes:
-        st.write(f"Sugestões de palavras compostas: {', '.join(sugestoes)}")
-
-    corpus_final += texto_corrigido + "\n"
-    total_textos += 1
-
-    estatisticas = f"Textos processados: {total_textos}\n"
-    estatisticas += f"Siglas substituídas: {total_siglas}\n"
-    estatisticas += f"Palavras compostas substituídas: {total_compostos}\n"
-    estatisticas += f"Caracteres especiais removidos: {total_remocoes}\n"
-    for char, nome in caracteres_especiais.items():
-        if contagem_caracteres[char] > 0:
-            estatisticas += f" - {nome} ({char}) : {contagem_caracteres[char]}\n"
-
-    return corpus_final, estatisticas
+    return corpus_final
 
 # Interface Streamlit
 st.set_page_config(layout="wide")
 st.title("Gerador de corpus textual para IRaMuTeQ")
 
-# Caixa de texto para o usuário colar o texto
-texto_usuario = st.text_area("📋 Insira ou cole seu texto aqui para análise", height=300)
-
 st.markdown("""
 ### 📌 Instruções
-Digite ou cole seu texto na caixa acima. O texto será analisado para sugerir palavras compostas, siglas e outras modificações.
+
+Envie um texto e a ferramenta sugerirá possíveis palavras compostas e detectará siglas.
+
 """)
 
-file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
+# Caixa para o usuário colar o texto
+texto_usuario = st.text_area("Cole seu texto aqui:")
 
-if file and texto_usuario:
-    try:
-        xls = pd.ExcelFile(file)
-        df_textos = xls.parse("textos_selecionados")
-        df_compostos = xls.parse("dic_palavras_compostas")
-        df_siglas = xls.parse("dic_siglas")
-        df_textos.columns = [col.strip().lower() for col in df_textos.columns]
-
-        if st.button("🚀 GERAR CORPUS TEXTUAL"):
-            corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas, texto_usuario)
-
-            if corpus.strip():
-                st.success("Corpus gerado com sucesso!")
-                st.text_area("📊 Estatísticas do processamento", estatisticas, height=250)
-
-                buf = io.BytesIO()
-                buf.write(corpus.encode("utf-8"))
-                st.download_button("📄 BAIXAR CORPUS TEXTUAL", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
-            else:
-                st.warning("Nenhum texto processado. Verifique os dados da planilha.")
-
-    except Exception as e:
-        st.error(f"Erro ao processar o arquivo: {e}")
-
-st.markdown("""
----  
-👨‍🏫 **Sobre o autor**  
-**Autor:** José Wendel dos Santos  
-**Instituição:** Universidade Federal de Sergipe (UFS)  
-**Contato:** eng.wendel@gmail.com
-""")
+if texto_usuario:
+    palavras_compostas = sugerir_palavras_compostas(texto_usuario)
+    siglas_detectadas = detectar_siglas(texto_usuario, {"IA": "Inteligência Artificial", "USP": "Universidade de São Paulo"})  # Exemplo de siglas
+    
+    st.write("### Palavras compostas sugeridas:")
+    st.write(palavras_compostas)
+    
+    st.write("### Siglas detectadas:")
+    st.write(siglas_detectadas)
