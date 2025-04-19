@@ -3,10 +3,6 @@ import pandas as pd
 import re
 import io
 from word2number import w2n
-import spacy
-
-# Carregar o modelo spaCy para NER
-nlp = spacy.load("pt_core_news_sm")
 
 # Função para converter números por extenso para algarismos
 def converter_numeros_por_extenso(texto):
@@ -64,30 +60,12 @@ def processar_pronomes_pospostos(texto):
     texto = re.sub(r'\b(\w+)[áéíóúâêô]-(lo|la|los|las)-ia\b', r'\2 \1ia', texto)
     return texto
 
-# Função para detectar siglas
-def detectar_siglas(texto):
-    """
-    Detecta siglas no texto. Siglas são sequências de letras maiúsculas (2 ou mais).
-    """
-    siglas = re.findall(r"\b[A-Z]{2,}\b", texto)
-    return sorted(set(siglas))
-
-# Função para detectar palavras compostas
-def detectar_palavras_compostas(texto):
-    """
-    Detecta palavras compostas no texto.
-    Uma palavra composta é uma sequência de palavras onde cada palavra significativa
-    começa com letra maiúscula (exemplo: Inteligência Artificial, Universidade de Aveiro).
-    """
-    doc = nlp(texto)
-    compostas = []
-
-    # A função NER detecta entidades nomeadas como palavras compostas (exemplo: 'Universidade de Aveiro')
-    for ent in doc.ents:
-        if len(ent.text.split()) > 1:
-            compostas.append(ent.text)
-
-    return sorted(set(compostas))
+# Função para realizar a pré-análise de siglas e palavras compostas
+def pre_analise_texto(texto):
+    siglas_detectadas = re.findall(r'\b[A-Z]{2,}\b', texto)
+    palavras_compostas_detectadas = re.findall(r'\b(?:[A-Z][a-z]+(?: [A-Z][a-z]+)+)\b', texto)
+    
+    return siglas_detectadas, palavras_compostas_detectadas
 
 # Função principal para gerar o corpus textual
 def gerar_corpus(df_textos, df_compostos, df_siglas):
@@ -125,12 +103,14 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
         texto_corrigido = converter_numeros_por_extenso(texto_corrigido)
         texto_corrigido = processar_palavras_com_se(texto_corrigido)
         texto_corrigido = processar_pronomes_pospostos(texto_corrigido)
-
-        # Detecção de siglas e palavras compostas
-        siglas_detectadas = detectar_siglas(texto_corrigido)
-        compostas_detectadas = detectar_palavras_compostas(texto_corrigido)
-
         total_textos += 1
+
+        # Pré-análise de siglas e palavras compostas
+        siglas_detectadas, palavras_compostas_detectadas = pre_analise_texto(texto)
+        
+        # Exibir os resultados da pré-análise
+        st.write("Siglas detectadas:", siglas_detectadas)
+        st.write("Palavras compostas detectadas:", palavras_compostas_detectadas)
 
         for sigla, significado in dict_siglas.items():
             texto_corrigido = re.sub(rf"\({sigla}\)", "", texto_corrigido)
@@ -155,15 +135,11 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 
         texto_corrigido = re.sub(r"\s+", " ", texto_corrigido.strip())
 
-        # Exibir as siglas e palavras compostas detectadas
-        st.write(f"**Siglas detectadas**: {', '.join(siglas_detectadas)}")
-        st.write(f"**Palavras compostas detectadas**: {', '.join(compostas_detectadas)}")
-
         metadata = f"**** *ID_{id_val}"
         for col in row.index:
             if col.lower() not in ["id", "textos selecionados"]:
                 metadata += f" *{col.replace(' ', '_')}_{str(row[col]).replace(' ', '_')}"
-
+        
         corpus_final += f"{metadata}\n{texto_corrigido}\n"
 
     estatisticas = f"Textos processados: {total_textos}\n"
@@ -180,7 +156,19 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 st.set_page_config(layout="wide")
 st.title("Gerador de corpus textual para IRaMuTeQ")
 
-st.markdown("""### 📌 Instruções...""")
+st.markdown("""
+### 📌 Instruções
+
+Esta ferramenta foi desenvolvida para facilitar a geração de corpus textual compatível com o IRaMuTeQ.
+
+Envie um arquivo do Excel **.xlsx** com a estrutura correta para que o corpus possa ser gerado automaticamente.
+
+Sua planilha deve conter **três abas (planilhas internas)** com os seguintes nomes e finalidades:
+
+1. **`textos_selecionados`** : coleção de textos que serão transformados de acordo com as regras de normalização.  
+2. **`dic_palavras_compostas`** : permite substituir palavras compostas por suas formas normalizadas, garantindo uma maior consistência no corpus textual gerado.  
+3. **`dic_siglas`** : tem a finalidade de expandir siglas para suas formas completas, aumentando a legibilidade e a clareza do texto.
+""")
 
 with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
     st.download_button(
@@ -212,7 +200,15 @@ if file:
                 st.download_button("📄 BAIXAR CORPUS TEXTUAL", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
             else:
                 st.warning("Nenhum texto processado. Verifique os dados da planilha.")
+
     except Exception as e:
         st.error(f"Erro ao processar o arquivo: {e}")
 
-st.markdown("""---👨‍🏫 **Sobre o autor**...""")
+st.markdown("""
+---
+👨‍🏫 **Sobre o autor**
+
+**Autor:** José Wendel dos Santos  
+**Instituição:** Universidade Federal de Sergipe (UFS)  
+**Contato:** eng.wendel@gmail.com
+""")
