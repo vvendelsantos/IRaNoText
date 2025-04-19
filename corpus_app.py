@@ -4,7 +4,6 @@ import re
 import io
 import spacy
 from word2number import w2n
-import requests
 
 # Carregar modelo do spaCy
 nlp = spacy.load("pt_core_news_sm")
@@ -18,72 +17,6 @@ def detectar_palavras_compostas(texto):
     doc = nlp(texto)
     compostas = [ent.text for ent in doc.ents if len(ent.text.split()) > 1]
     return list(set(compostas))
-
-# ========================== PARTE 1 - PRÉ-ANÁLISE ==========================
-st.title("Analisador de Texto - Detecção de Siglas e Palavras Compostas")
-
-texto_input = st.text_area("✍️ Insira um texto para pré-análise", height=200)
-
-if st.button("🔍 Analisar texto"):
-    if texto_input.strip():
-        siglas = detectar_siglas(texto_input)
-        compostas = detectar_palavras_compostas(texto_input)
-
-        col1, col2 = st.columns(2)
-        with col1:
-            st.markdown("### 🧩 Palavras Compostas Detectadas")
-            if compostas:
-                for termo in compostas:
-                    st.write(f"- {termo}")
-            else:
-                st.info("Nenhuma palavra composta encontrada.")
-
-        with col2:
-            st.markdown("### 🧾 Siglas Detectadas")
-            if siglas:
-                for sigla in siglas:
-                    st.write(f"- {sigla}")
-            else:
-                st.info("Nenhuma sigla encontrada.")
-    else:
-        st.warning("Por favor, insira um texto antes de analisar.")
-
-# ========================== PARTE 2 - GERAÇÃO DE CORPUS ==========================
-st.markdown("---")
-st.title("Gerador de corpus textual para IRaMuTeQ")
-
-st.markdown(""" 
-### 📌 Instruções
-
-Esta ferramenta foi desenvolvida para facilitar a geração de corpus textual compatível com o IRaMuTeQ.
-
-Envie um arquivo do Excel **.xlsx** com a estrutura correta para que o corpus possa ser gerado automaticamente.
-
-Sua planilha deve conter **três abas (planilhas internas)** com os seguintes nomes e finalidades:
-
-1. **`textos_selecionados`** : coleção de textos que serão transformados de acordo com as regras de normalização.  
-2. **`dic_palavras_compostas`** : permite substituir palavras compostas por suas formas normalizadas, garantindo uma maior consistência no corpus textual gerado.  
-3. **`dic_siglas`** : tem a finalidade de expandir siglas para suas formas completas, aumentando a legibilidade e a clareza do texto.
-""")
-
-with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
-    st.download_button(
-        label="📅 Baixar modelo de planilha",
-        data=exemplo,
-        file_name="gerar_corpus_iramuteq.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
-
-# Botão para baixar o arquivo de textos (word)
-url_textos = "https://github.com/seu_usuario/seu_repositorio/raw/main/textos_selecionados.docx"
-st.download_button(
-    label="📄 Baixar textos para análise",
-    data=requests.get(url_textos).content,
-    file_name="textos_selecionados.docx",
-    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-)
-
-file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
 
 # Funções auxiliares da parte 2
 def converter_numeros_por_extenso(texto):
@@ -166,7 +99,7 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 
     for _, row in df_textos.iterrows():
         texto = str(row.get("textos selecionados", ""))
-
+        id_val = row.get("id", "")
         if not texto.strip():
             continue
 
@@ -198,45 +131,123 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 
         texto_corrigido = re.sub(r"\s+", " ", texto_corrigido.strip())
 
-        metadata = f"**** *ID_{str(row.get('id', ''))}"
+        metadata = f"**** *ID_{id_val}"
+        for col in row.index:
+            if col.lower() not in ["id", "textos selecionados"]:
+                metadata += f" *{col.replace(' ', '_')}_{str(row[col]).replace(' ', '_')}"
+
         corpus_final += f"{metadata}\n{texto_corrigido}\n"
 
     estatisticas = f"Textos processados: {total_textos}\n"
     estatisticas += f"Siglas removidas/substituídas: {total_siglas}\n"
     estatisticas += f"Palavras compostas substituídas: {total_compostos}\n"
     estatisticas += f"Caracteres especiais removidos: {total_remocoes}\n"
+    for char, nome in caracteres_especiais.items():
+        if contagem_caracteres[char] > 0:
+            estatisticas += f" - {nome} ({char}) : {contagem_caracteres[char]}\n"
 
     return corpus_final, estatisticas
 
-if file:
-    try:
-        xls = pd.ExcelFile(file)
-        df_textos = xls.parse("textos_selecionados")
-        df_compostos = xls.parse("dic_palavras_compostas")
-        df_siglas = xls.parse("dic_siglas")
-        df_textos.columns = [col.strip().lower() for col in df_textos.columns]
+# ================ Layout com Abas ================
+st.set_page_config(page_title="Analisador e Gerador de Corpus", layout="wide")
 
-        if st.button("🚀 GERAR CORPUS TEXTUAL"):
-            corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
+aba1, aba2 = st.tabs(["🔍 Analisar Texto", "🛠️ Gerar Corpus Textual"])
 
-            if corpus.strip():
-                st.success("Corpus gerado com sucesso!")
-                st.text_area("📊 Estatísticas do processamento", estatisticas, height=250)
+# ========================== PARTE 1 - PRÉ-ANÁLISE ==========================
+with aba1:
+    st.title("Analisador de Texto - Detecção de Siglas e Palavras Compostas")
 
-                buf = io.BytesIO()
-                buf.write(corpus.encode("utf-8"))
-                st.download_button("📄 BAIXAR CORPUS TEXTUAL", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
-            else:
-                st.warning("Nenhum texto processado. Verifique os dados da planilha.")
+    texto_input = st.text_area("✍️ Insira um texto para pré-análise", height=200)
 
-    except Exception as e:
-        st.error(f"Erro ao processar o arquivo: {e}")
+    if st.button("🔎 Analisar texto"):
+        if texto_input.strip():
+            siglas = detectar_siglas(texto_input)
+            compostas = detectar_palavras_compostas(texto_input)
 
-st.markdown(""" 
---- 
-👨‍🏫 **Sobre o autor** 
+            col1, col2 = st.columns(2)
+            with col1:
+                st.markdown("### 🧩 Palavras Compostas Detectadas")
+                if compostas:
+                    for termo in compostas:
+                        st.write(f"- {termo}")
+                else:
+                    st.info("Nenhuma palavra composta encontrada.")
+
+            with col2:
+                st.markdown("### 🧾 Siglas Detectadas")
+                if siglas:
+                    for sigla in siglas:
+                        st.write(f"- {sigla}")
+                else:
+                    st.info("Nenhuma sigla encontrada.")
+        else:
+            st.warning("Por favor, insira um texto antes de analisar.")
+
+# ========================== PARTE 2 - GERAÇÃO DE CORPUS ==========================
+with aba2:
+    st.title("Gerador de Corpus Textual para IRaMuTeQ")
+
+    st.markdown("""
+    ### 📌 Instruções
+
+    Esta ferramenta foi desenvolvida para facilitar a geração de corpus textual compatível com o IRaMuTeQ.
+
+    Envie um arquivo do Excel **.xlsx** com a estrutura correta para que o corpus possa ser gerado automaticamente.
+
+    Sua planilha deve conter **três abas**:
+    1. `textos_selecionados`
+    2. `dic_palavras_compostas`
+    3. `dic_siglas`
+    """)
+
+    with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
+        st.download_button(
+            label="📅 Baixar modelo de planilha",
+            data=exemplo,
+            file_name="gerar_corpus_iramuteq.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+
+    file = st.file_uploader("📂 Envie sua planilha preenchida", type=["xlsx"])
+
+    if file:
+        try:
+            xls = pd.ExcelFile(file)
+            df_textos = xls.parse("textos_selecionados")
+            df_compostos = xls.parse("dic_palavras_compostas")
+            df_siglas = xls.parse("dic_siglas")
+            df_textos.columns = [col.strip().lower() for col in df_textos.columns]
+
+            if st.button("🚀 GERAR CORPUS TEXTUAL"):
+                corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
+
+                if corpus.strip():
+                    st.success("Corpus gerado com sucesso!")
+
+                    # Criar abas para Corpus e Estatísticas
+                    tab1, tab2 = st.tabs(["📄 Corpus Gerado", "📊 Estatísticas do Processamento"])
+
+                    with tab1:
+                        st.text_area("Visualização do Corpus", corpus, height=300)
+
+                    with tab2:
+                        st.text_area("Estatísticas", estatisticas, height=300)
+
+                    buf = io.BytesIO()
+                    buf.write(corpus.encode("utf-8"))
+                    st.download_button("📥 BAIXAR CORPUS TEXTUAL", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
+                else:
+                    st.warning("Nenhum texto processado. Verifique os dados da planilha.")
+
+        except Exception as e:
+            st.error(f"Erro ao processar o arquivo: {e}")
+
+# Rodapé
+st.markdown("""
+---
+👨‍🏫 **Sobre o autor**
 
 **Autor:** José Wendel dos Santos  
 **Instituição:** Universidade Federal de Sergipe (UFS)  
-**Contato:** eng.wendel@gmail.com 
+**Contato:** eng.wendel@gmail.com
 """)
