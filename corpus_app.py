@@ -1,13 +1,22 @@
 import streamlit as st
 import pandas as pd
 import re
-import io
 import spacy
+import io
 from word2number import w2n
 
+# Carregar modelo spaCy para NER
 nlp = spacy.load("pt_core_news_sm")
 
-# Função para converter números por extenso para algarismos
+# Funções de Detecção
+def detectar_siglas(texto):
+    return sorted(set(re.findall(r"\b[A-Z]{2,}\b", texto)))
+
+def detectar_palavras_compostas(texto):
+    doc = nlp(texto)
+    compostas = [ent.text for ent in doc.ents if len(ent.text.split()) > 1]
+    return sorted(set(compostas))
+
 def converter_numeros_por_extenso(texto):
     unidades = {
         "zero": 0, "dois": 2, "duas": 2, "três": 3, "quatro": 4, "cinco": 5,
@@ -49,29 +58,6 @@ def converter_numeros_por_extenso(texto):
 
     return " ".join(resultado)
 
-# Função para processar palavras compostas com "-se"
-def processar_palavras_com_se(texto):
-    return re.sub(r"(\b\w+)-se\b", r"se \1", texto)
-
-# Função para processar pronomes oblíquos pós-verbais
-def processar_pronomes_pospostos(texto):
-    texto = re.sub(r'\b(\w+)-se\b', r'se \1', texto)
-    texto = re.sub(r'\b(\w+)-([oa]s?)\b', r'\2 \1', texto)
-    texto = re.sub(r'\b(\w+)-(lhe|lhes)\b', r'\2 \1', texto)
-    texto = re.sub(r'\b(\w+)-(me|te|nos|vos)\b', r'\2 \1', texto)
-    texto = re.sub(r'\b(\w+)[áéíóúâêô]?-([oa]s?)\b', r'\2 \1', texto)
-    texto = re.sub(r'\b(\w+)[áéíóúâêô]-(lo|la|los|las)-ia\b', r'\2 \1ia', texto)
-    return texto
-
-# Função para extrair palavras compostas do texto com NLP
-def detectar_palavras_compostas_nlp(texto):
-    doc = nlp(texto)
-    compostas = set()
-    for ent in doc.ents:
-        if len(ent.text.split()) > 1:
-            compostas.add(ent.text)
-    return sorted(compostas)
-
 # Função principal para gerar o corpus
 def gerar_corpus(df_textos, df_compostos, df_siglas):
     dict_compostos = {
@@ -106,29 +92,17 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 
         texto_corrigido = texto.lower()
         texto_corrigido = converter_numeros_por_extenso(texto_corrigido)
-        texto_corrigido = processar_palavras_com_se(texto_corrigido)
-        texto_corrigido = processar_pronomes_pospostos(texto_corrigido)
         total_textos += 1
 
         for sigla, significado in dict_siglas.items():
-            texto_corrigido = re.sub(rf"\\({sigla}\\)", "", texto_corrigido)
-            texto_corrigido = re.sub(rf"\\b{sigla}\\b", significado, texto_corrigido, flags=re.IGNORECASE)
+            texto_corrigido = re.sub(rf"\({sigla}\)", "", texto_corrigido)
+            texto_corrigido = re.sub(rf"\b{sigla}\b", significado, texto_corrigido, flags=re.IGNORECASE)
             total_siglas += 1
 
         for termo, substituto in dict_compostos.items():
             if termo in texto_corrigido:
-                texto_corrigido = re.sub(rf"\\b{termo}\\b", substituto, texto_corrigido, flags=re.IGNORECASE)
+                texto_corrigido = re.sub(rf"\b{termo}\b", substituto, texto_corrigido, flags=re.IGNORECASE)
                 total_compostos += 1
-
-        for char in caracteres_especiais:
-            count = texto_corrigido.count(char)
-            if count:
-                if char == "%":
-                    texto_corrigido = texto_corrigido.replace(char, "")
-                else:
-                    texto_corrigido = texto_corrigido.replace(char, "_")
-                contagem_caracteres[char] += count
-                total_remocoes += count
 
         texto_corrigido = re.sub(r"\s+", " ", texto_corrigido.strip())
 
@@ -139,33 +113,36 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 
         corpus_final += f"{metadata}\n{texto_corrigido}\n"
 
-    estatisticas = f"Textos processados: {total_textos}\n"
-    estatisticas += f"Siglas removidas/substituídas: {total_siglas}\n"
-    estatisticas += f"Palavras compostas substituídas: {total_compostos}\n"
-    estatisticas += f"Caracteres especiais removidos: {total_remocoes}\n"
-    for char, nome in caracteres_especiais.items():
-        if contagem_caracteres[char] > 0:
-            estatisticas += f" - {nome} ({char}) : {contagem_caracteres[char]}\n"
-
-    return corpus_final, estatisticas
+    return corpus_final
 
 # Interface Streamlit
 st.set_page_config(layout="wide")
 st.title("Gerador de corpus textual para IRaMuTeQ")
 
-st.markdown("""
-### 📌 Instruções
+# Texto do usuário
+texto_input = st.text_area("Cole ou digite um texto para análise:", height=200)
 
-Esta ferramenta foi desenvolvida para facilitar a geração de corpus textual compatível com o IRaMuTeQ.
+# Detecção automática
+if texto_input:
+    if st.button("Analisar Texto"):
+        # Detectar siglas e palavras compostas
+        compostas = detectar_palavras_compostas(texto_input)
+        siglas = detectar_siglas(texto_input)
 
-Envie um arquivo do Excel **.xlsx** com a estrutura correta para que o corpus possa ser gerado automaticamente.
+        # Exibir resultados lado a lado
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown("**📌 Palavras Compostas Detectadas:**")
+            for item in compostas:
+                st.markdown(f"- {item}")
+        with col2:
+            st.markdown("**🔠 Siglas Detectadas:**")
+            for item in siglas:
+                st.markdown(f"- {item}")
 
-Sua planilha deve conter **três abas (planilhas internas)** com os seguintes nomes e finalidades:
-
-1. **`textos_selecionados`** : coleção de textos que serão transformados de acordo com as regras de normalização.  
-2. **`dic_palavras_compostas`** : permite substituir palavras compostas por suas formas normalizadas, garantindo uma maior consistência no corpus textual gerado.  
-3. **`dic_siglas`** : tem a finalidade de expandir siglas para suas formas completas, aumentando a legibilidade e a clareza do texto.
-""")
+# Inserir planilha para gerar corpus
+st.markdown("---")
+st.markdown("### 📎 Envio de Planilha para Geração do Corpus")
 
 with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
     st.download_button(
@@ -183,15 +160,12 @@ if file:
         df_textos = xls.parse("textos_selecionados")
         df_compostos = xls.parse("dic_palavras_compostas")
         df_siglas = xls.parse("dic_siglas")
-        df_textos.columns = [col.strip().lower() for col in df_textos.columns]
 
         if st.button("🚀 GERAR CORPUS TEXTUAL"):
-            corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
+            corpus = gerar_corpus(df_textos, df_compostos, df_siglas)
 
             if corpus.strip():
                 st.success("Corpus gerado com sucesso!")
-                st.text_area("📊 Estatísticas do processamento", estatisticas, height=250)
-
                 buf = io.BytesIO()
                 buf.write(corpus.encode("utf-8"))
                 st.download_button("📄 BAIXAR CORPUS TEXTUAL", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
