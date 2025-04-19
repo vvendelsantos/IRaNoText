@@ -4,23 +4,27 @@ import re
 import io
 from word2number import w2n
 
-# Função para converter números por extenso para algarismos
+# Function to convert written numbers to digits
 def converter_numeros_por_extenso(texto):
     unidades = {
-        "zero": 0, "dois": 2, "duas": 2, "três": 3, "quatro": 4, "cinco": 5,
-        "seis": 6, "sete": 7, "oito": 8, "nove": 9
+        "zero": 0, "um": 1, "dois": 2, "duas": 2, "três": 3, "quatro": 4,
+        "cinco": 5, "seis": 6, "sete": 7, "oito": 8, "nove": 9
     }
     dezenas = {
-        "dez": 10, "onze": 11, "doze": 12, "treze": 13, "quatorze": 14, "quinze": 15,
-        "dezesseis": 16, "dezessete": 17, "dezoito": 18, "dezenove": 19, "vinte": 20
+        "dez": 10, "onze": 11, "doze": 12, "treze": 13, "quatorze": 14,
+        "quinze": 15, "dezesseis": 16, "dezessete": 17, "dezoito": 18,
+        "dezenove": 19, "vinte": 20, "trinta": 30, "quarenta": 40,
+        "cinquenta": 50, "sessenta": 60, "setenta": 70, "oitenta": 80,
+        "noventa": 90
     }
     centenas = {
-        "cem": 100, "cento": 100, "duzentos": 200, "trezentos": 300, "quatrocentos": 400,
-        "quinhentos": 500, "seiscentos": 600, "setecentos": 700, "oitocentos": 800, "novecentos": 900
+        "cem": 100, "cento": 100, "duzentos": 200, "trezentos": 300,
+        "quatrocentos": 400, "quinhentos": 500, "seiscentos": 600,
+        "setecentos": 700, "oitocentos": 800, "novecentos": 900
     }
     multiplicadores = {
-        "mil": 1000, "milhão": 1000000, "milhões": 1000000, "bilhão": 1000000000,
-        "bilhões": 1000000000
+        "mil": 1000, "milhão": 1000000, "milhões": 1000000,
+        "bilhão": 1000000000, "bilhões": 1000000000
     }
 
     def processar_palavra(palavra):
@@ -46,11 +50,11 @@ def converter_numeros_por_extenso(texto):
 
     return " ".join(resultado)
 
-# Função para processar palavras compostas com "-se"
+# Function to process compound words with "-se"
 def processar_palavras_com_se(texto):
     return re.sub(r"(\b\w+)-se\b", r"se \1", texto)
 
-# Função para processar pronomes oblíquos pós-verbais
+# Function to process post-verbal pronouns
 def processar_pronomes_pospostos(texto):
     texto = re.sub(r'\b(\w+)-se\b', r'se \1', texto)
     texto = re.sub(r'\b(\w+)-([oa]s?)\b', r'\2 \1', texto)
@@ -60,27 +64,7 @@ def processar_pronomes_pospostos(texto):
     texto = re.sub(r'\b(\w+)[áéíóúâêô]-(lo|la|los|las)-ia\b', r'\2 \1ia', texto)
     return texto
 
-# Função para detectar siglas e palavras compostas
-def detectar_siglas_e_compostos(texto):
-    siglas = []
-    compostos = []
-    
-    # Exemplo de detecção de siglas
-    sigla_regex = r"\b[A-Z]{2,}\b"
-    siglas = re.findall(sigla_regex, texto)
-    
-    # Exemplo de detecção de palavras compostas
-    compostos_exemplos = [
-        "inteligência artificial", "instituto federal de sergipe", "universidade de aveiro", 
-        "ministro da educação", "rede social"
-    ]
-    for composto in compostos_exemplos:
-        if composto.lower() in texto.lower():
-            compostos.append(composto)
-    
-    return siglas, compostos
-
-# Função principal
+# Main corpus generation function
 def gerar_corpus(df_textos, df_compostos, df_siglas):
     dict_compostos = {
         str(row["Palavra composta"]).lower(): str(row["Palavra normalizada"]).lower()
@@ -157,82 +141,148 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 
     return corpus_final, estatisticas
 
-# Interface Streamlit
+# Improved acronym detection without lookbehind error
+def detectar_siglas(texto):
+    """Detects acronyms more accurately without variable-width lookbehind"""
+    try:
+        # Find all 2-4 letter all-caps words
+        siglas = re.findall(r'\b[A-Z]{2,4}\b', texto)
+        
+        # Filter out common words and single-letter abbreviations
+        palavras_comuns = {'EU', 'OS', 'AOS', 'COM', 'PARA', 'PELA', 'PELO', 
+                          'UMA', 'ESTE', 'QUE', 'SEM', 'SOB', 'SOBRE'}
+        siglas_filtradas = [s for s in set(siglas) if s not in palavras_comuns]
+        
+        # Additional filter: must be followed by lowercase or punctuation
+        siglas_validas = []
+        for sigla in siglas_filtradas:
+            # Check context around the acronym
+            sigla_pattern = re.compile(rf'\b{sigla}\b')
+            for match in sigla_pattern.finditer(texto):
+                start, end = match.span()
+                # Check what comes after the acronym
+                if end < len(texto) and not texto[end].isalpha():
+                    siglas_validas.append(sigla)
+                    break
+                elif end == len(texto):
+                    siglas_validas.append(sigla)
+                    break
+        
+        return sorted(list(set(siglas_validas)))
+    except Exception as e:
+        st.error(f"Erro ao detectar siglas: {e}")
+        return []
+
+# Improved compound word detection
+def sugerir_palavras_compostas(texto):
+    """Suggests compound words more accurately"""
+    try:
+        # Find sequences of capitalized words
+        candidatos = re.findall(r'\b(?:[A-Z][a-záéíóúâêôãõç]+\s?){2,}\b', texto)
+        compostos_sugeridos = []
+        
+        # Words to filter out
+        palavras_filtrar = {'De', 'Da', 'Do', 'Das', 'Dos', 'E', 'Com', 
+                           'Para', 'Por', 'Em', 'No', 'Na', 'O', 'A'}
+        
+        for termo in candidatos:
+            termo = termo.strip()
+            palavras = termo.split()
+            
+            # Filter valid compounds
+            if (len(palavras) >= 2 and
+                len(termo) > 5 and
+                not any(p in palavras_filtrar for p in palavras)):
+                
+                # Check if doesn't end with preposition
+                if palavras[-1] not in palavras_filtrar:
+                    compostos_sugeridos.append(termo)
+        
+        return sorted(list(set(compostos_sugeridos)))
+    except Exception as e:
+        st.error(f"Erro ao sugerir palavras compostas: {e}")
+        return []
+
+# Streamlit UI
 st.set_page_config(layout="wide")
 st.title("Gerador de corpus textual para IRaMuTeQ")
 
-st.markdown("""
-### 📌 Instruções
-
-Esta ferramenta foi desenvolvida para facilitar a geração de corpus textual compatível com o IRaMuTeQ.
-
-Envie um arquivo do Excel **.xlsx** com a estrutura correta para que o corpus possa ser gerado automaticamente.
-
-Sua planilha deve conter **três abas (planilhas internas)** com os seguintes nomes e finalidades:
-
-1. **textos_selecionados** : coleção de textos que serão transformados de acordo com as regras de normalização.  
-2. **dic_palavras_compostas** : permite substituir palavras compostas por suas formas normalizadas, garantindo uma maior consistência no corpus textual gerado.  
-3. **dic_siglas** : tem a finalidade de expandir siglas para suas formas completas, aumentando a legibilidade e a clareza do texto.
-""")
-
-# Campo para inserir texto para pré-análise
-texto_para_analise = st.text_area("📝 Insira o texto para pré-análise de siglas e palavras compostas:", height=200)
-
-# Botão "Analisar" para detectar siglas e palavras compostas
-if st.button("🔍 Analisar"):
-    siglas_detectadas, compostos_detectados = detectar_siglas_e_compostos(texto_para_analise)
-
-    # Exibição dos resultados lado a lado
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.subheader("Siglas detectadas:")
-        if siglas_detectadas:
-            st.write("\n".join(siglas_detectadas))
-        else:
-            st.write("Nenhuma sigla detectada.")
-
-    with col2:
-        st.subheader("Palavras compostas detectadas:")
-        if compostos_detectados:
-            st.write("\n".join(compostos_detectados))
-        else:
-            st.write("Nenhuma palavra composta detectada.")
-
-with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
-    st.download_button(
-        label="📅 Baixar modelo de planilha",
-        data=exemplo,
-        file_name="gerar_corpus_iramuteq.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+# Text analysis section
+st.markdown("## 🔍 Pré-análise de texto (opcional)")
+with st.container():
+    texto_usuario = st.text_area(
+        "Cole seu texto aqui para detectar siglas e palavras compostas:",
+        height=150,
+        placeholder="Ex: A UFS (Universidade Federal de Sergipe) oferece cursos em Inteligência Artificial...",
+        label_visibility="collapsed"
     )
+    
+    if st.button("Analisar 🔍", key="analisar_texto"):
+        if texto_usuario.strip():
+            siglas = detectar_siglas(texto_usuario)
+            compostos = sugerir_palavras_compostas(texto_usuario)
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.markdown("**Palavras compostas detectadas**")
+                if compostos:
+                    for composto in compostos:
+                        st.write(f"• {composto}")
+                else:
+                    st.info("Nenhuma palavra composta detectada")
+            
+            with col2:
+                st.markdown("**Siglas detectadas**")
+                if siglas:
+                    for sigla in siglas:
+                        st.write(f"• {sigla}")
+                else:
+                    st.info("Nenhuma sigla detectada")
 
-file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
+# Main upload section
+st.markdown("## 📌 Envie sua planilha completa para gerar o corpus")
+with st.container():
+    with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
+        st.download_button(
+            label="📅 Baixar modelo de planilha",
+            data=exemplo,
+            file_name="gerar_corpus_iramuteq.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
 
-if file:
-    try:
-        xls = pd.ExcelFile(file)
-        df_textos = xls.parse("textos_selecionados")
-        df_compostos = xls.parse("dic_palavras_compostas")
-        df_siglas = xls.parse("dic_siglas")
-        df_textos.columns = [col.strip().lower() for col in df_textos.columns]
+    file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"], label_visibility="collapsed")
 
-        if st.button("🚀 GERAR CORPUS TEXTUAL"):
-            corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
+    if file:
+        try:
+            xls = pd.ExcelFile(file)
+            df_textos = xls.parse("textos_selecionados")
+            df_compostos = xls.parse("dic_palavras_compostas")
+            df_siglas = xls.parse("dic_siglas")
+            df_textos.columns = [col.strip().lower() for col in df_textos.columns]
 
-            if corpus.strip():
-                st.success("Corpus gerado com sucesso!")
-                st.text_area("📊 Estatísticas do processamento", estatisticas, height=250)
+            if st.button("🚀 GERAR CORPUS TEXTUAL"):
+                corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
 
-                buf = io.BytesIO()
-                buf.write(corpus.encode("utf-8"))
-                st.download_button("📄 BAIXAR CORPUS TEXTUAL", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
-            else:
-                st.warning("Nenhum texto processado. Verifique os dados da planilha.")
+                if corpus.strip():
+                    st.success("Corpus gerado com sucesso!")
+                    st.text_area("📊 Estatísticas do processamento", estatisticas, height=250)
 
-    except Exception as e:
-        st.error(f"Erro ao processar o arquivo: {e}")
+                    buf = io.BytesIO()
+                    buf.write(corpus.encode("utf-8"))
+                    st.download_button(
+                        "📄 BAIXAR CORPUS TEXTUAL", 
+                        data=buf.getvalue(), 
+                        file_name="corpus_IRaMuTeQ.txt", 
+                        mime="text/plain"
+                    )
+                else:
+                    st.warning("Nenhum texto processado. Verifique os dados da planilha.")
 
+        except Exception as e:
+            st.error(f"Erro ao processar o arquivo: {e}")
+
+# Footer
 st.markdown("""
 ---
 👨‍🏫 **Sobre o autor**
