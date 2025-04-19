@@ -69,7 +69,7 @@ def gerar_ngramas(texto, n=2):
     return ngramas_frequentes
 
 # Função principal para gerar o corpus e as estatísticas
-def gerar_corpus(df_textos, df_compostos, df_siglas):
+def gerar_corpus(df_textos, df_compostos, df_siglas, texto_inserido=None):
     dict_compostos = {
         str(row["Palavra composta"]).lower(): str(row["Palavra normalizada"]).lower()
         for _, row in df_compostos.iterrows()
@@ -93,6 +93,10 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
     total_compostos = 0
     total_remocoes = 0
     corpus_final = ""
+
+    # Se texto manual for inserido
+    if texto_inserido:
+        df_textos = pd.DataFrame({"textos selecionados": [texto_inserido]})
 
     for _, row in df_textos.iterrows():
         texto = str(row.get("textos selecionados", ""))
@@ -148,6 +152,9 @@ Sua planilha deve conter **três abas (planilhas internas)** com os seguintes no
 3. **`dic_siglas`** : tem a finalidade de expandir siglas para suas formas completas, aumentando a legibilidade e a clareza do texto.
 """)
 
+# Caixa para inserir texto manualmente
+texto_manual = st.text_area("📋 Insira o texto para processamento (opcional):")
+
 with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
     st.download_button(
         label="📅 Baixar modelo de planilha",
@@ -167,7 +174,7 @@ if file:
         df_textos.columns = [col.strip().lower() for col in df_textos.columns]
 
         if st.button("🚀 GERAR CORPUS TEXTUAL"):
-            corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
+            corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas, texto_manual)
 
             if corpus.strip():
                 st.success("Corpus gerado com sucesso!")
