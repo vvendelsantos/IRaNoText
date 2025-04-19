@@ -8,7 +8,69 @@ from word2number import w2n
 # Carregar modelo do spaCy
 nlp = spacy.load("pt_core_news_sm")
 
-# Funções da parte 1
+# Configuração de página mais profissional
+st.set_page_config(
+    page_title="Analisador de Texto Profissional",
+    page_icon=":memo:",
+    layout="wide"
+)
+
+# CSS personalizado para aparência premium
+st.markdown("""
+    <style>
+        .main {
+            max-width: 95%;
+            padding: 2rem;
+        }
+        .stTabs [data-baseweb="tab-list"] {
+            gap: 10px;
+        }
+        .stTabs [data-baseweb="tab"] {
+            padding: 8px 20px;
+            border-radius: 8px 8px 0 0;
+        }
+        .stTabs [aria-selected="true"] {
+            background-color: #f0f2f6;
+            font-weight: 600;
+        }
+        .stButton>button {
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-weight: 500;
+        }
+        .stDownloadButton>button {
+            width: 100%;
+            justify-content: center;
+        }
+        .stTextArea textarea {
+            min-height: 200px;
+        }
+        .result-card {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .footer {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e6e6e6;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .header-title {
+            color: #1e3a8a;
+            margin-bottom: 0.5rem;
+        }
+        .header-subtitle {
+            color: #4b5563;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+# Funções ORIGINAIS (sem alterações)
 def detectar_siglas(texto):
     tokens = re.findall(r"\b[A-Z]{2,}\b", texto)
     return sorted(set(tokens))
@@ -19,9 +81,8 @@ def detectar_palavras_compostas(texto):
     return list(set(compostas))
 
 # ========================== ABAS ==========================
-st.set_page_config(layout="wide")  # Ajusta o layout para ocupar mais espaço na tela
-
-st.title("Analisador de Texto - Detecção de Siglas e Palavras Compostas")
+st.markdown('<h1 class="header-title">Analisador de Texto Profissional</h1>', unsafe_allow_html=True)
+st.markdown('<p class="header-subtitle">Detecção de Siglas e Palavras Compostas | Geração de Corpus para IRaMuTeQ</p>', unsafe_allow_html=True)
 
 tabs = st.tabs(["📝 Pré-análise", "📑 Geração de Corpus"])
 
@@ -29,9 +90,13 @@ with tabs[0]:
     # ========================== PARTE 1 - PRÉ-ANÁLISE ==========================
     st.header("Detecção de Siglas e Palavras Compostas")
 
-    texto_input = st.text_area("✍️ Insira um texto para pré-análise", height=200, max_chars=2000)
+    texto_input = st.text_area(
+        "✍️ Insira um texto para pré-análise", 
+        height=200,
+        placeholder="Cole ou digite seu texto aqui..."
+    )
 
-    if st.button("🔍 Analisar texto"):
+    if st.button("🔍 Analisar texto", type="primary"):
         if texto_input.strip():
             siglas = detectar_siglas(texto_input)
             compostas = detectar_palavras_compostas(texto_input)
@@ -59,44 +124,50 @@ with tabs[1]:
     # ========================== PARTE 2 - GERAÇÃO DE CORPUS ==========================
     st.header("Gerador de Corpus Textual para IRaMuTeQ")
 
-    st.markdown("""   
-    ### 📌 Instruções
+    with st.expander("📌 Instruções Detalhadas", expanded=True):
+        st.markdown("""   
+        ### Estrutura Requerida da Planilha
 
-    Esta ferramenta foi desenvolvida para facilitar a geração de corpus textual compatível com o IRaMuTeQ.
+        Envie um arquivo Excel **.xlsx** com **três abas**:
 
-    Envie um arquivo do Excel **.xlsx** com a estrutura correta para que o corpus possa ser gerado automaticamente.
+        1. **`textos_selecionados`**  
+           - Coleção de textos para normalização
+           - Colunas obrigatórias: `id` e `textos selecionados`
 
-    Sua planilha deve conter **três abas (planilhas internas)** com os seguintes nomes e finalidades:
+        2. **`dic_palavras_compostas`**  
+           - Dicionário de palavras compostas
+           - Colunas: `Palavra composta` e `Palavra normalizada`
 
-    1. **`textos_selecionados`** : coleção de textos que serão transformados de acordo com as regras de normalização.  
-    2. **`dic_palavras_compostas`** : permite substituir palavras compostas por suas formas normalizadas, garantindo uma maior consistência no corpus textual gerado.  
-    3. **`dic_siglas`** : tem a finalidade de expandir siglas para suas formas completas, aumentando a legibilidade e a clareza do texto.
-    """)
+        3. **`dic_siglas`**  
+           - Dicionário de siglas
+           - Colunas: `Sigla` e `Significado`
+        """)
 
-    # Ajustando os botões para ficarem mais elegantes
-    col1, col2 = st.columns([1, 1])
-    with col1:
-        with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
-            st.download_button(
-                label="📥 Baixar modelo de planilha",
-                data=exemplo,
-                file_name="gerar_corpus_iramuteq.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                use_container_width=True  # Faz o botão ocupar toda a largura disponível
-            )
-    with col2:
-        with open("textos_selecionados.xlsx", "rb") as textos:
-            st.download_button(
-                label="📥 Baixar textos para análise",
-                data=textos,
-                file_name="textos_selecionados.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                use_container_width=True  # Faz o botão ocupar toda a largura disponível
-            )
+    # Botões para download (mantido original)
+    with st.container():
+        col1, col2 = st.columns(2)
+        with col1:
+            with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
+                st.download_button(
+                    label="📥 Baixar modelo de planilha",
+                    data=exemplo,
+                    file_name="gerar_corpus_iramuteq.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    use_container_width=True
+                )
+        with col2:
+            with open("textos_selecionados.xlsx", "rb") as textos:
+                st.download_button(
+                    label="📥 Baixar textos para análise",
+                    data=textos,
+                    file_name="textos_selecionados.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    use_container_width=True
+                )
 
     file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
 
-    # Funções auxiliares da parte 2
+    # Funções auxiliares ORIGINAIS (sem alterações)
     def converter_numeros_por_extenso(texto):
         unidades = {
             "zero": 0, "dois": 2, "duas": 2, "três": 3, "quatro": 4, "cinco": 5,
@@ -119,7 +190,7 @@ with tabs[1]:
             try:
                 return str(w2n.word_to_num(palavra))
             except:
-                return palavra
+                return palabra
 
         palavras = texto.split()
         resultado = []
@@ -234,20 +305,44 @@ with tabs[1]:
             df_siglas = xls.parse("dic_siglas")
             df_textos.columns = [col.strip().lower() for col in df_textos.columns]
 
-            if st.button("🚀 GERAR CORPUS TEXTUAL"):
+            if st.button("🚀 GERAR CORPUS TEXTUAL", type="primary"):
                 corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
 
                 if corpus.strip():
                     st.success("Corpus gerado com sucesso!")
 
-                    # Nova aba para mostrar o corpus antes do download
-                    st.subheader("📄 Corpus Textual Gerado")
-                    st.text_area("Veja o corpus gerado antes de baixar", corpus, height=300)
+                    # Exibição organizada dos resultados
+                    col1, col2 = st.columns([2, 1])
+                    
+                    with col1:
+                        st.subheader("📄 Corpus Textual Gerado")
+                        st.text_area("Pré-visualização do corpus", corpus[:2000] + ("..." if len(corpus) > 2000 else ""), height=300)
 
-                    st.text_area("📊 Estatísticas do processamento", estatisticas, height=250)
+                        buf = io.BytesIO()
+                        buf.write(corpus.encode("utf-8"))
+                        st.download_button(
+                            "📄 BAIXAR CORPUS TEXTUAL", 
+                            data=buf.getvalue(), 
+                            file_name="corpus_IRaMuTeQ.txt", 
+                            mime="text/plain",
+                            use_container_width=True
+                        )
+                    
+                    with col2:
+                        st.subheader("📊 Estatísticas")
+                        st.text_area("Métricas de processamento", estatisticas, height=300)
+                else:
+                    st.warning("Nenhum texto processado. Verifique os dados da planilha.")
 
-                    buf = io.BytesIO()
-                    buf.write(corpus.encode("utf-8"))
-                    st.download_button("📄 BAIXAR CORPUS TEXTUAL", data=buf.getvalue(), file_name="corpus_textual.txt")
         except Exception as e:
-            st.error(f"Ocorreu um erro ao processar a planilha: {str(e)}")
+            st.error(f"Erro ao processar o arquivo: {e}")
+
+# Rodapé profissional
+st.markdown("""
+    <div class="footer">
+        <h4>👨‍💻 Sobre o Autor</h4>
+        <p><strong>José Wendel dos Santos</strong><br>
+        Pesquisador | Universidade Federal de Sergipe (UFS)<br>
+        📧 <a href="mailto:eng.wendel@gmail.com">eng.wendel@gmail.com</a></p>
+    </div>
+""", unsafe_allow_html=True)
