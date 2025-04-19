@@ -60,6 +60,21 @@ def processar_pronomes_pospostos(texto):
     texto = re.sub(r'\b(\w+)[áéíóúâêô]-(lo|la|los|las)-ia\b', r'\2 \1ia', texto)
     return texto
 
+# Função para detectar siglas e sugerir palavras compostas
+def detectar_siglas_e_palavras_compostas(texto, dict_siglas, dict_compostos):
+    siglas_detectadas = []
+    compostas_detectadas = []
+
+    for sigla, significado in dict_siglas.items():
+        if re.search(rf"\b{sigla}\b", texto, flags=re.IGNORECASE):
+            siglas_detectadas.append(f"{sigla} -> {significado}")
+
+    for termo, substituto in dict_compostos.items():
+        if re.search(rf"\b{termo}\b", texto, flags=re.IGNORECASE):
+            compostas_detectadas.append(f"{termo} -> {substituto}")
+    
+    return siglas_detectadas, compostas_detectadas
+
 # Função principal para gerar o corpus
 def gerar_corpus(df_textos, df_compostos, df_siglas):
     dict_compostos = {
@@ -86,6 +101,9 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
     total_remocoes = 0
     corpus_final = ""
 
+    siglas_detectadas_totais = []
+    compostas_detectadas_totais = []
+
     for _, row in df_textos.iterrows():
         texto = str(row.get("textos selecionados", ""))
         id_val = row.get("id", "")
@@ -97,6 +115,11 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
         texto_corrigido = processar_palavras_com_se(texto_corrigido)
         texto_corrigido = processar_pronomes_pospostos(texto_corrigido)
         total_textos += 1
+
+        # Detecção de siglas e palavras compostas
+        siglas_detectadas, compostas_detectadas = detectar_siglas_e_palavras_compostas(texto_corrigido, dict_siglas, dict_compostos)
+        siglas_detectadas_totais.extend(siglas_detectadas)
+        compostas_detectadas_totais.extend(compostas_detectadas)
 
         # Substituir siglas
         for sigla, significado in dict_siglas.items():
@@ -138,7 +161,7 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
         if contagem_caracteres[char] > 0:
             estatisticas += f" - {nome} ({char}) : {contagem_caracteres[char]}\n"
 
-    return corpus_final, estatisticas
+    return corpus_final, estatisticas, siglas_detectadas_totais, compostas_detectadas_totais
 
 # Interface Streamlit
 st.set_page_config(layout="wide")
@@ -158,15 +181,6 @@ Sua planilha deve conter **três abas (planilhas internas)** com os seguintes no
 3. **`dic_siglas`** : tem a finalidade de expandir siglas para suas formas completas, aumentando a legibilidade e a clareza do texto.
 """)
 
-# Exemplo de botão para baixar o modelo
-with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
-    st.download_button(
-        label="📅 Baixar modelo de planilha",
-        data=exemplo,
-        file_name="gerar_corpus_iramuteq.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
-
 file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
 
 if file:
@@ -178,11 +192,21 @@ if file:
         df_textos.columns = [col.strip().lower() for col in df_textos.columns]
 
         if st.button("🚀 GERAR CORPUS TEXTUAL"):
-            corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
+            corpus, estatisticas, siglas_detectadas, compostas_detectadas = gerar_corpus(df_textos, df_compostos, df_siglas)
 
             if corpus.strip():
                 st.success("Corpus gerado com sucesso!")
                 st.text_area("📊 Estatísticas do processamento", estatisticas, height=250)
+
+                # Exibindo siglas detectadas
+                st.subheader("Siglas Detectadas e suas Substituições")
+                for sigla in siglas_detectadas:
+                    st.write(sigla)
+
+                # Exibindo palavras compostas detectadas
+                st.subheader("Palavras Compostas Detectadas e suas Substituições")
+                for composta in compostas_detectadas:
+                    st.write(composta)
 
                 buf = io.BytesIO()
                 buf.write(corpus.encode("utf-8"))
