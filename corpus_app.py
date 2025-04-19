@@ -177,30 +177,30 @@ if texto_usuario:
         else:
             st.write("Nenhuma sigla detectada.")
 
-        # Botão para o usuário enviar a planilha após a análise do texto
-        st.markdown("""---""")
-        st.subheader("📁 Envie a planilha para gerar o corpus textual")
-        file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
+# Botão para o usuário enviar a planilha após a análise do texto
+st.markdown("""---""")
+st.subheader("📁 Envie a planilha para gerar o corpus textual")
+file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
 
-        if file:
-            try:
-                xls = pd.ExcelFile(file)
-                df_textos = xls.parse("textos_selecionados")
-                df_compostos = xls.parse("dic_palavras_compostas")
-                df_siglas = xls.parse("dic_siglas")
-                df_textos.columns = [col.strip().lower() for col in df_textos.columns]
+if file:
+    try:
+        xls = pd.ExcelFile(file)
+        df_textos = xls.parse("textos_selecionados")
+        df_compostos = xls.parse("dic_palavras_compostas")
+        df_siglas = xls.parse("dic_siglas")
+        df_textos.columns = [col.strip().lower() for col in df_textos.columns]
 
-                if st.button("🚀 GERAR CORPUS TEXTUAL"):
-                    corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
+        if st.button("🚀 GERAR CORPUS TEXTUAL"):
+            corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
 
-                    if corpus.strip():
-                        st.success("Corpus gerado com sucesso!")
-                        st.text_area("📊 Estatísticas do processamento", estatisticas, height=250)
+            if corpus.strip():
+                st.success("Corpus gerado com sucesso!")
+                st.text_area("📊 Estatísticas do processamento", estatisticas, height=250)
 
-                        buf = io.BytesIO()
-                        buf.write(corpus.encode("utf-8"))
-                        st.download_button("📄 BAIXAR CORPUS TEXTUAL", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
-                    else:
-                        st.warning("Nenhum texto processado. Verifique os dados da planilha.")
-            except Exception as e:
-                st.error(f"Erro ao processar o arquivo: {e}")
+                buf = io.BytesIO()
+                buf.write(corpus.encode("utf-8"))
+                st.download_button("📄 BAIXAR CORPUS TEXTUAL", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
+            else:
+                st.warning("Nenhum texto processado. Verifique os dados da planilha.")
+    except Exception as e:
+        st.error(f"Erro ao processar o arquivo: {e}")
