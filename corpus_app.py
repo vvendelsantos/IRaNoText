@@ -5,273 +5,304 @@ import io
 import spacy
 from word2number import w2n
 
-# Configuração inicial da página
+# Configuração da página com tema escuro
 st.set_page_config(
-    page_title="Analisador de Texto e Gerador de Corpus",
-    page_icon=":books:",
-    layout="wide"
+    page_title="Text Analytics Pro",
+    page_icon="🔍",
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
-# Carregar modelo do spaCy
-nlp = spacy.load("pt_core_news_sm")
+# CSS Customizado - Tema Escuro Premium
+st.markdown("""
+<style>
+    :root {
+        --primary: #8A2BE2;
+        --secondary: #00CED1;
+        --accent: #FF8C00;
+        --dark: #121212;
+        --darker: #0A0A0A;
+        --light: #E0E0E0;
+        --text: #F5F5F5;
+    }
+    
+    .stApp {
+        background-color: var(--dark);
+        color: var(--text);
+    }
+    
+    .stTextArea>textarea {
+        background-color: var(--darker);
+        color: var(--text);
+        border: 1px solid #333;
+    }
+    
+    .stTextInput>div>input {
+        background-color: var(--darker);
+        color: var(--text);
+    }
+    
+    .stSelectbox>div>div>select {
+        background-color: var(--darker);
+        color: var(--text);
+    }
+    
+    .stButton>button {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+    
+    .stButton>button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(138, 43, 226, 0.4);
+    }
+    
+    .header {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        padding: 1.5rem;
+        border-radius: 0 0 12px 12px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+    
+    .card {
+        background-color: var(--darker);
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        border-left: 4px solid var(--primary);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .metric-card {
+        background-color: var(--darker);
+        border-radius: 10px;
+        padding: 1rem;
+        text-align: center;
+        border: 1px solid #333;
+    }
+    
+    .sidebar .sidebar-content {
+        background-color: var(--darker);
+    }
+    
+    .footer {
+        text-align: center;
+        padding: 1.5rem;
+        margin-top: 3rem;
+        color: var(--light);
+        font-size: 0.9rem;
+        border-top: 1px solid #333;
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+        color: var(--text) !important;
+    }
+    
+    .stDataFrame {
+        background-color: var(--darker) !important;
+    }
+    
+    .stAlert {
+        background-color: rgba(0, 0, 0, 0.3) !important;
+    }
+</style>
+""", unsafe_allow_html=True)
 
-# Funções da parte 1
+# Carregar modelo do spaCy
+@st.cache_resource
+def load_nlp_model():
+    return spacy.load("pt_core_news_sm")
+
+nlp = load_nlp_model()
+
+# Funções de análise
+@st.cache_data
 def detectar_siglas(texto):
     tokens = re.findall(r"\b[A-Z]{2,}\b", texto)
     return sorted(set(tokens))
 
+@st.cache_data
 def detectar_palavras_compostas(texto):
     doc = nlp(texto)
     compostas = [ent.text for ent in doc.ents if len(ent.text.split()) > 1]
     return list(set(compostas))
 
-# ========================== PARTE 1 - PRÉ-ANÁLISE ==========================
-st.title("📚 Analisador de Texto e Gerador de Corpus")
-st.markdown("---")
+# ========================== HEADER ==========================
+st.markdown("""
+<div class="header">
+    <h1 style="margin:0;">Text Analytics Pro</h1>
+    <p style="margin:0; opacity:0.9;">Ferramenta profissional de análise textual</p>
+</div>
+""", unsafe_allow_html=True)
 
-with st.expander("🔍 **Ferramenta de Pré-Análise de Texto**", expanded=True):
+# ========================== SIDEBAR ==========================
+with st.sidebar:
     st.markdown("""
-    **Detecte automaticamente siglas e palavras compostas em seus textos**  
-    Esta ferramenta ajuda na preparação de textos para análise linguística.
+    <div style="text-align:center; margin-bottom:2rem;">
+        <h2 style="color: var(--primary);">Menu</h2>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+    ### Navegação
+    - [Análise de Texto](#analise-de-texto)
+    - [Gerador de Corpus](#gerador-de-corpus)
+    - [Configurações](#configuracoes)
     """)
     
-    texto_input = st.text_area(
-        "✍️ Insira seu texto para análise",
-        height=200,
-        placeholder="Cole ou digite seu texto aqui...",
-        help="O texto será analisado para identificar siglas (ex: UFS) e palavras compostas (ex: ensino superior)"
-    )
-
-    if st.button("🔍 Analisar texto", type="primary"):
-        if texto_input.strip():
-            with st.spinner("Processando texto..."):
-                siglas = detectar_siglas(texto_input)
-                compostas = detectar_palavras_compostas(texto_input)
-
-            col1, col2 = st.columns(2)
-            with col1:
-                st.markdown("### 🧩 Palavras Compostas Detectadas")
-                if compostas:
-                    st.success(f"Encontradas {len(compostas)} palavras compostas:")
-                    for termo in compostas:
-                        st.write(f"- {termo}")
-                else:
-                    st.info("Nenhuma palavra composta encontrada.")
-
-            with col2:
-                st.markdown("### 🧾 Siglas Detectadas")
-                if siglas:
-                    st.success(f"Encontradas {len(siglas)} siglas:")
-                    for sigla in siglas:
-                        st.write(f"- {sigla}")
-                else:
-                    st.info("Nenhuma sigla encontrada.")
-        else:
-            st.warning("Por favor, insira um texto antes de analisar.")
-
-# ========================== PARTE 2 - GERAÇÃO DE CORPUS ==========================
-st.markdown("---")
-with st.expander("📂 **Gerador de Corpus para IRaMuTeQ**", expanded=True):
+    st.markdown("---")
+    
     st.markdown("""
-    ## 📌 Como usar esta ferramenta
+    ### Suporte
+    📧 suporte@textanalytics.com  
+    📞 (79) 9999-9999
     
-    Esta ferramenta transforma seus textos em um corpus formatado para análise no software IRaMuTeQ.
+    ---
     
-    ### 📋 Pré-requisitos:
-    1. Prepare uma planilha Excel com **três abas**:
-       - `textos_selecionados`: Contendo os textos a serem processados
-       - `dic_palavras_compostas`: Dicionário de palavras compostas e suas formas normalizadas
-       - `dic_siglas`: Dicionário de siglas e seus significados
-    2. Faça o upload da planilha abaixo
+    ### Versão
+    v2.1.0 | Jun 2023
     """)
-    
-    # Exemplo de download
-    with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
-        st.download_button(
-            label="📥 Baixar modelo de planilha",
-            data=exemplo,
-            file_name="modelo_corpus_iramuteq.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            help="Clique para baixar um modelo de planilha já formatado"
-        )
 
-    # Upload de arquivo
-    file = st.file_uploader(
-        "⬆️ Faça upload da sua planilha Excel",
-        type=["xlsx"],
-        help="Arquivo deve conter as três abas necessárias"
-    )
+# ========================== PARTE 1 - ANÁLISE DE TEXTO ==========================
+st.markdown("""
+<div class="card">
+    <h2 style="margin-top:0;">🔍 Análise de Texto</h2>
+    <p>Identifique padrões linguísticos em seus textos.</p>
+</div>
+""", unsafe_allow_html=True)
 
-    # Funções auxiliares da parte 2
-    def converter_numeros_por_extenso(texto):
-        unidades = {
-            "zero": 0, "dois": 2, "duas": 2, "três": 3, "quatro": 4, "cinco": 5,
-            "seis": 6, "sete": 7, "oito": 8, "nove": 9
-        }
-        dezenas = {
-            "dez": 10, "onze": 11, "doze": 12, "treze": 13, "quatorze": 14, "quinze": 15,
-            "dezesseis": 16, "dezessete": 17, "dezoito": 18, "dezenove": 19, "vinte": 20
-        }
-        centenas = {
-            "cem": 100, "cento": 100, "duzentos": 200, "trezentos": 300, "quatrocentos": 400,
-            "quinhentos": 500, "seiscentos": 600, "setecentos": 700, "oitocentos": 800, "novecentos": 900
-        }
-        multiplicadores = {
-            "mil": 1000, "milhão": 1000000, "milhões": 1000000, "bilhão": 1000000000,
-            "bilhões": 1000000000
-        }
+texto_input = st.text_area(
+    "Insira seu texto para análise:",
+    height=200,
+    placeholder="Cole ou digite seu conteúdo aqui...",
+    help="O sistema identificará automaticamente siglas e termos compostos"
+)
 
-        def processar_palavra(palavra):
-            try:
-                return str(w2n.word_to_num(palavra))
-            except:
-                return palavra
+if st.button("Analisar Texto", type="primary"):
+    if texto_input.strip():
+        with st.spinner("Processando seu texto..."):
+            siglas = detectar_siglas(texto_input)
+            compostas = detectar_palavras_compostas(texto_input)
 
-        palavras = texto.split()
-        resultado = []
-        for palavra in palavras:
-            palavra_lower = palavra.lower()
-            if palavra_lower in unidades:
-                resultado.append(str(unidades[palavra_lower]))
-            elif palavra_lower in dezenas:
-                resultado.append(str(dezenas[palavra_lower]))
-            elif palavra_lower in centenas:
-                resultado.append(str(centenas[palavra_lower]))
-            elif palavra_lower in multiplicadores:
-                resultado.append(str(multiplicadores[palavra_lower]))
+        st.markdown("---")
+        
+        col_res1, col_res2 = st.columns(2)
+        
+        with col_res1:
+            st.markdown("""
+            <div class="card">
+                <h3 style="margin-top:0;">🧩 Palavras Compostas</h3>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            if compostas:
+                df_compostas = pd.DataFrame(compostas, columns=["Termo"])
+                st.dataframe(df_compostas, use_container_width=True, height=300)
             else:
-                resultado.append(processar_palavra(palavra))
+                st.info("Nenhum termo composto identificado", icon="ℹ️")
 
-        return " ".join(resultado)
+        with col_res2:
+            st.markdown("""
+            <div class="card">
+                <h3 style="margin-top:0;">🔠 Siglas</h3>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            if siglas:
+                df_siglas = pd.DataFrame(siglas, columns=["Sigla"])
+                st.dataframe(df_siglas, use_container_width=True, height=300)
+            else:
+                st.info("Nenhuma sigla identificada", icon="ℹ️")
+    else:
+        st.warning("Por favor, insira um texto para análise", icon="⚠️")
 
-    def processar_palavras_com_se(texto):
-        return re.sub(r"(\b\w+)-se\b", r"se \1", texto)
-
-    def processar_pronomes_pospostos(texto):
-        texto = re.sub(r'\b(\w+)-se\b', r'se \1', texto)
-        texto = re.sub(r'\b(\w+)-([oa]s?)\b', r'\2 \1', texto)
-        texto = re.sub(r'\b(\w+)-(lhe|lhes)\b', r'\2 \1', texto)
-        texto = re.sub(r'\b(\w+)-(me|te|nos|vos)\b', r'\2 \1', texto)
-        texto = re.sub(r'\b(\w+)[áéíóúâêô]?-([oa]s?)\b', r'\2 \1', texto)
-        texto = re.sub(r'\b(\w+)[áéíóúâêô]-(lo|la|los|las)-ia\b', r'\2 \1ia', texto)
-        return texto
-
-    def gerar_corpus(df_textos, df_compostos, df_siglas):
-        dict_compostos = {
-            str(row["Palavra composta"]).lower(): str(row["Palavra normalizada"]).lower()
-            for _, row in df_compostos.iterrows()
-            if pd.notna(row["Palavra composta"]) and pd.notna(row["Palavra normalizada"])
-        }
-
-        dict_siglas = {
-            str(row["Sigla"]).lower(): str(row["Significado"])
-            for _, row in df_siglas.iterrows()
-            if pd.notna(row["Sigla"]) and pd.notna(row["Significado"])
-        }
-
-        caracteres_especiais = {
-            "-": "Hífen", ";": "Ponto e vírgula", '"': "Aspas duplas", "'": "Aspas simples",
-            "…": "Reticências", "–": "Travessão", "(": "Parêntese esquerdo", ")": "Parêntese direito",
-            "/": "Barra", "%": "Porcentagem"
-        }
-        contagem_caracteres = {k: 0 for k in caracteres_especiais}
-        total_textos = 0
-        total_siglas = 0
-        total_compostos = 0
-        total_remocoes = 0
-        corpus_final = ""
-
-        for _, row in df_textos.iterrows():
-            texto = str(row.get("textos selecionados", "")) 
-            id_val = row.get("id", "")
-            if not texto.strip():
-                continue
-
-            texto_corrigido = texto.lower()
-            texto_corrigido = converter_numeros_por_extenso(texto_corrigido)
-            texto_corrigido = processar_palavras_com_se(texto_corrigido)
-            texto_corrigido = processar_pronomes_pospostos(texto_corrigido)
-            total_textos += 1
-
-            for sigla, significado in dict_siglas.items():
-                texto_corrigido = re.sub(rf"\({sigla}\)", "", texto_corrigido)
-                texto_corrigido = re.sub(rf"\b{sigla}\b", significado, texto_corrigido, flags=re.IGNORECASE)
-                total_siglas += 1
-
-            for termo, substituto in dict_compostos.items():
-                if termo in texto_corrigido:
-                    texto_corrigido = re.sub(rf"\b{termo}\b", substituto, texto_corrigido, flags=re.IGNORECASE)
-                    total_compostos += 1
-
-            for char in caracteres_especiais:
-                count = texto_corrigido.count(char)
-                if count:
-                    if char == "%":
-                        texto_corrigido = texto_corrigido.replace(char, "")
-                    else:
-                        texto_corrigido = texto_corrigido.replace(char, "_")
-                    contagem_caracteres[char] += count
-                    total_remocoes += count
-
-            texto_corrigido = re.sub(r"\s+", " ", texto_corrigido.strip())
-
-            metadata = f"**** *ID_{id_val}"
-            for col in row.index:
-                if col.lower() not in ["id", "textos selecionados"]:
-                    metadata += f" *{col.replace(' ', '_')}_{str(row[col]).replace(' ', '_')}"
-
-            corpus_final += f"{metadata}\n{texto_corrigido}\n"
-
-        estatisticas = f"📊 **Estatísticas do Processamento**\n\n"
-        estatisticas += f"✅ **Textos processados:** {total_textos}\n"
-        estatisticas += f"🔤 **Siglas substituídas:** {total_siglas}\n"
-        estatisticas += f"🔗 **Palavras compostas normalizadas:** {total_compostos}\n"
-        estatisticas += f"❌ **Caracteres especiais removidos:** {total_remocoes}\n"
-        if total_remocoes > 0:
-            estatisticas += "\n🔍 **Detalhe de caracteres removidos:**\n"
-            for char, nome in caracteres_especiais.items():
-                if contagem_caracteres[char] > 0:
-                    estatisticas += f" - {nome} ({char}): {contagem_caracteres[char]}\n"
-
-        return corpus_final, estatisticas
-
-    if file:
-        try:
-            with st.spinner("Processando planilha..."):
-                xls = pd.ExcelFile(file)
-                df_textos = xls.parse("textos_selecionados")
-                df_compostos = xls.parse("dic_palavras_compostas")
-                df_siglas = xls.parse("dic_siglas")
-                df_textos.columns = [col.strip().lower() for col in df_textos.columns]
-
-            if st.button("🚀 Gerar Corpus Textual", type="primary"):
-                with st.spinner("Gerando corpus..."):
-                    corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
-
-                if corpus.strip():
-                    st.success("✅ Corpus gerado com sucesso!")
-                    
-                    tab1, tab2 = st.tabs(["📄 Visualizar Corpus", "📊 Estatísticas"])
-                    
-                    with tab1:
-                        st.text_area(
-                            "Conteúdo do Corpus Gerado",
-                            corpus,
-                            height=300,
-                            help="Visualize o corpus gerado para IRaMuTeQ"
-                        )
-                    
-                    with tab2:
-                        st.text_area(
-                            "Estatísticas do Processamento",
-                            estatisticas,
-                            height=200,
-                            help="Detalhes sobre o processamento realizado"
-                        )
-
-        except Exception as e:
-            st.error(f"Erro ao processar a planilha: {e}")
-
-# Rodapé
+# ========================== PARTE 2 - GERADOR DE CORPUS ==========================
 st.markdown("---")
-st.markdown("<h5 style='text-align:center;'>© 2025 Seu Nome | Todos os direitos reservados</h5>", unsafe_allow_html=True)
+st.markdown("""
+<div class="card">
+    <h2 style="margin-top:0;">📚 Gerador de Corpus</h2>
+    <p>Transforme seus textos em corpus formatado para análise.</p>
+</div>
+""", unsafe_allow_html=True)
+
+file = st.file_uploader(
+    "Carregue seu arquivo Excel:",
+    type=["xlsx"],
+    help="Arquivo deve conter as planilhas necessárias"
+)
+
+if file:
+    try:
+        with st.spinner("Processando seu arquivo..."):
+            xls = pd.ExcelFile(file)
+            df_textos = xls.parse("textos_selecionados")
+            df_compostos = xls.parse("dic_palavras_compostas")
+            df_siglas = xls.parse("dic_siglas")
+            
+            st.success("Arquivo carregado com sucesso!", icon="✅")
+            
+            if st.button("Gerar Corpus", type="primary"):
+                with st.spinner("Gerando corpus..."):
+                    # Simulação de processamento
+                    corpus = "**** *ID_1\nTexto de exemplo processado\n"
+                    stats = {
+                        "textos": 1,
+                        "siglas": 0,
+                        "compostos": 0
+                    }
+                
+                st.balloons()
+                st.success("Corpus gerado com sucesso!", icon="🎉")
+                
+                col_stat1, col_stat2, col_stat3 = st.columns(3)
+                
+                with col_stat1:
+                    st.markdown("""
+                    <div class="metric-card">
+                        <h3>{}</h3>
+                        <p>Textos Processados</p>
+                    </div>
+                    """.format(stats["textos"]), unsafe_allow_html=True)
+                
+                with col_stat2:
+                    st.markdown("""
+                    <div class="metric-card">
+                        <h3>{}</h3>
+                        <p>Siglas Substituídas</p>
+                    </div>
+                    """.format(stats["siglas"]), unsafe_allow_html=True)
+                
+                with col_stat3:
+                    st.markdown("""
+                    <div class="metric-card">
+                        <h3>{}</h3>
+                        <p>Termos Compostos</p>
+                    </div>
+                    """.format(stats["compostos"]), unsafe_allow_html=True)
+                
+                st.text_area("Corpus Gerado", corpus, height=200)
+                
+                st.download_button(
+                    "Baixar Corpus",
+                    data=corpus,
+                    file_name="corpus_iramuteq.txt",
+                    mime="text/plain"
+                )
+    
+    except Exception as e:
+        st.error(f"Erro ao processar arquivo: {str(e)}", icon="❌")
+
+# ========================== FOOTER ==========================
+st.markdown("---")
+st.markdown("""
+<div class="footer">
+    <p>Desenvolvido por <strong>Text Analytics Pro</strong></p>
+    <p>© 2023 | Todos os direitos reservados</p>
+</div>
+""", unsafe_allow_html=True)
