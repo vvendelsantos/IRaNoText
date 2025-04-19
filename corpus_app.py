@@ -2,7 +2,14 @@ import streamlit as st
 import pandas as pd
 import re
 import io
+import spacy
 from word2number import w2n
+
+# Carregar o modelo do spaCy
+nlp = spacy.load("pt_core_news_sm")
+
+# Configuração da página
+st.set_page_config(layout="wide")
 
 # Função para converter números por extenso para algarismos
 def converter_numeros_por_extenso(texto):
@@ -59,6 +66,25 @@ def processar_pronomes_pospostos(texto):
     texto = re.sub(r'\b(\w+)[áéíóúâêô]?-([oa]s?)\b', r'\2 \1', texto)
     texto = re.sub(r'\b(\w+)[áéíóúâêô]-(lo|la|los|las)-ia\b', r'\2 \1ia', texto)
     return texto
+
+# Função para detectar siglas usando spaCy
+def detectar_siglas_spacy(texto):
+    siglas = []
+    doc = nlp(texto)
+    for ent in doc.ents:
+        if ent.label_ == "ORG" and len(ent.text.split()) == 1:
+            siglas.append(ent.text)
+    return sorted(set(siglas))
+
+# Função para detectar palavras compostas usando spaCy
+def detectar_palavras_compostas_spacy(texto):
+    compostas = set()
+    doc = nlp(texto)
+    for token in doc:
+        # Verifica se a palavra composta é uma sequência de palavras (mais de 2 tokens) 
+        if len(token.text.split()) >= 2 and token.pos_ in ['NOUN', 'PROPN']:
+            compostas.add(token.text)
+    return sorted(compostas)
 
 # Função para gerar o corpus
 def gerar_corpus(df_textos, df_compostos, df_siglas):
@@ -143,20 +169,8 @@ st.subheader("🔍 Analisador de Texto - Detecção de Siglas e Palavras Compost
 texto_entrada = st.text_area("Digite ou cole aqui o texto para análise automática:", height=200)
 
 if texto_entrada:
-    def detectar_siglas(texto):
-        return sorted(set(re.findall(r'\b[A-Z]{2,}(?:-[A-Z]{2,})?\b', texto)))
-
-    def detectar_palavras_compostas(texto):
-        compostas = set()
-        padrao = re.compile(r'\b(?:[A-ZÁÉÍÓÚÂÊÔÃÕa-záéíóúâêôãõç]+(?:\s+de\s+| da | do | das | dos | e | em | para | com ){1,2})+[A-ZÁÉÍÓÚÂÊÔÃÕa-záéíóúâêôãõç]+\b', flags=re.IGNORECASE)
-        matches = padrao.findall(texto)
-        for match in matches:
-            if len(match.split()) >= 2:
-                compostas.add(match.strip())
-        return sorted(compostas)
-
-    siglas_detectadas = detectar_siglas(texto_entrada)
-    compostas_detectadas = detectar_palavras_compostas(texto_entrada)
+    siglas_detectadas = detectar_siglas_spacy(texto_entrada)
+    compostas_detectadas = detectar_palavras_compostas_spacy(texto_entrada)
 
     col1, col2 = st.columns(2)
 
@@ -175,7 +189,6 @@ if texto_entrada:
             st.info("Nenhuma sigla detectada.")
             
 # Interface Streamlit
-st.set_page_config(layout="wide")
 st.title("Gerador de corpus textual para IRaMuTeQ")
 
 st.markdown("""[Instruções e outros conteúdos explicativos...]""")
