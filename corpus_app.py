@@ -111,7 +111,11 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
         for char in caracteres_especiais:
             count = texto_corrigido.count(char)
             if count:
-                texto_corrigido = texto_corrigido.replace(char, "_")
+                # Se o caractere for '%' não substituímos por '_', apenas removemos
+                if char == "%":
+                    texto_corrigido = texto_corrigido.replace(char, "")
+                else:
+                    texto_corrigido = texto_corrigido.replace(char, "_")
                 contagem_caracteres[char] += count
                 total_remocoes += count
 
