@@ -4,36 +4,9 @@ import re
 import io
 from word2number import w2n
 from collections import Counter
-from itertools import tee, islice
+from itertools import tee
 
-# Stopwords comuns em português
-stopwords = set([
-    "a", "à", "ao", "aos", "as", "às", "com", "como", "da", "das", "de", "do", "dos",
-    "e", "em", "entre", "na", "nas", "no", "nos", "num", "numa", "o", "os", "ou", "para",
-    "pelas", "pelos", "por", "sem", "sob", "sobre", "trás", "um", "uma", "uns", "umas"
-])
-
-# Funções auxiliares para detectar bigramas e siglas
-def gerar_bigramas(lista_palavras):
-    a, b = tee(lista_palavras)
-    next(b, None)
-    return zip(a, b)
-
-def sugerir_palavras_compostas(texto, limite=10):
-    palavras = re.findall(r'\b\w+\b', texto.lower())
-    bigramas = gerar_bigramas(palavras)
-    contagem = Counter(bigramas)
-
-    compostas_frequentes = [
-        f"{a} {b}" for (a, b), freq in contagem.items()
-        if freq > 1 and a not in stopwords and b not in stopwords
-    ]
-    return sorted(compostas_frequentes, key=lambda x: contagem[tuple(x.split())], reverse=True)[:limite]
-
-def sugerir_siglas(texto):
-    return sorted(set(re.findall(r'\((\w{2,10})\)', texto)))
-
-# Funções de processamento (iguais às anteriores, com ajuste para % ser removido e não substituído)
+# Função para converter números por extenso para algarismos
 def converter_numeros_por_extenso(texto):
     unidades = {
         "zero": 0, "dois": 2, "duas": 2, "três": 3, "quatro": 4, "cinco": 5,
@@ -75,6 +48,7 @@ def converter_numeros_por_extenso(texto):
 
     return " ".join(resultado)
 
+# Funções auxiliares para tratamento
 def processar_palavras_com_se(texto):
     return re.sub(r"(\b\w+)-se\b", r"se \1", texto)
 
@@ -87,6 +61,35 @@ def processar_pronomes_pospostos(texto):
     texto = re.sub(r'\b(\w+)[áéíóúâêô]-(lo|la|los|las)-ia\b', r'\2 \1ia', texto)
     return texto
 
+# Sugestão de palavras compostas e siglas
+def sugerir_termos(texto):
+    stopwords = set(["de", "da", "do", "das", "dos", "em", "a", "o", "as", "os", "e", "com", "para", "por"])
+
+    palavras = re.findall(r"\b\w+[\w\-]*\b", texto)
+    bigramas = zip(palavras, palavras[1:])
+    trigramas = zip(palavras, palavras[1:], palavras[2:])
+
+    candidatos = []
+
+    # Bigramas com ambas as palavras não sendo stopwords
+    for w1, w2 in bigramas:
+        if w1.lower() not in stopwords and w2.lower() not in stopwords:
+            candidatos.append(f"{w1} {w2}")
+
+    # Trigramas com pelo menos dois termos com letra maiúscula ou não-stopwords
+    for w1, w2, w3 in trigramas:
+        if sum(1 for w in [w1, w2, w3] if w[0].isupper() or w.lower() not in stopwords) >= 2:
+            candidatos.append(f"{w1} {w2} {w3}")
+
+    # Nomes próprios longos
+    nomes_proprios = re.findall(r"((?:[A-ZÁÉÍÓÚÊÔÃÕ][a-záéíóúâêôãõç]+(?:\s|\-)){2,}[A-ZÁÉÍÓÚÊÔÃÕ]?[a-záéíóúâêôãõç]*)", texto)
+    candidatos.extend(nomes_proprios)
+
+    freq = Counter(candidatos)
+    mais_frequentes = [termo for termo, contagem in freq.items() if contagem >= 1]
+    return sorted(set(mais_frequentes))
+
+# Função principal para geração do corpus
 def gerar_corpus(df_textos, df_compostos, df_siglas):
     dict_compostos = {
         str(row["Palavra composta"]).lower(): str(row["Palavra normalizada"]).lower()
@@ -107,10 +110,7 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
     }
 
     contagem_caracteres = {k: 0 for k in caracteres_especiais}
-    total_textos = 0
-    total_siglas = 0
-    total_compostos = 0
-    total_remocoes = 0
+    total_textos = total_siglas = total_compostos = total_remocoes = 0
     corpus_final = ""
 
     for _, row in df_textos.iterrows():
@@ -126,22 +126,19 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
         total_textos += 1
 
         for sigla, significado in dict_siglas.items():
-            texto_corrigido = re.sub(rf"\({sigla}\)", "", texto_corrigido)
-            texto_corrigido = re.sub(rf"\b{sigla}\b", significado, texto_corrigido, flags=re.IGNORECASE)
+            texto_corrigido = re.sub(rf"\\({sigla}\\)", "", texto_corrigido)
+            texto_corrigido = re.sub(rf"\\b{sigla}\\b", significado, texto_corrigido, flags=re.IGNORECASE)
             total_siglas += 1
 
         for termo, substituto in dict_compostos.items():
             if termo in texto_corrigido:
-                texto_corrigido = re.sub(rf"\b{termo}\b", substituto, texto_corrigido, flags=re.IGNORECASE)
+                texto_corrigido = re.sub(rf"\\b{termo}\\b", substituto, texto_corrigido, flags=re.IGNORECASE)
                 total_compostos += 1
 
         for char in caracteres_especiais:
             count = texto_corrigido.count(char)
             if count:
-                if char == "%":
-                    texto_corrigido = texto_corrigido.replace(char, "")
-                else:
-                    texto_corrigido = texto_corrigido.replace(char, "_")
+                texto_corrigido = texto_corrigido.replace(char, "" if char == "%" else "_")
                 contagem_caracteres[char] += count
                 total_remocoes += count
 
@@ -168,26 +165,19 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 st.set_page_config(layout="wide")
 st.title("Gerador de corpus textual para IRaMuTeQ")
 
-# Etapa 1: Inserção de texto e sugestões
-st.subheader("Etapa 1: Sugestão de palavras compostas e siglas")
-texto_inicial = st.text_area("Cole aqui o texto para sugerir palavras compostas e siglas:", height=250)
+st.markdown("""
+### 📌 Instruções
 
-if texto_inicial:
-    compostas_sugeridas = sugerir_palavras_compostas(texto_inicial)
-    siglas_sugeridas = sugerir_siglas(texto_inicial)
+Esta ferramenta foi desenvolvida para facilitar a geração de corpus textual compatível com o IRaMuTeQ.
 
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown("**🔗 Palavras compostas sugeridas:**")
-        st.code("\n".join(compostas_sugeridas) if compostas_sugeridas else "Nenhuma encontrada")
+Envie um arquivo do Excel **.xlsx** com a estrutura correta para que o corpus possa ser gerado automaticamente.
 
-    with col2:
-        st.markdown("**🔠 Siglas sugeridas:**")
-        st.code("\n".join(siglas_sugeridas) if siglas_sugeridas else "Nenhuma encontrada")
+Sua planilha deve conter **três abas (planilhas internas)** com os seguintes nomes e finalidades:
 
-# Etapa 2: Upload da planilha e geração de corpus
-st.markdown("---")
-st.subheader("Etapa 2: Upload da planilha e geração do corpus")
+1. **`textos_selecionados`** : coleção de textos que serão transformados de acordo com as regras de normalização.  
+2. **`dic_palavras_compostas`** : permite substituir palavras compostas por suas formas normalizadas.  
+3. **`dic_siglas`** : expande siglas para suas formas completas.
+""")
 
 with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
     st.download_button(
@@ -197,6 +187,16 @@ with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
+st.header("🔍 Etapa 1 - Análise preliminar de texto")
+texto_exemplo = st.text_area("Cole aqui um texto para detectar possíveis palavras compostas e siglas:", height=200)
+
+if texto_exemplo:
+    termos_sugeridos = sugerir_termos(texto_exemplo)
+    st.markdown("**Sugestões de palavras compostas e siglas:**")
+    st.code("\n".join(termos_sugeridos), language="text")
+    st.markdown("_Copie os termos acima e insira-os nas planilhas apropriadas antes de gerar o corpus._")
+
+st.header("📄 Etapa 2 - Geração do corpus textual")
 file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
 
 if file:
@@ -219,6 +219,7 @@ if file:
                 st.download_button("📄 BAIXAR CORPUS TEXTUAL", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
             else:
                 st.warning("Nenhum texto processado. Verifique os dados da planilha.")
+
     except Exception as e:
         st.error(f"Erro ao processar o arquivo: {e}")
 
