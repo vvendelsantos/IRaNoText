@@ -7,18 +7,20 @@ import io
 def detectar_siglas(texto):
     # Regex para encontrar siglas com 2 ou mais letras maiúsculas
     siglas = re.findall(r'\b[A-Z]{2,}\b', texto)
-    return list(set(siglas))
+    # Excluir siglas irrelevantes ou com poucas letras
+    siglas_relevantes = [sigla for sigla in siglas if len(sigla) > 1 and sigla.lower() not in ["e", "do", "da", "de", "dos", "das"]]
+    return list(set(siglas_relevantes))
 
 # Função para detectar palavras compostas dinâmicas (termos compostos de múltiplas palavras)
 def detectar_palavras_compostas(texto):
-    # Regex para encontrar palavras compostas por mais de uma palavra separadas por espaços
-    # Exemplo de padrões comuns como 'termo composto', 'expressão chave', etc.
+    # Regex para encontrar palavras compostas com mais de uma palavra (ex: 'Inteligência Artificial', 'crises climáticas', etc.)
     palavras_compostas = re.findall(r'\b(?:[A-Z][a-z]+(?: [a-z]+)+)\b', texto)
 
-    # Retorna apenas as expressões encontradas (sem duplicados)
-    return list(set(palavras_compostas))
+    # Filtro para melhorar a precisão, excluindo termos sem relevância
+    palavras_compostas_relevantes = [p for p in palavras_compostas if len(p.split()) > 1 and len(p) > 5]
+    return list(set(palavras_compostas_relevantes))
 
-# Função para processar palavras compostas com "-" e pronomes oblíquos pós-verbais
+# Função para processar texto e ajustar
 def processar_texto(texto):
     texto = re.sub(r"(\b\w+)-se\b", r"se \1", texto)  # Ajuste para palavras com '-se'
     texto = re.sub(r"\b(\w+)-([oa]s?)\b", r"\2 \1", texto)  # Ajuste para pronomes pós-verbais
@@ -115,18 +117,22 @@ if st.button("🔍 Analisar Texto"):
         siglas_detectadas = detectar_siglas(texto_usuario)
         palavras_compostas_detectadas = detectar_palavras_compostas(texto_usuario)
 
-        # Exibindo resultados de forma bonita em listas
-        st.subheader("🔤 Siglas Detectadas")
-        if siglas_detectadas:
-            st.write("- " + "\n- ".join(siglas_detectadas))
-        else:
-            st.write("Nenhuma sigla detectada.")
+        # Exibindo resultados lado a lado
+        col1, col2 = st.columns(2)
 
-        st.subheader("🔤 Sugestões de Palavras Compostas")
-        if palavras_compostas_detectadas:
-            st.write("- " + "\n- ".join(palavras_compostas_detectadas))
-        else:
-            st.write("Nenhuma palavra composta detectada.")
+        with col1:
+            st.subheader("🔤 Siglas Detectadas")
+            if siglas_detectadas:
+                st.write("- " + "\n- ".join(siglas_detectadas))
+            else:
+                st.write("Nenhuma sigla detectada.")
+
+        with col2:
+            st.subheader("🔤 Sugestões de Palavras Compostas")
+            if palavras_compostas_detectadas:
+                st.write("- " + "\n- ".join(palavras_compostas_detectadas))
+            else:
+                st.write("Nenhuma palavra composta detectada.")
     else:
         st.warning("Por favor, insira um texto para análise.")
 
