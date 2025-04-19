@@ -10,7 +10,7 @@ st.set_page_config(
     page_title="Text Analytics Suite | UFS",
     page_icon=":microscope:",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
 # CSS customizado
@@ -80,26 +80,6 @@ def detectar_palavras_compostas(texto):
     compostas = [ent.text for ent in doc.ents if len(ent.text.split()) > 1]
     return list(set(compostas))
 
-# ========================== SIDEBAR ==========================
-with st.sidebar:
-    st.image("https://via.placeholder.com/150x50?text=UFS+Lab", width=150)
-    st.markdown("""
-    ## Text Analytics Suite
-    **Versão:** 2.1.0  
-    **Última atualização:** 15/06/2023
-    
-    ---
-    ### Suporte Técnico
-    Entre em contato com nossa equipe:
-    - eng.wendel@gmail.com
-    - (79) 99999-9999
-    
-    ---
-    ### Documentação
-    [Manual do Usuário](https://example.com)  
-    [Tutoriais em Vídeo](https://example.com)
-    """)
-
 # ========================== PARTE 1 - PRÉ-ANÁLISE ==========================
 st.markdown('<div class="header-style">Análise Linguística Automatizada</div>', unsafe_allow_html=True)
 
@@ -153,47 +133,78 @@ with st.expander("🔬 Ferramenta de Detecção de Padrões Textuais", expanded=
             st.warning("Por favor, insira um texto para análise", icon="⚠️")
 
 # ========================== PARTE 2 - GERAÇÃO DE CORPUS ==========================
-st.markdown('<div class="header-style">Geração de Corpus a partir de Planilha</div>', unsafe_allow_html=True)
+st.markdown("---")
+st.markdown('<div class="header-style">Geração de Corpus para Análise Textual</div>', unsafe_allow_html=True)
 
-with st.expander("📂 Carregar Planilha", expanded=True):
+with st.expander("🧮 Conversor para IRaMuTeQ", expanded=True):
     st.markdown("""
-    <div class="subheader-style">Faça upload de uma planilha com os dados completos</div>
+    <div class="subheader-style">Transformação automatizada de textos brutos em corpus estruturado</div>
+    
+    Esta ferramenta realiza o pré-processamento textual necessário para análise no software IRaMuTeQ,
+    incluindo normalização de termos e tratamento de elementos especiais.
     """, unsafe_allow_html=True)
+    
+    tab_guide, tab_template = st.tabs(["📋 Guia de Preparação", "📥 Modelo de Planilha"])
+    
+    with tab_guide:
+        st.markdown("""
+        ### Requisitos do Arquivo de Entrada
+        
+        O arquivo Excel deve conter **três planilhas** com estrutura específica:
+        
+        1. **`textos_selecionados`**
+           - Coluna obrigatória: `textos selecionados` (conteúdo textual)
+           - Coluna opcional: `id` (identificador único)
+           - Colunas adicionais serão incluídas como metadados
+        
+        2. **`dic_palavras_compostas`**
+           - `Palavra composta`: Termo original
+           - `Palavra normalizada`: Forma padronizada
+        
+        3. **`dic_siglas`**
+           - `Sigla`: Acrônimo em maiúsculas
+           - `Significado`: Expansão da sigla
+        """)
+    
+    with tab_template:
+        with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
+            st.download_button(
+                label="Download do Modelo",
+                data=exemplo,
+                file_name="modelo_corpus_iramuteq.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                help="Modelo pré-formatado com todas as planilhas necessárias"
+            )
+        st.image("https://via.placeholder.com/600x300?text=Preview+do+Modelo", caption="Visualização da estrutura do arquivo modelo")
 
-    uploaded_file = st.file_uploader(
-        "Selecione o arquivo Excel para gerar o corpus textual",
+    st.markdown("---")
+    file = st.file_uploader(
+        "Carregue seu arquivo Excel preparado:",
         type=["xlsx"],
-        help="A planilha deve conter as abas: 'textos_selecionados', 'dic_palavras_compostas' e 'dic_siglas'"
+        help="Arquivo deve seguir a estrutura descrita no guia"
     )
 
-    if uploaded_file:
-        try:
-            with st.spinner("Carregando a planilha..."):
-                excel_file = pd.ExcelFile(uploaded_file)
-                df_textos = excel_file.parse("textos_selecionados")
-                df_palavras = excel_file.parse("dic_palavras_compostas")
-                df_siglas = excel_file.parse("dic_siglas")
-                st.success("Planilha carregada com sucesso!", icon="✅")
-
-                st.markdown("### Pré-visualização da Planilha")
-                st.write("#### Textos Selecionados", df_textos.head())
-                st.write("#### Dicionário de Palavras Compostas", df_palavras.head())
-                st.write("#### Dicionário de Siglas", df_siglas.head())
-
-            if st.button("Gerar Corpus"):
-                with st.spinner("Gerando corpus textual..."):
-                    # A função que gera o corpus pode ser implementada aqui
-                    # Exemplo de chamada à função que processaria os dados
-                    st.success("Corpus gerado com sucesso!", icon="✅")
-                    # Abaixo seria um exemplo de como você pode permitir o download do corpus gerado
-                    # Generate corpus and save it as a CSV or any desired format
-
-        except Exception as e:
-            st.error(f"Erro ao carregar a planilha: {e}")
+    # Funções auxiliares da parte 2
+    def converter_numeros_por_extenso(texto):
+        unidades = {
+            "zero": 0, "dois": 2, "duas": 2, "três": 3, "quatro": 4, "cinco": 5,
+            "seis": 6, "sete": 7, "oito": 8, "nove": 9
+        }
+        dezenas = {
+            "dez": 10, "onze": 11, "doze": 12, "treze": 13, "quatorze": 14, "quinze": 15,
+            "dezesseis": 16, "dezessete": 17, "dezoito": 18, "dezenove": 19, "vinte": 20
+        }
+        centenas = {
+            "cem": 100, "cento": 100, "duzentos": 200, "trezentos": 300, "quatrocentos": 400,
+            "quinhentos": 500, "seiscentos": 600, "setecentos": 700, "oitocentos": 800, "novecentos": 900
+        }
+        multiplicadores = {
+            "mil": 1000, "milhão": 1000000, "bilhão": 1000000000
+        }
+        
+        # Função para converter texto em números
+        # Aqui, você implementaria um algoritmo para converter números escritos por extenso
+        return texto  # Exemplificação básica, pode ser expandido para processar corretamente
 
 # ========================== RODAPÉ ==========================
-st.markdown("""
-<div class="footer">
-    &copy; 2025 UFS Lab | Desenvolvido por Eng. Wendel | Todos os direitos reservados
-</div>
-""", unsafe_allow_html=True)
+st.markdown('<div class="footer">Desenvolvido por UFS Lab</div>', unsafe_allow_html=True)
