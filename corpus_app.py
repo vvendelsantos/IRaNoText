@@ -2,15 +2,11 @@ import streamlit as st
 import pandas as pd
 import re
 import io
-from word2number import w2n
 import spacy
+from word2number import w2n
 
-# Baixar o modelo spaCy de português
-try:
-    nlp = spacy.load('pt_core_news_sm')
-except:
-    spacy.cli.download('pt_core_news_sm')
-    nlp = spacy.load('pt_core_news_sm')
+# Carregar o modelo do spacy para português
+nlp = spacy.load('pt_core_news_sm')
 
 # Função para converter números por extenso para algarismos
 def converter_numeros_por_extenso(texto):
@@ -54,7 +50,7 @@ def converter_numeros_por_extenso(texto):
 
     return " ".join(resultado)
 
-# Função para processar palavras compostas com "-"
+# Função para processar palavras compostas com "-se"
 def processar_palavras_com_se(texto):
     return re.sub(r"(\b\w+)-se\b", r"se \1", texto)
 
@@ -70,15 +66,20 @@ def processar_pronomes_pospostos(texto):
 
 # Função para sugerir palavras compostas
 def sugerir_palavras_compostas(texto):
-    # Tokenização com spaCy
-    doc = nlp(texto)
-    tokens = [token.text for token in doc]
-    
-    # Aqui você pode adicionar outras lógicas para detectar palavras compostas
+    texto_processado = nlp(texto)
+    palavras_compostas_sugeridas = set()
+    stopwords = {"de", "a", "o", "e", "que", "da", "das", "do", "dos", "as", "os", "em"}
 
-    return tokens  # Retorna as palavras tokenizadas (ou compostas)
+    for i in range(len(texto_processado) - 1):
+        palavra1 = texto_processado[i].text.lower()
+        palavra2 = texto_processado[i + 1].text.lower()
 
-# Função principal para gerar o corpus
+        if palavra1 not in stopwords and palavra2 not in stopwords:
+            palavras_compostas_sugeridas.add(f"{palavra1} {palavra2}")
+
+    return list(palavras_compostas_sugeridas)
+
+# Função para gerar o corpus textual
 def gerar_corpus(df_textos, df_compostos, df_siglas):
     dict_compostos = {
         str(row["Palavra composta"]).lower(): str(row["Palavra normalizada"]).lower()
@@ -105,7 +106,7 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
     corpus_final = ""
 
     for _, row in df_textos.iterrows():
-        texto = str(row.get("textos selecionados", ""))
+        texto = str(row.get("textos selecionados", "")) 
         id_val = row.get("id", "")
         if not texto.strip():
             continue
@@ -129,7 +130,6 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
         for char in caracteres_especiais:
             count = texto_corrigido.count(char)
             if count:
-                # Se o caractere for '%' não substituímos por '_', apenas removemos
                 if char == "%":
                     texto_corrigido = texto_corrigido.replace(char, "")
                 else:
@@ -143,7 +143,6 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
         for col in row.index:
             if col.lower() not in ["id", "textos selecionados"]:
                 metadata += f" *{col.replace(' ', '_')}_{str(row[col]).replace(' ', '_')}"
-        
         corpus_final += f"{metadata}\n{texto_corrigido}\n"
 
     estatisticas = f"Textos processados: {total_textos}\n"
@@ -174,6 +173,17 @@ Sua planilha deve conter **três abas (planilhas internas)** com os seguintes no
 3. **`dic_siglas`** : tem a finalidade de expandir siglas para suas formas completas, aumentando a legibilidade e a clareza do texto.
 """)
 
+# Caixa de entrada para texto
+texto_usuario = st.text_area("Insira o texto para sugerir palavras compostas", height=200)
+
+if texto_usuario:
+    palavras_compostas = sugerir_palavras_compostas(texto_usuario)
+    if palavras_compostas:
+        st.subheader("Palavras compostas sugeridas:")
+        st.write(", ".join(palavras_compostas))
+    else:
+        st.write("Nenhuma palavra composta sugerida.")
+        
 with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
     st.download_button(
         label="📅 Baixar modelo de planilha",
