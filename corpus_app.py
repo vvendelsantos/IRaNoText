@@ -149,100 +149,98 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
     return corpus_final, estatisticas
 
 # Interface com abas
-aba = st.tabs(["🔍 Pré-Análise de Texto", "🧪 Gerador de Corpus"])[0]
+tab1, tab2 = st.tabs(["🔍 Pré-Análise de Texto", "🧪 Gerador de Corpus"])
 
-with st.tabs(["🔍 Pré-Análise de Texto", "🧪 Gerador de Corpus"]) as (aba1, aba2):
-    
-    with aba1:
-        st.title("Analisador de Texto - Detecção de Siglas e Palavras Compostas")
-        texto_input = st.text_area("✍️ Insira um texto para pré-análise", height=200)
+with tab1:
+    st.title("Analisador de Texto - Detecção de Siglas e Palavras Compostas")
+    texto_input = st.text_area("✍️ Insira um texto para pré-análise", height=200)
 
-        if st.button("🔍 Analisar texto"):
-            if texto_input.strip():
-                siglas = detectar_siglas(texto_input)
-                compostas = detectar_palavras_compostas(texto_input)
+    if st.button("🔍 Analisar texto"):
+        if texto_input.strip():
+            siglas = detectar_siglas(texto_input)
+            compostas = detectar_palavras_compostas(texto_input)
 
-                col1, col2 = st.columns(2)
-                with col1:
-                    st.markdown("### 🧩 Palavras Compostas Detectadas")
-                    if compostas:
-                        for termo in compostas:
-                            st.write(f"- {termo}")
-                    else:
-                        st.info("Nenhuma palavra composta encontrada.")
-                with col2:
-                    st.markdown("### 🧾 Siglas Detectadas")
-                    if siglas:
-                        for sigla in siglas:
-                            st.write(f"- {sigla}")
-                    else:
-                        st.info("Nenhuma sigla encontrada.")
-            else:
-                st.warning("Por favor, insira um texto antes de analisar.")
+            col1, col2 = st.columns(2)
+            with col1:
+                st.markdown("### 🧩 Palavras Compostas Detectadas")
+                if compostas:
+                    for termo in compostas:
+                        st.write(f"- {termo}")
+                else:
+                    st.info("Nenhuma palavra composta encontrada.")
+            with col2:
+                st.markdown("### 🧾 Siglas Detectadas")
+                if siglas:
+                    for sigla in siglas:
+                        st.write(f"- {sigla}")
+                else:
+                    st.info("Nenhuma sigla encontrada.")
+        else:
+            st.warning("Por favor, insira um texto antes de analisar.")
 
-    with aba2:
-        st.title("Gerador de corpus textual para IRaMuTeQ")
-        st.markdown("""
-        ### 📌 Instruções
+with tab2:
+    st.title("Gerador de corpus textual para IRaMuTeQ")
+    st.markdown("""
+    ### 📌 Instruções
 
-        Esta ferramenta foi desenvolvida para facilitar a geração de corpus textual compatível com o IRaMuTeQ.
-        Envie um arquivo do Excel **.xlsx** com a estrutura correta para que o corpus possa ser gerado automaticamente.
-        """)
+    Esta ferramenta foi desenvolvida para facilitar a geração de corpus textual compatível com o IRaMuTeQ.
+    Envie um arquivo do Excel **.xlsx** com a estrutura correta para que o corpus possa ser gerado automaticamente.
+    """)
 
-        col_a, col_b = st.columns(2)
+    col_a, col_b = st.columns(2)
 
-        with col_a:
-            with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
-                st.download_button(
-                    label="📅 Baixar modelo de planilha",
-                    data=exemplo,
-                    file_name="gerar_corpus_iramuteq.xlsx",
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                )
+    with col_a:
+        with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
+            st.download_button(
+                label="📅 Baixar modelo de planilha",
+                data=exemplo,
+                file_name="gerar_corpus_iramuteq.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
 
-        with col_b:
-            with open("textos_para_analise.docx", "rb") as docx_file:
-                st.download_button(
-                    label="📄 Baixar textos para análise",
-                    data=docx_file,
-                    file_name="textos_para_analise.docx",
-                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                )
+    with col_b:
+        with open("textos_para_analise.docx", "rb") as docx_file:
+            st.download_button(
+                label="📄 Baixar textos para análise",
+                data=docx_file,
+                file_name="textos_para_analise.docx",
+                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            )
 
-        file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
+    file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
 
-        if file:
-            try:
-                xls = pd.ExcelFile(file)
-                df_textos = xls.parse("textos_selecionados")
-                df_compostos = xls.parse("dic_palavras_compostas")
-                df_siglas = xls.parse("dic_siglas")
-                df_textos.columns = [col.strip().lower() for col in df_textos.columns]
+    if file:
+        try:
+            xls = pd.ExcelFile(file)
+            df_textos = xls.parse("textos_selecionados")
+            df_compostos = xls.parse("dic_palavras_compostas")
+            df_siglas = xls.parse("dic_siglas")
+            df_textos.columns = [col.strip().lower() for col in df_textos.columns]
 
-                if st.button("🚀 GERAR CORPUS TEXTUAL"):
-                    corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
+            if st.button("🚀 GERAR CORPUS TEXTUAL"):
+                corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
 
-                    if corpus.strip():
-                        st.success("Corpus gerado com sucesso!")
+                if corpus.strip():
+                    st.success("Corpus gerado com sucesso!")
 
-                        with st.expander("📑 Ver Corpus Gerado"):
-                            st.text_area("Corpus Gerado", corpus, height=300)
+                    with st.expander("📑 Ver Corpus Gerado"):
+                        st.text_area("Corpus Gerado", corpus, height=300)
 
-                        st.text_area("📊 Estatísticas do processamento", estatisticas, height=250)
+                    st.text_area("📊 Estatísticas do processamento", estatisticas, height=250)
 
-                        buf = io.BytesIO()
-                        buf.write(corpus.encode("utf-8"))
-                        st.download_button("📄 BAIXAR CORPUS TEXTUAL", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
-                    else:
-                        st.warning("Nenhum texto processado. Verifique os dados da planilha.")
-            except Exception as e:
-                st.error(f"Erro ao processar o arquivo: {e}")
+                    buf = io.BytesIO()
+                    buf.write(corpus.encode("utf-8"))
+                    st.download_button("📄 BAIXAR CORPUS TEXTUAL", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
+                else:
+                    st.warning("Nenhum texto processado. Verifique os dados da planilha.")
+        except Exception as e:
+            st.error(f"Erro ao processar o arquivo: {e}")
 
-        st.markdown("""
-        ---
-        👨‍🏫 **Sobre o autor**
+    st.markdown("""
+    ---
+    👨‍🏫 **Sobre o autor**
 
-        **Autor:** José Wendel dos Santos  
-        **Instituição:** Universidade Federal de Sergipe (UFS)  
-        **Contato:** eng.wendel@gmail.com
-        """)
+    **Autor:** José Wendel dos Santos  
+    **Instituição:** Universidade Federal de Sergipe (UFS)  
+    **Contato:** eng.wendel@gmail.com
+    """)
