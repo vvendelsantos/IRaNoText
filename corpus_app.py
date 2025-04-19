@@ -30,7 +30,7 @@ with tabs[0]:
     st.header("Detecção de Siglas e Palavras Compostas")
 
     # Permitindo que o usuário cole o texto sem restrição
-    texto_input = st.text_area("✍️ Insira um texto para pré-análise", height=200, max_chars=None)  # max_chars=None permite texto sem limite
+    texto_input = st.text_area("✍️ Insira um texto para pré-análise", height=200)  # Sem max_chars
 
     if st.button("🔍 Analisar texto"):
         if texto_input.strip():
@@ -233,18 +233,34 @@ with tabs[1]:
             df_textos = xls.parse("textos_selecionados")
             df_compostos = xls.parse("dic_palavras_compostas")
             df_siglas = xls.parse("dic_siglas")
-            df_textos.columns = [col.strip().lower() for col in df_textos.columns]
 
-            if st.button("🚀 GERAR CORPUS TEXTUAL"):
-                corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
+            corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
 
-                st.download_button(
-                    label="📥 Baixar Corpus Processado",
-                    data=corpus,
-                    file_name="corpus_textual.txt",
-                    mime="text/plain"
-                )
+            st.download_button(
+                label="📥 Baixar Corpus Processado",
+                data=corpus,
+                file_name="corpus_textual.txt",
+                mime="text/plain"
+            )
 
-                st.markdown(f"**Estatísticas do processamento:**\n\n{estatisticas}")
+            st.markdown(f"**Estatísticas do processamento:**\n\n{estatisticas}")
         except Exception as e:
             st.error(f"Ocorreu um erro ao processar a planilha: {str(e)}")
+
+# ========================== RODAPÉ ==========================
+st.markdown("""
+    <style>
+        .footer {
+            text-align: center;
+            padding: 10px;
+            background-color: #f1f1f1;
+            color: #333;
+        }
+    </style>
+    <div class="footer">
+        👨‍🏫 **Sobre o autor**<br>
+        **Autor:** José Wendel dos Santos<br>
+        **Instituição:** Universidade Federal de Sergipe (UFS)<br>
+        **Contato:** eng.wendel@gmail.com
+    </div>
+""", unsafe_allow_html=True)
