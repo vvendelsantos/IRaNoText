@@ -1,6 +1,6 @@
 import streamlit as st
-import re
 import pandas as pd
+import re
 import io
 from word2number import w2n
 
@@ -96,6 +96,23 @@ def processar_pronomes_pospostos(texto):
     texto = re.sub(r'\b(\w+)[áéíóúâêô]-(lo|la|los|las)-ia\b', r'\2 \1ia', texto)
     return texto
 
+# Função para gerar o corpus a partir do texto processado
+def generate_corpus(compound_words, acronyms, processed_text):
+    corpus = []
+
+    # Adicionando palavras compostas ao corpus
+    for word in compound_words:
+        corpus.append(f"[{word['start']} - {word['end']}]: {word['phrase']}")
+    
+    # Adicionando siglas ao corpus
+    corpus.extend(acronyms)
+
+    # Adicionando o texto processado
+    corpus.append("\nTexto Processado:")
+    corpus.append(processed_text)
+
+    return "\n".join(corpus)
+
 # Função principal
 def main():
     st.title("Analisador de Texto - Geração de Corpus")
@@ -109,17 +126,22 @@ def main():
         
         # Processa o texto para identificar palavras compostas e siglas
         compound_words, acronyms = process_text(text)
-        
-        # Exibe as sugestões na interface
+
+        # Exibe as sugestões de palavras compostas e siglas detectadas
         show_suggestions(compound_words, acronyms)
 
-        # Gerar o texto com as modificações de números por extenso, palavras compostas e pronomes
-        text = converter_numeros_por_extenso(text)
-        text = processar_palavras_com_se(text)
-        text = processar_pronomes_pospostos(text)
+        # Processa o texto com as funções de conversão e correção
+        processed_text = text
+        processed_text = converter_numeros_por_extenso(processed_text)
+        processed_text = processar_palavras_com_se(processed_text)
+        processed_text = processar_pronomes_pospostos(processed_text)
 
-        # Exibe o texto final
-        st.text_area("Texto Processado", value=text, height=200)
+        # Geração do corpus com as palavras compostas, siglas e texto processado
+        corpus = generate_corpus(compound_words, acronyms, processed_text)
+
+        # Exibe o corpus final
+        st.markdown("### 🔹 Corpus Gerado:")
+        st.text_area("Corpus Gerado", value=corpus, height=300)
 
 if __name__ == "__main__":
     main()
