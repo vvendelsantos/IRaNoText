@@ -60,24 +60,7 @@ def processar_pronomes_pospostos(texto):
     texto = re.sub(r'\b(\w+)[áéíóúâêô]-(lo|la|los|las)-ia\b', r'\2 \1ia', texto)
     return texto
 
-# Função para detectar siglas e sugerir palavras compostas
-def detectar_siglas_e_sugerir_palavras_compostas(texto, dic_siglas, dic_compostos):
-    siglas_detectadas = []
-    palavras_compostas_sugeridas = []
-    
-    for sigla, significado in dic_siglas.items():
-        if sigla in texto:
-            siglas_detectadas.append(f"{sigla} → {significado}")
-            texto = texto.replace(sigla, significado)
-
-    for termo, substituto in dic_compostos.items():
-        if termo in texto:
-            palavras_compostas_sugeridas.append(f"{termo} → {substituto}")
-            texto = texto.replace(termo, substituto)
-
-    return siglas_detectadas, palavras_compostas_sugeridas, texto
-
-# Função principal
+# Função principal para gerar o corpus
 def gerar_corpus(df_textos, df_compostos, df_siglas):
     dict_compostos = {
         str(row["Palavra composta"]).lower(): str(row["Palavra normalizada"]).lower()
@@ -115,16 +98,19 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
         texto_corrigido = processar_pronomes_pospostos(texto_corrigido)
         total_textos += 1
 
+        # Substituir siglas
         for sigla, significado in dict_siglas.items():
             texto_corrigido = re.sub(rf"\({sigla}\)", "", texto_corrigido)
             texto_corrigido = re.sub(rf"\b{sigla}\b", significado, texto_corrigido, flags=re.IGNORECASE)
             total_siglas += 1
 
+        # Substituir palavras compostas
         for termo, substituto in dict_compostos.items():
             if termo in texto_corrigido:
                 texto_corrigido = re.sub(rf"\b{termo}\b", substituto, texto_corrigido, flags=re.IGNORECASE)
                 total_compostos += 1
 
+        # Remover ou substituir caracteres especiais
         for char in caracteres_especiais:
             count = texto_corrigido.count(char)
             if count:
@@ -167,9 +153,9 @@ Envie um arquivo do Excel **.xlsx** com a estrutura correta para que o corpus po
 
 Sua planilha deve conter **três abas (planilhas internas)** com os seguintes nomes e finalidades:
 
-1. **textos_selecionados** : coleção de textos que serão transformados de acordo com as regras de normalização.  
-2. **dic_palavras_compostas** : permite substituir palavras compostas por suas formas normalizadas, garantindo uma maior consistência no corpus textual gerado.  
-3. **dic_siglas** : tem a finalidade de expandir siglas para suas formas completas, aumentando a legibilidade e a clareza do texto.
+1. **`textos_selecionados`** : coleção de textos que serão transformados de acordo com as regras de normalização.  
+2. **`dic_palavras_compostas`** : permite substituir palavras compostas por suas formas normalizadas, garantindo uma maior consistência no corpus textual gerado.  
+3. **`dic_siglas`** : tem a finalidade de expandir siglas para suas formas completas, aumentando a legibilidade e a clareza do texto.
 """)
 
 # Campo para o usuário inserir o texto
