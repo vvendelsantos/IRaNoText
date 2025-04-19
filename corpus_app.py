@@ -122,9 +122,9 @@ st.title("Gerador de corpus textual para IRaMuTeQ")
 # Texto do usuário
 texto_input = st.text_area("Cole ou digite um texto para análise:", height=200)
 
-# Detecção automática
-if texto_input:
-    if st.button("Analisar Texto"):
+# Botão de análise
+if st.button("Analisar Texto"):
+    if texto_input:
         # Detectar siglas e palavras compostas
         compostas = detectar_palavras_compostas(texto_input)
         siglas = detectar_siglas(texto_input)
@@ -139,6 +139,8 @@ if texto_input:
             st.markdown("**🔠 Siglas Detectadas:**")
             for item in siglas:
                 st.markdown(f"- {item}")
+    else:
+        st.warning("Por favor, insira um texto para análise.")
 
 # Inserir planilha para gerar corpus
 st.markdown("---")
