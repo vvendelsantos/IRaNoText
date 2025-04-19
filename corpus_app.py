@@ -197,7 +197,7 @@ if st.button("Analisar Texto"):
         file = st.file_uploader("Envie a planilha com palavras compostas e siglas", type=["xlsx"])
         if file:
             dict_compostos, dict_siglas = carregar_planilha(file)
-            palavras_compostas_detectadas, siglas_detectadas = analisar_texto(texto_usuario, dict_compostos, dict_siglas)
+            palavras_compostas_detectadas, siglas_detectadas = detectar_palavras_compostas(texto_usuario, dict_compostos), detectar_siglas(texto_usuario, dict_siglas)
             
             # Mostrar resultados da análise
             st.subheader("🔤 Sugestões de Palavras Compostas")
