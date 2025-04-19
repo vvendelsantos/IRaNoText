@@ -2,31 +2,85 @@ import streamlit as st
 import pandas as pd
 import re
 import io
+import spacy
+from word2number import w2n
+from collections import Counter
 
-# Função para detectar siglas
+# Carregar modelo do spaCy
+nlp = spacy.load("pt_core_news_lg")
+
+# --- Funções auxiliares de análise textual dinâmica ---
+
 def detectar_siglas(texto):
-    # Regex para encontrar siglas com 2 ou mais letras maiúsculas
-    siglas = re.findall(r'\b[A-Z]{2,}\b', texto)
-    # Excluir siglas irrelevantes ou com poucas letras
-    siglas_relevantes = [sigla for sigla in siglas if len(sigla) > 1 and sigla.lower() not in ["e", "do", "da", "de", "dos", "das"]]
-    return list(set(siglas_relevantes))
+    return sorted(set(re.findall(r'\b[A-Z]{2,}(?:-[A-Z]+)*\b', texto)))
 
-# Função para detectar palavras compostas dinâmicas (termos compostos de múltiplas palavras)
 def detectar_palavras_compostas(texto):
-    # Regex para encontrar palavras compostas com mais de uma palavra (ex: 'Inteligência Artificial', 'crises climáticas', etc.)
-    palavras_compostas = re.findall(r'\b(?:[A-Z][a-z]+(?: [a-z]+)+)\b', texto)
+    doc = nlp(texto)
+    compostas = []
+    for ent in doc.ents:
+        if len(ent.text.split()) >= 2:
+            compostas.append(ent.text.strip())
+    for chunk in doc.noun_chunks:
+        if len(chunk.text.split()) >= 2:
+            compostas.append(chunk.text.strip())
+    compostas = [c for c in compostas if len(c.split()) <= 5 and not c.isupper()]
+    return sorted(set(compostas), key=lambda x: texto.lower().find(x.lower()))
 
-    # Filtro para melhorar a precisão, excluindo termos sem relevância
-    palavras_compostas_relevantes = [p for p in palavras_compostas if len(p.split()) > 1 and len(p) > 5]
-    return list(set(palavras_compostas_relevantes))
+# --- Funções de pré-processamento e corpus (originais do seu código) ---
 
-# Função para processar texto e ajustar
-def processar_texto(texto):
-    texto = re.sub(r"(\b\w+)-se\b", r"se \1", texto)  # Ajuste para palavras com '-se'
-    texto = re.sub(r"\b(\w+)-([oa]s?)\b", r"\2 \1", texto)  # Ajuste para pronomes pós-verbais
+def converter_numeros_por_extenso(texto):
+    unidades = {
+        "zero": 0, "dois": 2, "duas": 2, "três": 3, "quatro": 4, "cinco": 5,
+        "seis": 6, "sete": 7, "oito": 8, "nove": 9
+    }
+    dezenas = {
+        "dez": 10, "onze": 11, "doze": 12, "treze": 13, "quatorze": 14, "quinze": 15,
+        "dezesseis": 16, "dezessete": 17, "dezoito": 18, "dezenove": 19, "vinte": 20
+    }
+    centenas = {
+        "cem": 100, "cento": 100, "duzentos": 200, "trezentos": 300, "quatrocentos": 400,
+        "quinhentos": 500, "seiscentos": 600, "setecentos": 700, "oitocentos": 800, "novecentos": 900
+    }
+    multiplicadores = {
+        "mil": 1000, "milhão": 1000000, "milhões": 1000000, "bilhão": 1000000000,
+        "bilhões": 1000000000
+    }
+
+    def processar_palavra(palavra):
+        try:
+            return str(w2n.word_to_num(palavra))
+        except:
+            return palavra
+
+    palavras = texto.split()
+    resultado = []
+    for palavra in palavras:
+        palavra_lower = palavra.lower()
+        if palavra_lower in unidades:
+            resultado.append(str(unidades[palavra_lower]))
+        elif palavra_lower in dezenas:
+            resultado.append(str(dezenas[palavra_lower]))
+        elif palavra_lower in centenas:
+            resultado.append(str(centenas[palavra_lower]))
+        elif palavra_lower in multiplicadores:
+            resultado.append(str(multiplicadores[palavra_lower]))
+        else:
+            resultado.append(processar_palavra(palavra))
+
+    return " ".join(resultado)
+
+def processar_palavras_com_se(texto):
+    return re.sub(r"(\b\w+)-se\b", r"se \1", texto)
+
+def processar_pronomes_pospostos(texto):
+    texto = re.sub(r'\b(\w+)-se\b', r'se \1', texto)
+    texto = re.sub(r'\b(\w+)-([oa]s?)\b', r'\2 \1', texto)
+    texto = re.sub(r'\b(\w+)-(lhe|lhes)\b', r'\2 \1', texto)
+    texto = re.sub(r'\b(\w+)-(me|te|nos|vos)\b', r'\2 \1', texto)
+    texto = re.sub(r'\b(\w+)[áéíóúâêô]?-([oa]s?)\b', r'\2 \1', texto)
+    texto = re.sub(r'\b(\w+)[áéíóúâêô]-(lo|la|los|las)-ia\b', r'\2 \1ia', texto)
     return texto
 
-# Função para gerar o corpus conforme a planilha de entrada
 def gerar_corpus(df_textos, df_compostos, df_siglas):
     dict_compostos = {
         str(row["Palavra composta"]).lower(): str(row["Palavra normalizada"]).lower()
@@ -59,8 +113,9 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
             continue
 
         texto_corrigido = texto.lower()
-        texto_corrigido = processar_texto(texto_corrigido)
-
+        texto_corrigido = converter_numeros_por_extenso(texto_corrigido)
+        texto_corrigido = processar_palavras_com_se(texto_corrigido)
+        texto_corrigido = processar_pronomes_pospostos(texto_corrigido)
         total_textos += 1
 
         for sigla, significado in dict_siglas.items():
@@ -88,7 +143,7 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
         metadata = f"**** *ID_{id_val}"
         for col in row.index:
             if col.lower() not in ["id", "textos selecionados"]:
-                metadata += f" *{col.replace(' ', '_')}_{str(row[col]).replace(' ', '_')}" 
+                metadata += f" *{col.replace(' ', '_')}_{str(row[col]).replace(' ', '_')}"
 
         corpus_final += f"{metadata}\n{texto_corrigido}\n"
 
@@ -102,43 +157,43 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 
     return corpus_final, estatisticas
 
+# --- Interface Streamlit ---
 
-# Interface Streamlit
 st.set_page_config(layout="wide")
 st.title("Analisador de Texto - Detecção de Siglas e Palavras Compostas")
 
-# Caixa de texto para o usuário inserir o texto
-texto_usuario = st.text_area("📝 Insira o texto para análise", "", height=300)
+# Seção de análise preliminar
+st.markdown("### 🔍 Análise dinâmica de um texto individual")
 
-# Botão para iniciar a análise
-if st.button("🔍 Analisar Texto"):
+texto_usuario = st.text_area("Digite ou cole aqui um trecho de texto para análise:")
+
+if st.button("🔎 Analisar Texto"):
     if texto_usuario.strip():
-        # Detectando siglas e palavras compostas no texto
-        siglas_detectadas = detectar_siglas(texto_usuario)
         palavras_compostas_detectadas = detectar_palavras_compostas(texto_usuario)
+        siglas_detectadas = detectar_siglas(texto_usuario)
 
-        # Exibindo resultados lado a lado
         col1, col2 = st.columns(2)
-
         with col1:
-            st.subheader("🔤 Siglas Detectadas")
-            if siglas_detectadas:
-                st.write("- " + "\n- ".join(siglas_detectadas))
-            else:
-                st.write("Nenhuma sigla detectada.")
-
+            st.markdown("**🔤 Sugestões de Palavras Compostas**")
+            st.text("\n".join(palavras_compostas_detectadas) or "Nenhuma detectada.")
         with col2:
-            st.subheader("🔤 Sugestões de Palavras Compostas")
-            if palavras_compostas_detectadas:
-                st.write("- " + "\n- ".join(palavras_compostas_detectadas))
-            else:
-                st.write("Nenhuma palavra composta detectada.")
+            st.markdown("**🔠 Siglas Detectadas**")
+            st.text("\n".join(siglas_detectadas) or "Nenhuma detectada.")
     else:
         st.warning("Por favor, insira um texto para análise.")
 
-# Upload da planilha para gerar o corpus
-st.markdown("""---""")
-st.subheader("📤 Envie sua planilha para gerar o corpus textual")
+# Seção para geração do corpus
+st.markdown("---")
+st.markdown("### 🧾 Geração do Corpus Textual a partir da Planilha")
+
+with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
+    st.download_button(
+        label="📅 Baixar modelo de planilha",
+        data=exemplo,
+        file_name="gerar_corpus_iramuteq.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
 file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
 
 if file:
@@ -147,6 +202,7 @@ if file:
         df_textos = xls.parse("textos_selecionados")
         df_compostos = xls.parse("dic_palavras_compostas")
         df_siglas = xls.parse("dic_siglas")
+        df_textos.columns = [col.strip().lower() for col in df_textos.columns]
 
         if st.button("🚀 GERAR CORPUS TEXTUAL"):
             corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
@@ -160,16 +216,11 @@ if file:
                 st.download_button("📄 BAIXAR CORPUS TEXTUAL", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
             else:
                 st.warning("Nenhum texto processado. Verifique os dados da planilha.")
-
     except Exception as e:
         st.error(f"Erro ao processar o arquivo: {e}")
 
-# Texto do autor
-st.markdown("""
----
-👨‍🏫 **Sobre o autor**
-
+st.markdown("""---  
+👨‍🏫 **Sobre o autor**  
 **Autor:** José Wendel dos Santos  
 **Instituição:** Universidade Federal de Sergipe (UFS)  
-**Contato:** eng.wendel@gmail.com
-""")
+**Contato:** eng.wendel@gmail.com""")
