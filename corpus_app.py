@@ -1,20 +1,29 @@
 import streamlit as st
 import pandas as pd
 import re
-import io
 import nltk
 from word2number import w2n
 from collections import Counter
 from nltk.corpus import stopwords
 from nltk.util import ngrams
 
-# Baixando os recursos necessários do NLTK
-try:
-    nltk.data.find('tokenizers/punkt')
-except LookupError:
-    nltk.download('punkt')
-    
-nltk.download("stopwords")
+# Função para garantir que o pacote 'punkt' esteja presente
+def garantir_punkt():
+    try:
+        nltk.data.find('tokenizers/punkt')
+    except LookupError:
+        nltk.download('punkt')
+
+# Função para baixar o pacote de stopwords, caso necessário
+def garantir_stopwords():
+    try:
+        nltk.data.find('corpora/stopwords')
+    except LookupError:
+        nltk.download('stopwords')
+
+# Garantir que os pacotes necessários estejam disponíveis
+garantir_punkt()
+garantir_stopwords()
 
 # Função para converter números por extenso para algarismos
 def converter_numeros_por_extenso(texto):
