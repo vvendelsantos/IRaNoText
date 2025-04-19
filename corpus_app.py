@@ -252,7 +252,6 @@ with tabs[1]:
         except Exception as e:
             st.error(f"Erro ao processar o arquivo: {e}")
 
-# Rodapé
 st.markdown("""  
 ---  
 👨‍🏫 **Sobre o autor**  
