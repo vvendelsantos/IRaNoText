@@ -72,7 +72,7 @@ def detectar_siglas_spacy(texto):
     siglas = []
     doc = nlp(texto)
     for ent in doc.ents:
-        if ent.label_ == "ORG" and len(ent.text.split()) == 1:
+        if ent.label_ == "ORG" and len(ent.text.split()) == 1:  # Siglas geralmente são ORG (Organizações)
             siglas.append(ent.text)
     return sorted(set(siglas))
 
@@ -81,8 +81,7 @@ def detectar_palavras_compostas_spacy(texto):
     compostas = set()
     doc = nlp(texto)
     for token in doc:
-        # Verifica se a palavra composta é uma sequência de palavras (mais de 2 tokens) 
-        if len(token.text.split()) >= 2 and token.pos_ in ['NOUN', 'PROPN']:
+        if len(token.text.split()) >= 2 and token.pos_ in ['NOUN', 'PROPN']:  # Procura por substantivos compostos
             compostas.add(token.text)
     return sorted(compostas)
 
@@ -168,30 +167,37 @@ st.subheader("🔍 Analisador de Texto - Detecção de Siglas e Palavras Compost
 
 texto_entrada = st.text_area("Digite ou cole aqui o texto para análise automática:", height=200)
 
-if texto_entrada:
-    siglas_detectadas = detectar_siglas_spacy(texto_entrada)
-    compostas_detectadas = detectar_palavras_compostas_spacy(texto_entrada)
+# Botão de Analisar
+if st.button("🔎 Analisar Texto"):
+    if texto_entrada:
+        siglas_detectadas = detectar_siglas_spacy(texto_entrada)
+        compostas_detectadas = detectar_palavras_compostas_spacy(texto_entrada)
 
-    col1, col2 = st.columns(2)
+        col1, col2 = st.columns(2)
 
-    with col1:
-        st.markdown("#### 🧩 Palavras Compostas Detectadas")
-        if compostas_detectadas:
-            st.markdown("\n".join(compostas_detectadas))
-        else:
-            st.info("Nenhuma palavra composta detectada.")
+        with col1:
+            st.markdown("#### 🧩 Palavras Compostas Detectadas")
+            if compostas_detectadas:
+                st.markdown("\n".join(compostas_detectadas))
+            else:
+                st.info("Nenhuma palavra composta detectada.")
 
-    with col2:
-        st.markdown("#### 📝 Siglas Detectadas")
-        if siglas_detectadas:
-            st.markdown("\n".join(siglas_detectadas))
-        else:
-            st.info("Nenhuma sigla detectada.")
-            
+        with col2:
+            st.markdown("#### 📝 Siglas Detectadas")
+            if siglas_detectadas:
+                st.markdown("\n".join(siglas_detectadas))
+            else:
+                st.info("Nenhuma sigla detectada.")
+    else:
+        st.warning("Por favor, insira um texto para análise.")
+
 # Interface Streamlit
 st.title("Gerador de corpus textual para IRaMuTeQ")
 
-st.markdown("""[Instruções e outros conteúdos explicativos...]""")
+st.markdown("""---  
+👨‍🏫 **Sobre o autor**  
+[Detalhes sobre o autor e créditos da aplicação]
+""")
 
 file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
 
@@ -217,5 +223,3 @@ if file:
                 st.warning("Nenhum texto processado. Verifique os dados da planilha.")
     except Exception as e:
         st.error(f"Erro ao processar o arquivo: {e}")
-
-st.markdown("""--- 👨‍🏫 **Sobre o autor**""")
