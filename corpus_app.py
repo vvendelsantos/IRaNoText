@@ -3,9 +3,9 @@ import pandas as pd
 import re
 import io
 from word2number import w2n
-from collections import Counter
 
-# Função para converter números por extenso para algarismos
+# Funções auxiliares para o pré-processamento
+
 def converter_numeros_por_extenso(texto):
     unidades = {
         "zero": 0, "dois": 2, "duas": 2, "três": 3, "quatro": 4, "cinco": 5,
@@ -47,7 +47,6 @@ def converter_numeros_por_extenso(texto):
 
     return " ".join(resultado)
 
-# Funções de pré-processamento
 def processar_palavras_com_se(texto):
     return re.sub(r"(\b\w+)-se\b", r"se \1", texto)
 
@@ -60,33 +59,25 @@ def processar_pronomes_pospostos(texto):
     texto = re.sub(r'\b(\w+)[áéíóúâêô]-(lo|la|los|las)-ia\b', r'\2 \1ia', texto)
     return texto
 
-# Sugestão de siglas
 def detectar_siglas(texto):
     return list(set(re.findall(r'\b[A-Z]{2,}\b', texto)))
 
-# Sugestão de palavras compostas (heurística simples)
 def sugerir_palavras_compostas(texto):
-    palavras = texto.split()
-    triplas = [' '.join(palavras[i:i+3]) for i in range(len(palavras)-2)]
-    duplas = [' '.join(palavras[i:i+2]) for i in range(len(palavras)-1)]
-    compostas = Counter(duplas + triplas)
-    sugestoes = [k for k, v in compostas.items() if v > 1 and len(k.split()) > 1]
-    return sugestoes
+    padrao = r'\b([A-ZÁÉÍÓÚÂÊÔÃÕ][a-záéíóúâêôãõ]+(?:\s+[a-zde]{1,3})*\s+[A-ZÁÉÍÓÚÂÊÔÃÕ][a-záéíóúâêôãõ]+)\b'
+    sugestoes = re.findall(padrao, texto)
+    return list(set(sugestoes))
 
-# Função principal
 def gerar_corpus(df_textos, df_compostos, df_siglas):
     dict_compostos = {
         str(row["Palavra composta"]).lower(): str(row["Palavra normalizada"]).lower()
         for _, row in df_compostos.iterrows()
         if pd.notna(row["Palavra composta"]) and pd.notna(row["Palavra normalizada"])
     }
-
     dict_siglas = {
         str(row["Sigla"]).lower(): str(row["Significado"])
         for _, row in df_siglas.iterrows()
         if pd.notna(row["Sigla"]) and pd.notna(row["Significado"])
     }
-
     caracteres_especiais = {
         "-": "Hífen", ";": "Ponto e vírgula", '"': "Aspas duplas", "'": "Aspas simples",
         "…": "Reticências", "–": "Travessão", "(": "Parêntese esquerdo", ")": "Parêntese direito",
@@ -124,11 +115,14 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
         for char in caracteres_especiais:
             count = texto_corrigido.count(char)
             if count:
-                texto_corrigido = texto_corrigido.replace(char, "" if char == "%" else "_")
+                if char == "%":
+                    texto_corrigido = texto_corrigido.replace(char, "")
+                else:
+                    texto_corrigido = texto_corrigido.replace(char, "_")
                 contagem_caracteres[char] += count
                 total_remocoes += count
 
-        texto_corrigido = re.sub(r"\\s+", " ", texto_corrigido.strip())
+        texto_corrigido = re.sub(r"\s+", " ", texto_corrigido.strip())
 
         metadata = f"**** *ID_{id_val}"
         for col in row.index:
@@ -147,32 +141,40 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 
     return corpus_final, estatisticas
 
-# Interface Streamlit
+# --- Interface Streamlit ---
 st.set_page_config(layout="wide")
 st.title("Gerador de corpus textual para IRaMuTeQ")
 
-texto_usuario = st.text_area("✍️ Insira um texto para análise preliminar")
-if st.button("🔍 Analisar"):
-    col1, col2 = st.columns(2)
-    with col1:
-        sugestoes = sugerir_palavras_compostas(texto_usuario.lower())
-        st.markdown("**📌 Sugestões de palavras compostas:**")
-        st.write(sugestoes if sugestoes else "Nenhuma sugestão encontrada.")
-    with col2:
-        siglas = detectar_siglas(texto_usuario)
-        st.markdown("**📌 Siglas detectadas no texto:**")
-        st.write(siglas if siglas else "Nenhuma sigla detectada.")
+texto_input = st.text_area("✏️ Cole o texto a ser analisado antes de enviar a planilha:", height=250)
 
-st.divider()
+if st.button("🔍 Analisar"):
+    if texto_input.strip():
+        col1, col2 = st.columns(2)
+        with col1:
+            st.subheader("📌 Sugestões de palavras compostas:")
+            compostas = sugerir_palavras_compostas(texto_input)
+            if compostas:
+                for item in compostas:
+                    st.write(f"• {item}")
+            else:
+                st.info("Nenhuma palavra composta sugerida.")
+
+        with col2:
+            st.subheader("📌 Siglas detectadas no texto:")
+            siglas = detectar_siglas(texto_input)
+            if siglas:
+                for sigla in siglas:
+                    st.write(f"• {sigla}")
+            else:
+                st.info("Nenhuma sigla detectada.")
+    else:
+        st.warning("Insira um texto antes de clicar em Analisar.")
+
 st.markdown("""
 ### 📌 Instruções
-
 Esta ferramenta foi desenvolvida para facilitar a geração de corpus textual compatível com o IRaMuTeQ.
-
 Envie um arquivo do Excel **.xlsx** com a estrutura correta para que o corpus possa ser gerado automaticamente.
-
 Sua planilha deve conter **três abas (planilhas internas)** com os seguintes nomes e finalidades:
-
 1. **`textos_selecionados`** : coleção de textos que serão transformados de acordo com as regras de normalização.  
 2. **`dic_palavras_compostas`** : permite substituir palavras compostas por suas formas normalizadas.  
 3. **`dic_siglas`** : tem a finalidade de expandir siglas para suas formas completas.
@@ -186,7 +188,7 @@ with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
-file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
+file = st.file_uploader("📎 Envie sua planilha preenchida", type=["xlsx"])
 
 if file:
     try:
