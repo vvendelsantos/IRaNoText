@@ -60,21 +60,27 @@ def processar_pronomes_pospostos(texto):
     texto = re.sub(r'\b(\w+)[áéíóúâêô]-(lo|la|los|las)-ia\b', r'\2 \1ia', texto)
     return texto
 
-# Função para detectar palavras compostas e siglas
-def detectar_composicoes_e_siglas(texto):
-    palavras_compostas = set()
-    siglas = set()
+# Função para identificar palavras compostas e siglas no texto
+def identificar_palavras_compostas_siglas(texto):
+    stopwords = {"de", "a", "o", "as", "os", "em", "para", "com", "por", "sobre", "entre", "que", "do", "da", "dos", "das"}
     
+    # Identificação de palavras compostas
     palavras = texto.split()
+    compostas = []
+    siglas = []
+    for i in range(len(palavras) - 1):
+        # Verifica se é uma palavra composta
+        if palavras[i].lower() not in stopwords and palavras[i + 1].lower() not in stopwords:
+            compostas.append(f"{palavras[i]} {palavras[i + 1]}")
+
+    # Identificação de siglas
     for palavra in palavras:
-        if len(palavra) > 1 and palavra.isupper():
-            siglas.add(palavra)
-        if len(palavra) > 1:
-            palavras_compostas.add(palavra.lower())
+        if palavra.isupper() and len(palavra) > 1:  # sigla em maiúsculas com mais de 1 caractere
+            siglas.append(palavra)
+    
+    return compostas, siglas
 
-    return palavras_compostas, siglas
-
-# Função principal para gerar o corpus
+# Função para gerar o corpus
 def gerar_corpus(df_textos, df_compostos, df_siglas):
     dict_compostos = {
         str(row["Palavra composta"]).lower(): str(row["Palavra normalizada"]).lower()
@@ -102,7 +108,7 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 
     for _, row in df_textos.iterrows():
         texto = str(row.get("textos selecionados", ""))
-
+        id_val = row.get("id", "")
         if not texto.strip():
             continue
 
@@ -135,10 +141,11 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 
         texto_corrigido = re.sub(r"\s+", " ", texto_corrigido.strip())
 
-        metadata = f"**** *ID_{str(row.get('id', ''))}"
+        metadata = f"**** *ID_{id_val}"
         for col in row.index:
             if col.lower() not in ["id", "textos selecionados"]:
                 metadata += f" *{col.replace(' ', '_')}_{str(row[col]).replace(' ', '_')}"
+                
         corpus_final += f"{metadata}\n{texto_corrigido}\n"
 
     estatisticas = f"Textos processados: {total_textos}\n"
@@ -155,31 +162,41 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 st.set_page_config(layout="wide")
 st.title("Gerador de corpus textual para IRaMuTeQ")
 
-st.markdown("""
+st.markdown(""" 
 ### 📌 Instruções
 
 Esta ferramenta foi desenvolvida para facilitar a geração de corpus textual compatível com o IRaMuTeQ.
 
-1. **Etapa 1 - Análise do Texto**: Cole seu texto abaixo e o sistema sugerirá palavras compostas e siglas que podem ser usadas para preencher sua planilha.
-2. **Etapa 2 - Geração do Corpus**: Após preencher a planilha com as sugestões, faça o upload da planilha para gerar o corpus.
+Envie um arquivo do Excel **.xlsx** com a estrutura correta para que o corpus possa ser gerado automaticamente.
 
+Sua planilha deve conter **três abas (planilhas internas)** com os seguintes nomes e finalidades:
+
+1. **`textos_selecionados`** : coleção de textos que serão transformados de acordo com as regras de normalização.  
+2. **`dic_palavras_compostas`** : permite substituir palavras compostas por suas formas normalizadas, garantindo uma maior consistência no corpus textual gerado.  
+3. **`dic_siglas`** : tem a finalidade de expandir siglas para suas formas completas, aumentando a legibilidade e a clareza do texto.
 """)
 
-# Etapa 1: Análise do Texto
-st.subheader("💬 Etapa 1: Cole seu texto para sugestões de palavras compostas e siglas")
-
-texto_input = st.text_area("Digite seu texto abaixo", height=150)
+# Parte 1: Análise preliminar do texto
+texto_input = st.text_area("📋 Cole seu texto para análise", height=150)
 
 if texto_input:
-    palavras_compostas, siglas = detectar_composicoes_e_siglas(texto_input)
+    compostas, siglas = identificar_palavras_compostas_siglas(texto_input)
+    
+    st.subheader("💡 Palavras Compostas Detectadas:")
+    st.write(", ".join(compostas) if compostas else "Nenhuma palavra composta encontrada.")
 
-    st.subheader("🔍 Sugestões de palavras compostas")
-    st.write("\n".join(sorted(palavras_compostas)))
+    st.subheader("💡 Siglas Detectadas:")
+    st.write(", ".join(siglas) if siglas else "Nenhuma sigla encontrada.")
 
-    st.subheader("🔍 Sugestões de siglas")
-    st.write("\n".join(sorted(siglas)))
+# Parte 2: Processamento do arquivo e geração do corpus
+with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
+    st.download_button(
+        label="📅 Baixar modelo de planilha",
+        data=exemplo,
+        file_name="gerar_corpus_iramuteq.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
 
-# Etapa 2: Upload da Planilha
 file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
 
 if file:
@@ -205,3 +222,12 @@ if file:
 
     except Exception as e:
         st.error(f"Erro ao processar o arquivo: {e}")
+
+st.markdown(""" 
+--- 
+👨‍🏫 **Sobre o autor** 
+
+**Autor:** José Wendel dos Santos  
+**Instituição:** Universidade Federal de Sergipe (UFS)  
+**Contato:** eng.wendel@gmail.com
+""")
