@@ -1,96 +1,61 @@
 import streamlit as st
 import pandas as pd
 import re
-import io
 import spacy
 from word2number import w2n
-from PIL import Image
+import io
 
-# Configurações da página
+# Configuração inicial da página
 st.set_page_config(
-    page_title="LexiFlow - Análise Textual Avançada",
-    page_icon="✨",
-    layout="wide",
-    initial_sidebar_state="expanded"
+    page_title="Text Analytics Suite | UFS",
+    page_icon=":microscope:",
+    layout="wide"
 )
 
-# CSS Customizado
+# CSS customizado
 st.markdown("""
 <style>
-    :root {
-        --primary: #6C5CE7;
-        --secondary: #00CEFF;
-        --accent: #FD79A8;
-        --dark: #2D3436;
-        --light: #F5F6FA;
+    .header-style {
+        font-size: 24px;
+        font-weight: 600;
+        color: #2c3e50;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #3498db;
+        margin-bottom: 20px;
     }
-    
-    .stApp {
-        background-color: #FAFAFA;
-    }
-    
-    .title-box {
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
-        color: white;
-        padding: 1.5rem;
-        border-radius: 12px;
-        margin-bottom: 2rem;
-        box-shadow: 0 4px 20px rgba(108, 92, 231, 0.3);
-    }
-    
-    .card {
-        background: white;
-        border-radius: 12px;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        border-left: 4px solid var(--primary);
-    }
-    
-    .metric-card {
-        background: white;
-        border-radius: 12px;
-        padding: 1rem;
-        box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
-        text-align: center;
-    }
-    
-    .stButton>button {
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
-        color: white;
-        border: none;
-        border-radius: 8px;
-        padding: 0.5rem 1.5rem;
+    .subheader-style {
+        font-size: 18px;
         font-weight: 500;
-        transition: all 0.3s;
+        color: #34495e;
+        margin-top: 25px;
+        margin-bottom: 15px;
     }
-    
-    .stButton>button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(108, 92, 231, 0.3);
-    }
-    
-    .stTextArea>textarea {
+    .metric-box {
+        background-color: #f8f9fa;
         border-radius: 8px;
-        border: 1px solid #E0E0E0;
+        padding: 15px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-    
-    .tab-content {
-        padding: 1rem 0;
-    }
-    
     .footer {
+        font-size: 14px;
+        color: #7f8c8d;
         text-align: center;
-        padding: 1.5rem;
-        margin-top: 3rem;
-        color: #7F8C8D;
-        font-size: 0.9rem;
+        padding: 15px;
+        margin-top: 30px;
+        border-top: 1px solid #eee;
     }
-    
-    .feature-icon {
-        font-size: 2rem;
-        margin-bottom: 1rem;
-        color: var(--primary);
+    .stButton>button {
+        border-radius: 6px;
+        padding: 8px 16px;
+    }
+    .stTextArea>textarea {
+        border-radius: 6px;
+    }
+    .stDownloadButton>button {
+        border-radius: 6px;
+        background-color: #3498db;
+        color: white;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -102,7 +67,7 @@ def load_nlp_model():
 
 nlp = load_nlp_model()
 
-# Funções de análise
+# Funções da parte 1
 @st.cache_data
 def detectar_siglas(texto):
     tokens = re.findall(r"\b[A-Z]{2,}\b", texto)
@@ -114,220 +79,131 @@ def detectar_palavras_compostas(texto):
     compostas = [ent.text for ent in doc.ents if len(ent.text.split()) > 1]
     return list(set(compostas))
 
-# ========================== SIDEBAR ==========================
-with st.sidebar:
+# ========================== PARTE 1 - PRÉ-ANÁLISE ==========================
+st.markdown('<div class="header-style">Análise Linguística Automatizada</div>', unsafe_allow_html=True)
+
+with st.expander("🔬 Ferramenta de Detecção de Padrões Textuais", expanded=True):
     st.markdown("""
-    <div style="text-align:center; margin-bottom:2rem;">
-        <h1 style="color: var(--primary);">LexiFlow</h1>
-        <p style="color: var(--dark);">Análise Textual Inteligente</p>
-    </div>
+    <div class="subheader-style">Identificação automática de elementos textuais complexos</div>
     """, unsafe_allow_html=True)
     
-    st.markdown("""
-    ### Navegação
-    - [Análise de Texto](#analise-de-texto)
-    - [Gerador de Corpus](#gerador-de-corpus)
-    - [Documentação](#documentacao)
-    """)
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        texto_input = st.text_area(
+            "Insira o texto para análise:",
+            height=200,
+            placeholder="Cole ou digite o conteúdo textual a ser analisado...",
+            help="O sistema identificará automaticamente siglas e termos compostos"
+        )
     
-    st.markdown("---")
-    
-    st.markdown("""
-    ### Suporte
-    📧 contato@lexiflow.com  
-    📞 (79) 9999-9999
-    
-    ---
-    
-    ### Versão
-    v2.1.0 | Jun 2023
-    """)
+    with col2:
+        st.markdown('<div class="metric-box">ℹ️ <strong>Orientações</strong></div>', unsafe_allow_html=True)
+        st.markdown("""
+        - Textos com mais de 500 caracteres produzem melhores resultados
+        - Siglas devem estar em CAIXA ALTA
+        - Nomes próprios podem ser detectados como compostos
+        """)
 
-# ========================== HEADER ==========================
-st.markdown("""
-<div class="title-box">
-    <h1 style="color:white; margin:0;">LexiFlow</h1>
-    <p style="color:white; margin:0; opacity:0.9;">Ferramenta avançada de análise textual e geração de corpus</p>
-</div>
-""", unsafe_allow_html=True)
+    if st.button("Executar Análise", type="primary", key="analyze_btn"):
+        if texto_input.strip():
+            with st.spinner("Processando texto... Aguarde"):
+                siglas = detectar_siglas(texto_input)
+                compostas = detectar_palavras_compostas(texto_input)
 
-# ========================== PARTE 1 - ANÁLISE DE TEXTO ==========================
-st.markdown("""
-<div class="card">
-    <h2 style="color: var(--primary); margin-top:0;">🔍 Análise de Texto</h2>
-    <p>Identifique automaticamente padrões linguísticos em seus textos.</p>
-</div>
-""", unsafe_allow_html=True)
-
-col1, col2 = st.columns([3, 1])
-with col1:
-    texto_input = st.text_area(
-        "Insira seu texto para análise:",
-        height=200,
-        placeholder="Cole ou digite seu conteúdo aqui...",
-        help="O sistema identificará automaticamente siglas e termos compostos"
-    )
-
-with col2:
-    st.markdown("""
-    <div class="metric-card">
-        <div class="feature-icon">💡</div>
-        <h4 style="margin:0;">Dicas</h4>
-        <p style="font-size:0.9rem;">Textos com mais de 500 caracteres produzem melhores resultados</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-if st.button("Analisar Texto", type="primary"):
-    if texto_input.strip():
-        with st.spinner("Processando seu texto..."):
-            siglas = detectar_siglas(texto_input)
-            compostas = detectar_palavras_compostas(texto_input)
-
-        st.markdown("---")
-        
-        col_res1, col_res2 = st.columns(2)
-        
-        with col_res1:
-            st.markdown("""
-            <div class="card">
-                <h3 style="color: var(--primary); margin-top:0;">🧩 Palavras Compostas</h3>
-            </div>
-            """, unsafe_allow_html=True)
+            st.markdown("---")
+            col_res1, col_res2 = st.columns(2)
             
-            if compostas:
-                df_compostas = pd.DataFrame(compostas, columns=["Termo"])
-                st.dataframe(df_compostas, use_container_width=True, height=300)
-            else:
-                st.info("Nenhum termo composto identificado", icon="ℹ️")
+            with col_res1:
+                st.markdown('<div class="metric-box">📊 Resultados: Palavras Compostas</div>', unsafe_allow_html=True)
+                if compostas:
+                    st.success(f"🔍 {len(compostas)} termos identificados", icon="✅")
+                    st.dataframe(pd.DataFrame(compostas, columns=["Termo"]), hide_index=True)
+                else:
+                    st.info("Nenhum termo composto identificado", icon="ℹ️")
 
-        with col_res2:
-            st.markdown("""
-            <div class="card">
-                <h3 style="color: var(--primary); margin-top:0;">🔠 Siglas</h3>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            if siglas:
-                df_siglas = pd.DataFrame(siglas, columns=["Sigla"])
-                st.dataframe(df_siglas, use_container_width=True, height=300)
-            else:
-                st.info("Nenhuma sigla identificada", icon="ℹ️")
-    else:
-        st.warning("Por favor, insira um texto para análise", icon="⚠️")
+            with col_res2:
+                st.markdown('<div class="metric-box">📊 Resultados: Siglas</div>', unsafe_allow_html=True)
+                if siglas:
+                    st.success(f"🔠 {len(siglas)} siglas identificadas", icon="✅")
+                    st.dataframe(pd.DataFrame(siglas, columns=["Sigla"]), hide_index=True)
+                else:
+                    st.info("Nenhuma sigla identificada", icon="ℹ️")
+        else:
+            st.warning("Por favor, insira um texto para análise", icon="⚠️")
 
-# ========================== PARTE 2 - GERADOR DE CORPUS ==========================
+# ========================== PARTE 2 - GERAÇÃO DE CORPUS ==========================
 st.markdown("---")
-st.markdown("""
-<div class="card">
-    <h2 style="color: var(--primary); margin-top:0;">📚 Gerador de Corpus</h2>
-    <p>Transforme seus textos em corpus formatado para análise no IRaMuTeQ.</p>
-</div>
-""", unsafe_allow_html=True)
+st.markdown('<div class="header-style">Geração de Corpus para Análise Textual</div>', unsafe_allow_html=True)
 
-tab1, tab2 = st.tabs(["📋 Instruções", "⚙️ Processamento"])
-
-with tab1:
+with st.expander("🧮 Conversor para IRaMuTeQ", expanded=True):
     st.markdown("""
-    <div class="card">
-        <h3 style="color: var(--primary); margin-top:0;">Como preparar seu arquivo</h3>
+    <div class="subheader-style">Transformação automatizada de textos brutos em corpus estruturado</div>
+    
+    Esta ferramenta realiza o pré-processamento textual necessário para análise no software IRaMuTeQ,
+    incluindo normalização de termos e tratamento de elementos especiais.
+    """, unsafe_allow_html=True)
+    
+    tab_guide, tab_template = st.tabs(["📋 Guia de Preparação", "📥 Modelo de Planilha"])
+    
+    with tab_guide:
+        st.markdown("""
+        ### Requisitos do Arquivo de Entrada
         
-        ### Estrutura necessária:
-        1. **Planilha 'textos_selecionados'**
-           - Coluna obrigatória: `textos selecionados`
-           - Coluna opcional: `id`
-           - Outras colunas serão incluídas como metadados
+        O arquivo Excel deve conter **três planilhas** com estrutura específica:
         
-        2. **Planilha 'dic_palavras_compostas'**
+        1. **`textos_selecionados`**
+           - Coluna obrigatória: `textos selecionados` (conteúdo textual)
+           - Coluna opcional: `id` (identificador único)
+           - Colunas adicionais serão incluídas como metadados
+        
+        2. **`dic_palavras_compostas`**
            - `Palavra composta`: Termo original
            - `Palavra normalizada`: Forma padronizada
         
-        3. **Planilha 'dic_siglas'**
-           - `Sigla`: Acrônimo
+        3. **`dic_siglas`**
+           - `Sigla`: Acrônimo em maiúsculas
            - `Significado`: Expansão da sigla
-    </div>
-    """, unsafe_allow_html=True)
+        """)
     
-    with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
-        st.download_button(
-            label="Baixar Modelo de Planilha",
-            data=exemplo,
-            file_name="modelo_corpus_iramuteq.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
+    with tab_template:
+        with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
+            st.download_button(
+                label="Download do Modelo",
+                data=exemplo,
+                file_name="modelo_corpus_iramuteq.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                help="Modelo pré-formatado com todas as planilhas necessárias"
+            )
+        st.image("https://via.placeholder.com/600x300?text=Preview+do+Modelo", caption="Visualização da estrutura do arquivo modelo")
 
-with tab2:
+    st.markdown("---")
     file = st.file_uploader(
-        "Carregue seu arquivo Excel:",
+        "Carregue seu arquivo Excel preparado:",
         type=["xlsx"],
-        help="Arquivo deve seguir a estrutura especificada"
+        help="Arquivo deve seguir a estrutura descrita no guia"
     )
-    
-    if file:
-        try:
-            with st.spinner("Processando seu arquivo..."):
-                xls = pd.ExcelFile(file)
-                df_textos = xls.parse("textos_selecionados")
-                df_compostos = xls.parse("dic_palavras_compostas")
-                df_siglas = xls.parse("dic_siglas")
-                
-                st.success("Arquivo carregado com sucesso!", icon="✅")
-                
-                if st.button("Gerar Corpus", type="primary"):
-                    with st.spinner("Gerando corpus..."):
-                        # Simulação de processamento
-                        corpus = "**** *ID_1\nTexto de exemplo processado para demonstração\n"
-                        stats = {
-                            "textos": 1,
-                            "siglas": 0,
-                            "compostos": 0
-                        }
-                    
-                    st.balloons()
-                    st.success("Corpus gerado com sucesso!", icon="🎉")
-                    
-                    col_stat1, col_stat2, col_stat3 = st.columns(3)
-                    
-                    with col_stat1:
-                        st.markdown("""
-                        <div class="metric-card">
-                            <h3>{}</h3>
-                            <p>Textos Processados</p>
-                        </div>
-                        """.format(stats["textos"]), unsafe_allow_html=True)
-                    
-                    with col_stat2:
-                        st.markdown("""
-                        <div class="metric-card">
-                            <h3>{}</h3>
-                            <p>Siglas Substituídas</p>
-                        </div>
-                        """.format(stats["siglas"]), unsafe_allow_html=True)
-                    
-                    with col_stat3:
-                        st.markdown("""
-                        <div class="metric-card">
-                            <h3>{}</h3>
-                            <p>Termos Compostos</p>
-                        </div>
-                        """.format(stats["compostos"]), unsafe_allow_html=True)
-                    
-                    st.text_area("Corpus Gerado", corpus, height=200)
-                    
-                    st.download_button(
-                        "Baixar Corpus",
-                        data=corpus,
-                        file_name="corpus_iramuteq.txt",
-                        mime="text/plain"
-                    )
-        
-        except Exception as e:
-            st.error(f"Erro ao processar arquivo: {str(e)}", icon="❌")
 
-# ========================== FOOTER ==========================
-st.markdown("---")
-st.markdown("""
-<div class="footer">
-    <p>Desenvolvido com ❤️ por <strong>LexiFlow</strong></p>
-    <p>© 2023 | Todos os direitos reservados</p>
-</div>
-""", unsafe_allow_html=True)
+    # Funções auxiliares da parte 2
+    def converter_numeros_por_extenso(texto):
+        unidades = {
+            "zero": 0, "dois": 2, "duas": 2, "três": 3, "quatro": 4, "cinco": 5,
+            "seis": 6, "sete": 7, "oito": 8, "nove": 9
+        }
+        dezenas = {
+            "dez": 10, "onze": 11, "doze": 12, "treze": 13, "quatorze": 14, "quinze": 15,
+            "dezesseis": 16, "dezessete": 17, "dezoito": 18, "dezenove": 19, "vinte": 20
+        }
+        centenas = {
+            "cem": 100, "cento": 100, "duzentos": 200, "trezentos": 300, "quatrocentos": 400,
+            "quinhentos": 500, "seiscentos": 600, "setecentos": 700, "oitocentos": 800, "novecentos": 900
+        }
+        multiplicadores = {
+            "mil": 1000, "milhão": 1000000, "bilhão": 1000000000
+        }
+        
+        # Função para converter texto em números
+        # Aqui, você implementaria um algoritmo para converter números escritos por extenso
+        return texto  # Exemplificação básica, pode ser expandido para processar corretamente
+
+# ========================== RODAPÉ ==========================
+st.markdown('<div class="footer">Desenvolvido por UFS Lab</div>', unsafe_allow_html=True)
