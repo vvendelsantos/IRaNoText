@@ -60,20 +60,17 @@ def processar_pronomes_pospostos(texto):
     texto = re.sub(r'\b(\w+)[áéíóúâêô]-(lo|la|los|las)-ia\b', r'\2 \1ia', texto)
     return texto
 
-# Função para detectar palavras compostas e siglas
-def detectar_palavras_compostas_e_siglas(texto):
-    palavras_compostas = []
-    siglas = []
+# Função para detectar siglas
+def detectar_siglas(texto):
+    siglas = re.findall(r'\b[A-Z]{2,}\b', texto)
+    return list(set(siglas))
 
-    # Expressão regular para detectar palavras compostas
-    palavras_compostas_regex = re.findall(r'\b\w+-\w+\b', texto)
+# Função para detectar palavras compostas
+def detectar_palavras_compostas(texto):
+    palavras_compostas = re.findall(r'\b\w+-\w+\b', texto)
+    return list(set(palavras_compostas))
 
-    # Expressão regular para detectar siglas (de duas ou mais letras em maiúsculas)
-    siglas_regex = re.findall(r'\b[A-Z]{2,}\b', texto)
-
-    return palavras_compostas_regex, siglas_regex
-
-# Função para gerar o corpus
+# Função principal
 def gerar_corpus(df_textos, df_compostos, df_siglas):
     dict_compostos = {
         str(row["Palavra composta"]).lower(): str(row["Palavra normalizada"]).lower()
@@ -155,41 +152,34 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 st.set_page_config(layout="wide")
 st.title("Analisador de Texto - Detecção de Siglas e Palavras Compostas")
 
-# Texto sobre o autor
-st.markdown(
-    """
-    Este sistema foi desenvolvido para auxiliar na análise de textos, detectando siglas e palavras compostas,
-    e gerando um corpus textual compatível com o IRaMuTeQ.
-    """
-)
+# Caixa de texto para o usuário inserir o texto
+texto_usuario = st.text_area("📝 Insira o texto para análise", "", height=300)
 
-# Caixa de entrada para o usuário inserir o texto
-texto_usuario = st.text_area("📝 Insira o texto para análise:")
-
-# Botão para realizar a análise
+# Botão para iniciar a análise
 if st.button("🔍 Analisar Texto"):
-    # Detectar palavras compostas e siglas
-    palavras_compostas_detectadas, siglas_detectadas = detectar_palavras_compostas_e_siglas(texto_usuario.lower())
+    if texto_usuario.strip():
+        # Detectando siglas e palavras compostas no texto
+        siglas_detectadas = detectar_siglas(texto_usuario)
+        palavras_compostas_detectadas = detectar_palavras_compostas(texto_usuario)
 
-    # Exibir resultados lado a lado
-    col1, col2 = st.columns(2)
-    with col1:
-        st.subheader("🔤 Palavras Compostas Detectadas")
-        if palavras_compostas_detectadas:
-            st.write(", ".join(palavras_compostas_detectadas))
-        else:
-            st.write("Nenhuma palavra composta detectada.")
-    
-    with col2:
+        # Exibindo resultados de forma bonita em listas
         st.subheader("🔤 Siglas Detectadas")
         if siglas_detectadas:
-            st.write(", ".join(siglas_detectadas))
+            st.write("- " + "\n- ".join(siglas_detectadas))
         else:
             st.write("Nenhuma sigla detectada.")
 
-# Botão para o usuário enviar a planilha após a análise do texto
+        st.subheader("🔤 Sugestões de Palavras Compostas")
+        if palavras_compostas_detectadas:
+            st.write("- " + "\n- ".join(palavras_compostas_detectadas))
+        else:
+            st.write("Nenhuma palavra composta detectada.")
+    else:
+        st.warning("Por favor, insira um texto para análise.")
+
+# Upload da planilha para gerar o corpus
 st.markdown("""---""")
-st.subheader("📁 Envie a planilha para gerar o corpus textual")
+st.subheader("📤 Envie sua planilha para gerar o corpus textual")
 file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
 
 if file:
@@ -198,7 +188,6 @@ if file:
         df_textos = xls.parse("textos_selecionados")
         df_compostos = xls.parse("dic_palavras_compostas")
         df_siglas = xls.parse("dic_siglas")
-        df_textos.columns = [col.strip().lower() for col in df_textos.columns]
 
         if st.button("🚀 GERAR CORPUS TEXTUAL"):
             corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
@@ -212,5 +201,16 @@ if file:
                 st.download_button("📄 BAIXAR CORPUS TEXTUAL", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
             else:
                 st.warning("Nenhum texto processado. Verifique os dados da planilha.")
+
     except Exception as e:
         st.error(f"Erro ao processar o arquivo: {e}")
+
+# Texto do autor
+st.markdown("""
+---
+👨‍🏫 **Sobre o autor**
+
+**Autor:** José Wendel dos Santos  
+**Instituição:** Universidade Federal de Sergipe (UFS)  
+**Contato:** eng.wendel@gmail.com
+""")
