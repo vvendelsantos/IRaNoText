@@ -201,17 +201,15 @@ if file is not None:
     }
 
     # Ajustando o botão de análise de texto
-    col1, col2 = st.columns([3, 1])
-    with col1:
-        if st.button("🔍 Analisar Texto"):
-            siglas_detectadas = detectar_siglas(input_texto.lower(), dict_siglas)
-            compostos_detectados = detectar_palavras_compostas(input_texto.lower(), dict_compostos)
+    if st.button("🔍 Analisar Texto"):
+        siglas_detectadas = detectar_siglas(input_texto.lower(), dict_siglas)
+        compostos_detectados = detectar_palavras_compostas(input_texto.lower(), dict_compostos)
 
-            st.subheader("🔍 Siglas detectadas:")
-            st.write([f"{sigla} ({significado})" for sigla, significado in siglas_detectadas])
+        st.subheader("🔍 Siglas detectadas:")
+        st.write([f"{sigla} ({significado})" for sigla, significado in siglas_detectadas])
 
-            st.subheader("🔍 Palavras compostas detectadas:")
-            st.write([f"{termo} → {substituto}" for termo, substituto in compostos_detectados])
+        st.subheader("🔍 Palavras compostas detectadas:")
+        st.write([f"{termo} → {substituto}" for termo, substituto in compostos_detectados])
 
     # Geração do corpus
     if st.button("🚀 GERAR CORPUS TEXTUAL"):
