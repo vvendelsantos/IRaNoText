@@ -237,58 +237,31 @@ with st.expander("📂 **Gerador de Corpus para IRaMuTeQ**", expanded=True):
 
     if file:
         try:
-            with st.spinner("Processando planilha..."):
-                xls = pd.ExcelFile(file)
-                df_textos = xls.parse("textos_selecionados")
-                df_compostos = xls.parse("dic_palavras_compostas")
-                df_siglas = xls.parse("dic_siglas")
-                df_textos.columns = [col.strip().lower() for col in df_textos.columns]
+            st.info(f"📂 Processando arquivo '{file.name}'")
+            df = pd.read_excel(file, sheet_name=None)
+            df_textos = df.get("textos_selecionados", pd.DataFrame())
+            df_compostos = df.get("dic_palavras_compostas", pd.DataFrame())
+            df_siglas = df.get("dic_siglas", pd.DataFrame())
 
-            if st.button("🚀 Gerar Corpus Textual", type="primary"):
-                with st.spinner("Gerando corpus..."):
-                    corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
+            if not df_textos.empty and not df_compostos.empty and not df_siglas.empty:
+                corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
 
-                if corpus.strip():
-                    st.success("✅ Corpus gerado com sucesso!")
-                    
-                    tab1, tab2 = st.tabs(["📄 Visualizar Corpus", "📊 Estatísticas"])
-                    
-                    with tab1:
-                        st.text_area(
-                            "Conteúdo do Corpus Gerado",
-                            corpus,
-                            height=300,
-                            help="Visualize o corpus gerado antes de baixar"
-                        )
-                    
-                    with tab2:
-                        st.text_area(
-                            "Estatísticas do Processamento",
-                            estatisticas,
-                            height=300,
-                            disabled=True
-                        )
-
-                    buf = io.BytesIO()
-                    buf.write(corpus.encode("utf-8"))
-                    st.download_button(
-                        "💾 Baixar Corpus Textual",
-                        data=buf.getvalue(),
-                        file_name="corpus_IRaMuTeQ.txt",
-                        mime="text/plain",
-                        help="Clique para baixar o arquivo de corpus no formato TXT"
-                    )
-                else:
-                    st.warning("⚠️ Nenhum texto foi processado. Verifique os dados da planilha.")
-
+                st.markdown(estatisticas)
+                st.download_button(
+                    label="📥 Baixar corpus gerado",
+                    data=corpus,
+                    file_name="corpus_gerado.txt",
+                    mime="text/plain"
+                )
+            else:
+                st.warning("O arquivo não contém as abas necessárias.")
         except Exception as e:
-            st.error(f"❌ Erro ao processar o arquivo: {str(e)}")
-            st.info("ℹ️ Verifique se a planilha contém todas as abas necessárias com os nomes corretos.")
+            st.error(f"Erro ao processar o arquivo: {e}")
 
 # Rodapé
 st.markdown("---")
 footer = """
-<div style="text-align: center; padding: 10px; background-color: #f0f2f6; border-radius: 5px;">
+<div style="text-align: center; padding: 10px; border-radius: 5px;">
     <p style="margin: 0;">👨‍💻 <strong>Desenvolvido por:</strong> José Wendel dos Santos</p>
     <p style="margin: 0;">🏛️ <strong>Instituição:</strong> Universidade Federal de Sergipe (UFS)</p>
     <p style="margin: 0;">📧 <strong>Contato:</strong> eng.wendel@gmail.com</p>
