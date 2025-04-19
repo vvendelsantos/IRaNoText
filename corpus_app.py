@@ -89,7 +89,7 @@ def detectar_palavras_compostas(texto):
 
     return sorted(set(compostas))
 
-# Função para gerar o corpus
+# Função principal para gerar o corpus
 def gerar_corpus(df_textos, df_compostos, df_siglas):
     dict_compostos = {
         str(row["Palavra composta"]).lower(): str(row["Palavra normalizada"]).lower()
@@ -117,7 +117,7 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 
     for _, row in df_textos.iterrows():
         texto = str(row.get("textos selecionados", ""))
-        id_val = row.get("id", "")
+
         if not texto.strip():
             continue
 
@@ -149,10 +149,10 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 
         texto_corrigido = re.sub(r"\s+", " ", texto_corrigido.strip())
 
-        metadata = f"**** *ID_{id_val}"
+        metadata = f"**** *ID_{row.get('id', '')}"
         for col in row.index:
             if col.lower() not in ["id", "textos selecionados"]:
-                metadata += f" *{col.replace(' ', '_')}_{str(row[col]).replace(' ', '_')}" 
+                metadata += f" *{col.replace(' ', '_')}_{str(row[col]).replace(' ', '_')}"
 
         corpus_final += f"{metadata}\n{texto_corrigido}\n"
 
@@ -166,7 +166,6 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 
     return corpus_final, estatisticas
 
-
 # Interface Streamlit
 st.set_page_config(layout="wide")
 st.title("Gerador de corpus textual para IRaMuTeQ")
@@ -174,39 +173,34 @@ st.title("Gerador de corpus textual para IRaMuTeQ")
 # Caixa de texto para o usuário inserir o texto
 texto_input = st.text_area("Insira o texto a ser analisado:")
 
-# Parte 1 - Análise do texto
+# Botão para iniciar a análise
 if st.button("🔍 Analisar texto"):
     if texto_input.strip():
         siglas_detectadas = detectar_siglas(texto_input)
         palavras_compostas_detectadas = detectar_palavras_compostas(texto_input)
 
-        # Exibir resultados lado a lado nas duas colunas
+        # Exibir resultados lado a lado
         col1, col2 = st.columns(2)
 
         with col1:
             st.subheader("Siglas detectadas")
-            if siglas_detectadas:
-                for sigla in siglas_detectadas:
-                    st.write(f"- {sigla}")  # Lista vertical de siglas
-            else:
-                st.write("Nenhuma sigla detectada")
+            st.write("\n".join(siglas_detectadas) if siglas_detectadas else "Nenhuma sigla detectada")
 
         with col2:
             st.subheader("Palavras compostas detectadas")
-            if palavras_compostas_detectadas:
-                for composta in palavras_compostas_detectadas:
-                    st.write(f"- {composta}")  # Lista vertical de palavras compostas
-            else:
-                st.write("Nenhuma palavra composta detectada")
+            st.write("\n".join(palavras_compostas_detectadas) if palavras_compostas_detectadas else "Nenhuma palavra composta detectada")
     else:
         st.warning("Por favor, insira um texto para análise.")
 
-
-# Parte 2 - Upload da planilha e geração do corpus
+# Se o arquivo for enviado
 uploaded_file = st.file_uploader("Faça upload da planilha de textos e palavras compostas", type=["csv", "xlsx"])
 
 if uploaded_file:
-    df_textos = pd.read_csv(uploaded_file)  # Leitura da planilha de textos
+    try:
+        df_textos = pd.read_csv(uploaded_file, encoding='utf-8')  # Tente utf-8 primeiro
+    except UnicodeDecodeError:
+        df_textos = pd.read_csv(uploaded_file, encoding='latin1')  # Caso haja erro, tenta latin1
+    
     df_compostos = pd.read_csv(uploaded_file)  # Leitura da planilha de palavras compostas
     df_siglas = pd.read_csv(uploaded_file)  # Leitura da planilha de siglas
 
