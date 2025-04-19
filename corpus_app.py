@@ -36,7 +36,7 @@ def exibir_resultados(palavras_compostas, siglas):
         else:
             st.write("Nenhuma sigla detectada.")
 
-# Função para processar os textos e gerar o corpus
+# Função principal para gerar o corpus (sem alteração)
 def gerar_corpus(df_textos, df_compostos, df_siglas):
     dict_compostos = {
         str(row["Palavra composta"]).lower(): str(row["Palavra normalizada"]).lower()
@@ -86,32 +86,35 @@ st.title("Gerador de corpus textual para IRaMuTeQ")
 st.markdown("""### 📌 Instruções
 Esta ferramenta foi desenvolvida para facilitar a geração de corpus textual compatível com o IRaMuTeQ.
 
-1. Insira o seu texto na caixa abaixo e o sistema irá detectar palavras compostas e siglas.
+1. Insira o seu texto na caixa abaixo e clique em "Analisar" para detectar palavras compostas e siglas.
 2. Revise os resultados apresentados e, após preencher a tabela, faça o upload da planilha para gerar o corpus.
 """)
 
 # Caixa para o usuário inserir o texto
 texto_usuario = st.text_area("📄 Insira o seu texto aqui:", height=200)
 
-# Processar o texto inserido
-if texto_usuario:
-    # Exemplo de dicionário de palavras compostas e siglas para teste
-    dict_compostos = {
-        "mestre de obras": "mestre-de-obras",
-        "engenheiro civil": "engenheiro-civil"
-    }
-    
-    dict_siglas = {
-        "ufse": "Universidade Federal de Sergipe",
-        "usa": "United States of America"
-    }
+# Adicionando botão para análise
+if st.button("🔍 Analisar"):
+    if texto_usuario:
+        # Exemplo de dicionário de palavras compostas e siglas para teste
+        dict_compostos = {
+            "mestre de obras": "mestre-de-obras",
+            "engenheiro civil": "engenheiro-civil"
+        }
+        
+        dict_siglas = {
+            "ufse": "Universidade Federal de Sergipe",
+            "usa": "United States of America"
+        }
 
-    # Detectando palavras compostas e siglas no texto
-    palavras_compostas_detectadas = detectar_palavras_compostas(texto_usuario.lower(), dict_compostos)
-    siglas_detectadas = detectar_siglas(texto_usuario.lower(), dict_siglas)
+        # Detectando palavras compostas e siglas no texto
+        palavras_compostas_detectadas = detectar_palavras_compostas(texto_usuario.lower(), dict_compostos)
+        siglas_detectadas = detectar_siglas(texto_usuario.lower(), dict_siglas)
 
-    # Exibindo os resultados
-    exibir_resultados(palavras_compostas_detectadas, siglas_detectadas)
+        # Exibindo os resultados
+        exibir_resultados(palavras_compostas_detectadas, siglas_detectadas)
+    else:
+        st.warning("Por favor, insira um texto para análise.")
 
 # Upload de planilha para gerar o corpus
 file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
