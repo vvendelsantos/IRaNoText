@@ -71,13 +71,25 @@ with tabs[1]:
     3. **`dic_siglas`** : tem a finalidade de expandir siglas para suas formas completas, aumentando a legibilidade e a clareza do texto.
     """)
 
-    with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
-        st.download_button(
-            label="📅 Baixar modelo de planilha",
-            data=exemplo,
-            file_name="gerar_corpus_iramuteq.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
+    # Botões para download
+    with st.container():
+        col1, col2 = st.columns(2)
+        with col1:
+            with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
+                st.download_button(
+                    label="📥 Baixar modelo de planilha",
+                    data=exemplo,
+                    file_name="gerar_corpus_iramuteq.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
+        with col2:
+            with open("textos_selecionados.xlsx", "rb") as textos:
+                st.download_button(
+                    label="📥 Baixar textos para análise",
+                    data=textos,
+                    file_name="textos_selecionados.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
 
     file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
 
@@ -224,6 +236,11 @@ with tabs[1]:
 
                 if corpus.strip():
                     st.success("Corpus gerado com sucesso!")
+
+                    # Nova aba para mostrar o corpus antes do download
+                    st.subheader("📄 Corpus Textual Gerado")
+                    st.text_area("Veja o corpus gerado antes de baixar", corpus, height=300)
+
                     st.text_area("📊 Estatísticas do processamento", estatisticas, height=250)
 
                     buf = io.BytesIO()
