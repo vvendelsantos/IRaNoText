@@ -173,17 +173,21 @@ Sua planilha deve conter **três abas (planilhas internas)** com os seguintes no
 # Caixa para inserir o texto manualmente
 texto_input = st.text_area("📥 Insira seu texto para análise de siglas e palavras compostas:", height=200)
 
-if texto_input:
-    # Detectar siglas e palavras compostas no texto inserido
-    siglas_detectadas = detectar_siglas(texto_input)
-    palavras_compostas_detectadas = detectar_palavras_compostas(texto_input)
-    
-    # Mostrar os resultados
-    st.subheader("🔍 Siglas Detectadas:")
-    st.write(siglas_detectadas)
+# Botão para analisar o texto
+if st.button("🔍 Analisar Texto"):
+    if texto_input:
+        # Detectar siglas e palavras compostas no texto inserido
+        siglas_detectadas = detectar_siglas(texto_input)
+        palavras_compostas_detectadas = detectar_palavras_compostas(texto_input)
 
-    st.subheader("🔍 Palavras Compostas Detectadas:")
-    st.write(palavras_compostas_detectadas)
+        # Mostrar os resultados
+        st.subheader("🔍 Siglas Detectadas:")
+        st.write(siglas_detectadas)
+
+        st.subheader("🔍 Palavras Compostas Detectadas:")
+        st.write(palavras_compostas_detectadas)
+    else:
+        st.warning("Por favor, insira um texto para análise.")
 
 file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
 
