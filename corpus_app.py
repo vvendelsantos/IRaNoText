@@ -170,13 +170,20 @@ Sua planilha deve conter **três abas (planilhas internas)** com os seguintes no
 3. **`dic_siglas`** : tem a finalidade de expandir siglas para suas formas completas, aumentando a legibilidade e a clareza do texto.
 """)
 
-with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
-    st.download_button(
-        label="📅 Baixar modelo de planilha",
-        data=exemplo,
-        file_name="gerar_corpus_iramuteq.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
+# Caixa para inserir o texto manualmente
+texto_input = st.text_area("📥 Insira seu texto para análise de siglas e palavras compostas:", height=200)
+
+if texto_input:
+    # Detectar siglas e palavras compostas no texto inserido
+    siglas_detectadas = detectar_siglas(texto_input)
+    palavras_compostas_detectadas = detectar_palavras_compostas(texto_input)
+    
+    # Mostrar os resultados
+    st.subheader("🔍 Siglas Detectadas:")
+    st.write(siglas_detectadas)
+
+    st.subheader("🔍 Palavras Compostas Detectadas:")
+    st.write(palavras_compostas_detectadas)
 
 file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
 
