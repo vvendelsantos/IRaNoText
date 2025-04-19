@@ -46,73 +46,39 @@ def converter_numeros_por_extenso(texto):
 
     return " ".join(resultado)
 
-# Função para processar palavras compostas com "-se"
-def processar_palavras_com_se(texto):
-    return re.sub(r"(\b\w+)-se\b", r"se \1", texto)
-
-# Função para processar pronomes oblíquos pós-verbais
-def processar_pronomes_pospostos(texto):
-    texto = re.sub(r'\b(\w+)-se\b', r'se \1', texto)
-    texto = re.sub(r'\b(\w+)-([oa]s?)\b', r'\2 \1', texto)
-    texto = re.sub(r'\b(\w+)-(lhe|lhes)\b', r'\2 \1', texto)
-    texto = re.sub(r'\b(\w+)-(me|te|nos|vos)\b', r'\2 \1', texto)
-    texto = re.sub(r'\b(\w+)[áéíóúâêô]?-([oa]s?)\b', r'\2 \1', texto)
-    texto = re.sub(r'\b(\w+)[áéíóúâêô]-(lo|la|los|las)-ia\b', r'\2 \1ia', texto)
-    return texto
-
-# Função para detectar palavras compostas no texto de forma dinâmica
+# Função para detectar palavras compostas
 def detectar_palavras_compostas(texto):
     palavras = texto.split()
     palavras_compostas = []
-
+    
+    # Verificar pares consecutivos de palavras
     for i in range(len(palavras) - 1):
         palavra_composta = f"{palavras[i]} {palavras[i + 1]}"
-        if re.match(r'[A-Za-z]+ [A-Za-z]+', palavra_composta):
+        if len(palavra_composta.split()) > 1:
             palavras_compostas.append(palavra_composta)
     
     return palavras_compostas
 
-# Função para detectar siglas no texto
+# Função para detectar siglas
 def detectar_siglas(texto):
     siglas = re.findall(r'\b[A-Z]{2,}\b', texto)
     return list(set(siglas))  # Retorna siglas únicas
 
 # Função principal
-def gerar_corpus(df_textos, df_compostos, df_siglas):
-    dict_compostos = {
-        str(row["Palavra composta"]).lower(): str(row["Palavra normalizada"]).lower()
-        for _, row in df_compostos.iterrows()
-        if pd.notna(row["Palavra composta"]) and pd.notna(row["Palavra normalizada"])
-    }
-
-    dict_siglas = {
-        str(row["Sigla"]).lower(): str(row["Significado"])
-        for _, row in df_siglas.iterrows()
-        if pd.notna(row["Sigla"]) and pd.notna(row["Significado"])
-    }
-
-    caracteres_especiais = {
-        "-": "Hífen", ";": "Ponto e vírgula", '"': "Aspas duplas", "'": "Aspas simples",
-        "…": "Reticências", "–": "Travessão", "(": "Parêntese esquerdo", ")": "Parêntese direito",
-        "/": "Barra", "%": "Porcentagem"
-    }
-    contagem_caracteres = {k: 0 for k in caracteres_especiais}
+def gerar_corpus(df_textos):
     total_textos = 0
     total_siglas = 0
     total_compostos = 0
-    total_remocoes = 0
     corpus_final = ""
-
+    
     for _, row in df_textos.iterrows():
         texto = str(row.get("textos selecionados", ""))
         id_val = row.get("id", "")
         if not texto.strip():
             continue
-
+        
         texto_corrigido = texto.lower()
         texto_corrigido = converter_numeros_por_extenso(texto_corrigido)
-        texto_corrigido = processar_palavras_com_se(texto_corrigido)
-        texto_corrigido = processar_pronomes_pospostos(texto_corrigido)
         
         # Detectar palavras compostas e siglas dinamicamente
         palavras_compostas = detectar_palavras_compostas(texto_corrigido)
@@ -124,20 +90,9 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
             texto_corrigido = re.sub(rf"\b{sigla}\b", sigla, texto_corrigido, flags=re.IGNORECASE)
             total_siglas += 1
 
-        for termo, substituto in dict_compostos.items():
-            if termo in texto_corrigido:
-                texto_corrigido = re.sub(rf"\b{termo}\b", substituto, texto_corrigido, flags=re.IGNORECASE)
-                total_compostos += 1
-
-        for char in caracteres_especiais:
-            count = texto_corrigido.count(char)
-            if count:
-                if char == "%":
-                    texto_corrigido = texto_corrigido.replace(char, "")
-                else:
-                    texto_corrigido = texto_corrigido.replace(char, "_")
-                contagem_caracteres[char] += count
-                total_remocoes += count
+        for palavra_composta in palavras_compostas:
+            texto_corrigido = re.sub(rf"\b{palavra_composta}\b", palavra_composta, texto_corrigido, flags=re.IGNORECASE)
+            total_compostos += 1
 
         texto_corrigido = re.sub(r"\s+", " ", texto_corrigido.strip())
 
@@ -147,14 +102,10 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
                 metadata += f" *{col.replace(' ', '_')}_{str(row[col]).replace(' ', '_')}"
 
         corpus_final += f"{metadata}\n{texto_corrigido}\n"
-
+    
     estatisticas = f"Textos processados: {total_textos}\n"
-    estatisticas += f"Siglas removidas/substituídas: {total_siglas}\n"
-    estatisticas += f"Palavras compostas substituídas: {total_compostos}\n"
-    estatisticas += f"Caracteres especiais removidos: {total_remocoes}\n"
-    for char, nome in caracteres_especiais.items():
-        if contagem_caracteres[char] > 0:
-            estatisticas += f" - {nome} ({char}) : {contagem_caracteres[char]}\n"
+    estatisticas += f"Siglas detectadas: {total_siglas}\n"
+    estatisticas += f"Palavras compostas detectadas: {total_compostos}\n"
 
     return corpus_final, estatisticas
 
@@ -178,12 +129,10 @@ if file:
     try:
         xls = pd.ExcelFile(file)
         df_textos = xls.parse("textos_selecionados")
-        df_compostos = xls.parse("dic_palavras_compostas")
-        df_siglas = xls.parse("dic_siglas")
         df_textos.columns = [col.strip().lower() for col in df_textos.columns]
 
         if st.button("🚀 GERAR CORPUS TEXTUAL"):
-            corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
+            corpus, estatisticas = gerar_corpus(df_textos)
 
             if corpus.strip():
                 st.success("Corpus gerado com sucesso!")
