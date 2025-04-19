@@ -158,38 +158,46 @@ Sua planilha deve conter **três abas (planilhas internas)** com os seguintes no
 3. **`dic_siglas`** : tem a finalidade de expandir siglas para suas formas completas, aumentando a legibilidade e a clareza do texto.
 """)
 
-# Campo para o usuário inserir o texto
-texto_usuario = st.text_area("Insira o texto a ser analisado:", "")
+# Exemplo de botão para baixar o modelo
+with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
+    st.download_button(
+        label="📅 Baixar modelo de planilha",
+        data=exemplo,
+        file_name="gerar_corpus_iramuteq.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
 
-# Botão de análise
-if st.button("🔍 Analisar"):
-    if texto_usuario.strip():
-        # Carregar dicionários de siglas e palavras compostas
-        dic_siglas = {
-            'ifes': 'Instituto Federal do Espírito Santo',  # Exemplo de sigla
-            # Adicionar mais siglas conforme necessário
-        }
-        dic_compostos = {
-            'inteligência artificial': 'IA',
-            'instituto federal de sergipe': 'IFS',
-            # Adicionar mais palavras compostas conforme necessário
-        }
+file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
 
-        # Detectar siglas e sugerir palavras compostas
-        siglas_detectadas, palavras_compostas, texto_corrigido = detectar_siglas_e_sugerir_palavras_compostas(
-            texto_usuario, dic_siglas, dic_compostos
-        )
+if file:
+    try:
+        xls = pd.ExcelFile(file)
+        df_textos = xls.parse("textos_selecionados")
+        df_compostos = xls.parse("dic_palavras_compostas")
+        df_siglas = xls.parse("dic_siglas")
+        df_textos.columns = [col.strip().lower() for col in df_textos.columns]
 
-        # Mostrar resultados em janelas lado a lado
-        col1, col2 = st.columns(2)
+        if st.button("🚀 GERAR CORPUS TEXTUAL"):
+            corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
 
-        with col1:
-            st.subheader("Siglas Detectadas")
-            st.write("\n".join(siglas_detectadas))
+            if corpus.strip():
+                st.success("Corpus gerado com sucesso!")
+                st.text_area("📊 Estatísticas do processamento", estatisticas, height=250)
 
-        with col2:
-            st.subheader("Palavras Compostas Sugeridas")
-            st.write("\n".join(palavras_compostas))
+                buf = io.BytesIO()
+                buf.write(corpus.encode("utf-8"))
+                st.download_button("📄 BAIXAR CORPUS TEXTUAL", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
+            else:
+                st.warning("Nenhum texto processado. Verifique os dados da planilha.")
 
-    else:
-        st.warning("Por favor, insira um texto para análise.")
+    except Exception as e:
+        st.error(f"Erro ao processar o arquivo: {e}")
+
+st.markdown("""
+---
+👨‍🏫 **Sobre o autor**
+
+**Autor:** José Wendel dos Santos  
+**Instituição:** Universidade Federal de Sergipe (UFS)  
+**Contato:** eng.wendel@gmail.com
+""")
