@@ -4,6 +4,7 @@ import re
 import io
 from word2number import w2n
 import nltk
+from docx import Document
 
 # Baixar o recurso necessário do NLTK
 nltk.download('punkt', quiet=True)
@@ -64,7 +65,17 @@ def processar_pronomes_pospostos(texto):
     texto = re.sub(r'\b(\w+)[áéíóúâêô]-(lo|la|los|las)-ia\b', r'\2 \1ia', texto)
     return texto
 
-# Função principal
+# Função para ler conteúdo de um arquivo Word e extrair dados
+def ler_arquivo_word(file):
+    doc = Document(file)
+    dados = []
+    for para in doc.paragraphs:
+        texto = para.text.strip()
+        if texto:
+            dados.append(texto)
+    return dados
+
+# Função principal para gerar o corpus
 def gerar_corpus(df_textos, df_compostos, df_siglas):
     dict_compostos = {
         str(row["Palavra composta"]).lower(): str(row["Palavra normalizada"]).lower()
@@ -140,40 +151,44 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 
 # Interface Streamlit
 st.set_page_config(layout="wide")
-st.title("Gerador de corpus textual para IRaMuTeQ")
+st.title("Gerador de Corpus Textual para IRaMuTeQ")
 
-st.markdown("""  
+st.markdown("""
 ### 📌 Instruções
+1. Envie um arquivo Word com as **palavras compostas** e **siglas**.
+2. Envie outro arquivo Word com os **textos** a serem processados.
 
-Esta ferramenta foi desenvolvida para facilitar a geração de corpus textual compatível com o IRaMuTeQ.
-
-Envie um arquivo do Excel **.xlsx** com a estrutura correta para que o corpus possa ser gerado automaticamente.
-
-Sua planilha deve conter **três abas (planilhas internas)** com os seguintes nomes e finalidades:
-
-1. **`textos_selecionados`** : coleção de textos que serão transformados de acordo com as regras de normalização.  
-2. **`dic_palavras_compostas`** : permite substituir palavras compostas por suas formas normalizadas, garantindo uma maior consistência no corpus textual gerado.  
-3. **`dic_siglas`** : tem a finalidade de expandir siglas para suas formas completas, aumentando a legibilidade e a clareza do texto.
+O código irá alocar os dados na planilha interna e gerar o corpus automaticamente.
 """)
 
-with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
-    st.download_button(
-        label="📅 Baixar modelo de planilha",
-        data=exemplo,
-        file_name="gerar_corpus_iramuteq.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
+file_compostos_siglas = st.file_uploader("Envie o arquivo com palavras compostas e siglas", type=["docx"])
+file_textos = st.file_uploader("Envie o arquivo com os textos", type=["docx"])
 
-file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
-
-if file:
+if file_compostos_siglas and file_textos:
     try:
-        xls = pd.ExcelFile(file)
-        df_textos = xls.parse("textos_selecionados")
-        df_compostos = xls.parse("dic_palavras_compostas")
-        df_siglas = xls.parse("dic_siglas")
-        df_textos.columns = [col.strip().lower() for col in df_textos.columns]
+        # Ler palavras compostas e siglas
+        dados_compostos_siglas = ler_arquivo_word(file_compostos_siglas)
 
+        # Separar dados de palavras compostas e siglas
+        palavras_compostas = []
+        siglas = []
+        for linha in dados_compostos_siglas:
+            if "->" in linha:
+                sigla, significado = linha.split("->")
+                siglas.append({"Sigla": sigla.strip(), "Significado": significado.strip()})
+            else:
+                termo, normalizado = linha.split("=>")
+                palavras_compostas.append({"Palavra composta": termo.strip(), "Palavra normalizada": normalizado.strip()})
+
+        # Criar DataFrame
+        df_compostos = pd.DataFrame(palavras_compostas)
+        df_siglas = pd.DataFrame(siglas)
+
+        # Ler os textos
+        dados_textos = ler_arquivo_word(file_textos)
+        df_textos = pd.DataFrame({"textos selecionados": dados_textos})
+
+        # Gerar o corpus
         if st.button("🚀 GERAR CORPUS TEXTUAL"):
             corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
 
@@ -185,16 +200,6 @@ if file:
                 buf.write(corpus.encode("utf-8"))
                 st.download_button("📄 BAIXAR CORPUS TEXTUAL", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
             else:
-                st.warning("Nenhum texto processado. Verifique os dados da planilha.")
-
+                st.warning("Nenhum texto processado. Verifique os dados.")
     except Exception as e:
-        st.error(f"Erro ao processar o arquivo: {e}")
-
-st.markdown("""  
----  
-👨‍🏫 **Sobre o autor**
-
-**Autor:** José Wendel dos Santos  
-**Instituição:** Universidade Federal de Sergipe (UFS)  
-**Contato:** eng.wendel@gmail.com  
-""")
+        st.error(f"Erro ao processar os arquivos: {e}")
