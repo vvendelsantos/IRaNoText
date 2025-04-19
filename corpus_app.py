@@ -2,25 +2,38 @@ import streamlit as st
 import pandas as pd
 import re
 import io
-from collections import Counter
 from word2number import w2n
+from collections import Counter
+from itertools import tee, islice
 
-# ===================== FUNÇÕES DE ANÁLISE INICIAL =====================
+# Stopwords comuns em português
+stopwords = set([
+    "a", "à", "ao", "aos", "as", "às", "com", "como", "da", "das", "de", "do", "dos",
+    "e", "em", "entre", "na", "nas", "no", "nos", "num", "numa", "o", "os", "ou", "para",
+    "pelas", "pelos", "por", "sem", "sob", "sobre", "trás", "um", "uma", "uns", "umas"
+])
+
+# Funções auxiliares para detectar bigramas e siglas
+def gerar_bigramas(lista_palavras):
+    a, b = tee(lista_palavras)
+    next(b, None)
+    return zip(a, b)
+
+def sugerir_palavras_compostas(texto, limite=10):
+    palavras = re.findall(r'\b\w+\b', texto.lower())
+    bigramas = gerar_bigramas(palavras)
+    contagem = Counter(bigramas)
+
+    compostas_frequentes = [
+        f"{a} {b}" for (a, b), freq in contagem.items()
+        if freq > 1 and a not in stopwords and b not in stopwords
+    ]
+    return sorted(compostas_frequentes, key=lambda x: contagem[tuple(x.split())], reverse=True)[:limite]
 
 def sugerir_siglas(texto):
-    padrao_siglas = re.findall(r'\b[A-Z]{2,}\b', texto)
-    return sorted(set(padrao_siglas))
+    return sorted(set(re.findall(r'\((\w{2,10})\)', texto)))
 
-def sugerir_palavras_compostas(texto):
-    compostas_hifen = re.findall(r'\b\w+-\w+\b', texto.lower())
-    palavras = re.findall(r'\b\w+\b', texto.lower())
-    bigramas = zip(palavras, palavras[1:])
-    contagem = Counter([" ".join(b) for b in bigramas])
-    frequentes = [k for k, v in contagem.items() if v > 1]
-    return sorted(set(compostas_hifen + frequentes))
-
-# ===================== FUNÇÕES DE PROCESSAMENTO DE TEXTO =====================
-
+# Funções de processamento (iguais às anteriores, com ajuste para % ser removido e não substituído)
 def converter_numeros_por_extenso(texto):
     unidades = {
         "zero": 0, "dois": 2, "duas": 2, "três": 3, "quatro": 4, "cinco": 5,
@@ -92,6 +105,7 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
         "…": "Reticências", "–": "Travessão", "(": "Parêntese esquerdo", ")": "Parêntese direito",
         "/": "Barra", "%": "Porcentagem"
     }
+
     contagem_caracteres = {k: 0 for k in caracteres_especiais}
     total_textos = 0
     total_siglas = 0
@@ -150,42 +164,30 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 
     return corpus_final, estatisticas
 
-# ===================== INTERFACE STREAMLIT =====================
-
+# Interface Streamlit
 st.set_page_config(layout="wide")
 st.title("Gerador de corpus textual para IRaMuTeQ")
 
-# === ETAPA 1: COLAR TEXTO E OBTER SUGESTÕES ===
-st.markdown("### 🧪 Etapa 1: Análise preliminar de texto")
+# Etapa 1: Inserção de texto e sugestões
+st.subheader("Etapa 1: Sugestão de palavras compostas e siglas")
+texto_inicial = st.text_area("Cole aqui o texto para sugerir palavras compostas e siglas:", height=250)
 
-texto_exemplo = st.text_area("📋 Cole aqui seu texto para análise inicial", height=250)
-
-if texto_exemplo.strip():
-    siglas_encontradas = sugerir_siglas(texto_exemplo)
-    compostas_encontradas = sugerir_palavras_compostas(texto_exemplo)
+if texto_inicial:
+    compostas_sugeridas = sugerir_palavras_compostas(texto_inicial)
+    siglas_sugeridas = sugerir_siglas(texto_inicial)
 
     col1, col2 = st.columns(2)
-
     with col1:
-        st.markdown("#### 🔤 Siglas detectadas")
-        if siglas_encontradas:
-            st.code("\n".join(siglas_encontradas))
-        else:
-            st.info("Nenhuma sigla detectada.")
+        st.markdown("**🔗 Palavras compostas sugeridas:**")
+        st.code("\n".join(compostas_sugeridas) if compostas_sugeridas else "Nenhuma encontrada")
 
     with col2:
-        st.markdown("#### 🔗 Palavras compostas sugeridas")
-        if compostas_encontradas:
-            st.code("\n".join(compostas_encontradas))
-        else:
-            st.info("Nenhuma palavra composta identificada.")
+        st.markdown("**🔠 Siglas sugeridas:**")
+        st.code("\n".join(siglas_sugeridas) if siglas_sugeridas else "Nenhuma encontrada")
 
-    st.markdown("> ✏️ Copie e edite os termos acima para incluir na planilha.")
-
+# Etapa 2: Upload da planilha e geração de corpus
 st.markdown("---")
-
-# === ETAPA 2: UPLOAD E GERAÇÃO DO CORPUS ===
-st.markdown("### 📥 Etapa 2: Geração do corpus textual")
+st.subheader("Etapa 2: Upload da planilha e geração do corpus")
 
 with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
     st.download_button(
@@ -217,7 +219,6 @@ if file:
                 st.download_button("📄 BAIXAR CORPUS TEXTUAL", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
             else:
                 st.warning("Nenhum texto processado. Verifique os dados da planilha.")
-
     except Exception as e:
         st.error(f"Erro ao processar o arquivo: {e}")
 
