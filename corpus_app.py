@@ -60,27 +60,7 @@ def processar_pronomes_pospostos(texto):
     texto = re.sub(r'\b(\w+)[áéíóúâêô]-(lo|la|los|las)-ia\b', r'\2 \1ia', texto)
     return texto
 
-# Função para identificar palavras compostas
-def identificar_palavras_compostas(texto, stopwords):
-    palavras = texto.split()
-    palavras_compostas = set()
-
-    for i in range(len(palavras) - 1):
-        # Combinar palavras consecutivas, ignorando stopwords
-        if palavras[i].lower() not in stopwords and palavras[i + 1].lower() not in stopwords:
-            combinacao = f"{palavras[i]} {palavras[i + 1]}"
-            palavras_compostas.add(combinacao)
-
-    return palavras_compostas
-
-# Função para sugerir palavras compostas
-def sugerir_palavras_compostas(texto, stopwords):
-    palavras_compostas = identificar_palavras_compostas(texto, stopwords)
-    # Filtrar palavras compostas com mais de uma palavra (relevantes)
-    palavras_compostas_relevantes = [p for p in palavras_compostas if len(p.split()) > 1 and p.lower() not in stopwords]
-    return palavras_compostas_relevantes
-
-# Função para gerar o corpus
+# Função para gerar o corpus textual
 def gerar_corpus(df_textos, df_compostos, df_siglas):
     dict_compostos = {
         str(row["Palavra composta"]).lower(): str(row["Palavra normalizada"]).lower()
@@ -108,7 +88,7 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 
     for _, row in df_textos.iterrows():
         texto = str(row.get("textos selecionados", ""))
-
+        id_val = row.get("id", "")
         if not texto.strip():
             continue
 
@@ -141,56 +121,80 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 
         texto_corrigido = re.sub(r"\s+", " ", texto_corrigido.strip())
 
-        metadata = f"**** *ID_{row.get('id', '')}"
+        metadata = f"**** *ID_{id_val}"
+        for col in row.index:
+            if col.lower() not in ["id", "textos selecionados"]:
+                metadata += f" *{col.replace(' ', '_')}_{str(row[col]).replace(' ', '_')}"
+                
         corpus_final += f"{metadata}\n{texto_corrigido}\n"
 
     estatisticas = f"Textos processados: {total_textos}\n"
     estatisticas += f"Siglas removidas/substituídas: {total_siglas}\n"
     estatisticas += f"Palavras compostas substituídas: {total_compostos}\n"
     estatisticas += f"Caracteres especiais removidos: {total_remocoes}\n"
+    for char, nome in caracteres_especiais.items():
+        if contagem_caracteres[char] > 0:
+            estatisticas += f" - {nome} ({char}) : {contagem_caracteres[char]}\n"
+
     return corpus_final, estatisticas
 
 # Interface Streamlit
 st.set_page_config(layout="wide")
 st.title("Gerador de corpus textual para IRaMuTeQ")
 
-st.markdown("""
+st.markdown(""" 
 ### 📌 Instruções
 
-Cole o seu texto abaixo para que possamos sugerir palavras compostas e siglas. Você pode copiar as sugestões e inseri-las na planilha.
+Esta ferramenta foi desenvolvida para facilitar a geração de corpus textual compatível com o IRaMuTeQ.
 
-Depois, faça o upload da planilha para gerar o corpus.
+Envie um arquivo do Excel **.xlsx** com a estrutura correta para que o corpus possa ser gerado automaticamente.
+
+Sua planilha deve conter **três abas (planilhas internas)** com os seguintes nomes e finalidades:
+
+1. **`textos_selecionados`** : coleção de textos que serão transformados de acordo com as regras de normalização.  
+2. **`dic_palavras_compostas`** : permite substituir palavras compostas por suas formas normalizadas, garantindo uma maior consistência no corpus textual gerado.  
+3. **`dic_siglas`** : tem a finalidade de expandir siglas para suas formas completas, aumentando a legibilidade e a clareza do texto.
 """)
 
-# Caixa de texto para o usuário colar o conteúdo diretamente
-texto_usuario = st.text_area("Cole seu texto aqui para análise", height=200)
+# Download do modelo de planilha
+with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
+    st.download_button(
+        label="📅 Baixar modelo de planilha",
+        data=exemplo,
+        file_name="gerar_corpus_iramuteq.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
 
-# Stopwords que serão ignoradas ao identificar palavras compostas
-stopwords = ["de", "a", "o", "as", "os", "e", "em", "para", "com", "por", "que", "na", "no", "da", "do"]
-
-if texto_usuario:
-    # Análise de palavras compostas e siglas
-    palavras_compostas_relevantes = sugerir_palavras_compostas(texto_usuario, stopwords)
-    siglas_detectadas = re.findall(r"\b[A-Za-z]{2,}\b", texto_usuario)
-
-    # Exibição das sugestões
-    st.subheader("Sugestões de Palavras Compostas")
-    st.write(", ".join(palavras_compostas_relevantes))
-
-    st.subheader("Sugestões de Siglas Detectadas")
-    st.write(", ".join(siglas_detectadas))
-
-# Upload da planilha para gerar o corpus
+# Upload da planilha do usuário
 file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
 
 if file:
     try:
+        # Lendo as abas da planilha
         xls = pd.ExcelFile(file)
         df_textos = xls.parse("textos_selecionados")
         df_compostos = xls.parse("dic_palavras_compostas")
         df_siglas = xls.parse("dic_siglas")
         df_textos.columns = [col.strip().lower() for col in df_textos.columns]
 
+        # Sugestão de palavras compostas e siglas
+        if st.button("🔍 Sugerir Palavras Compostas e Siglas"):
+            palavras_compostas = set()
+            siglas = set()
+
+            for _, row in df_textos.iterrows():
+                texto = str(row.get("textos selecionados", ""))
+                palavras = texto.split()
+                for palavra in palavras:
+                    if len(palavra) > 1 and palavra.lower() not in dict_compostos:
+                        palavras_compostas.add(palavra.lower())
+                    if len(palavra) > 1 and palavra.isupper() and palavra not in dict_siglas:
+                        siglas.add(palavra)
+
+            st.text_area("📝 Sugestões de palavras compostas", "\n".join(sorted(palavras_compostas)))
+            st.text_area("📝 Sugestões de siglas", "\n".join(sorted(siglas)))
+
+        # Gerar o corpus
         if st.button("🚀 GERAR CORPUS TEXTUAL"):
             corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
 
@@ -198,6 +202,7 @@ if file:
                 st.success("Corpus gerado com sucesso!")
                 st.text_area("📊 Estatísticas do processamento", estatisticas, height=250)
 
+                # Opção para o usuário baixar o corpus gerado
                 buf = io.BytesIO()
                 buf.write(corpus.encode("utf-8"))
                 st.download_button("📄 BAIXAR CORPUS TEXTUAL", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
@@ -205,4 +210,4 @@ if file:
                 st.warning("Nenhum texto processado. Verifique os dados da planilha.")
 
     except Exception as e:
-        st.error(f"Erro ao processar o arquivo: {str(e)}")
+        st.error(f"Erro ao processar o arquivo: {e}")
