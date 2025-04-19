@@ -183,7 +183,7 @@ file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
 input_texto = st.text_area("📋 Insira o texto para análise:", height=200)
 
 # Detecção de siglas e palavras compostas
-if file is not None and input_texto:
+if file is not None:
     xls = pd.ExcelFile(file)
     df_compostos = xls.parse("dic_palavras_compostas")
     df_siglas = xls.parse("dic_siglas")
@@ -200,18 +200,20 @@ if file is not None and input_texto:
         if pd.notna(row["Sigla"]) and pd.notna(row["Significado"])
     }
 
-    if st.button("🔍 Analisar Texto"):
-        siglas_detectadas = detectar_siglas(input_texto.lower(), dict_siglas)
-        compostos_detectados = detectar_palavras_compostas(input_texto.lower(), dict_compostos)
+    # Ajustando o botão de análise de texto
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        if st.button("🔍 Analisar Texto"):
+            siglas_detectadas = detectar_siglas(input_texto.lower(), dict_siglas)
+            compostos_detectados = detectar_palavras_compostas(input_texto.lower(), dict_compostos)
 
-        st.subheader("🔍 Siglas detectadas:")
-        st.write([f"{sigla} ({significado})" for sigla, significado in siglas_detectadas])
+            st.subheader("🔍 Siglas detectadas:")
+            st.write([f"{sigla} ({significado})" for sigla, significado in siglas_detectadas])
 
-        st.subheader("🔍 Palavras compostas detectadas:")
-        st.write([f"{termo} → {substituto}" for termo, substituto in compostos_detectados])
+            st.subheader("🔍 Palavras compostas detectadas:")
+            st.write([f"{termo} → {substituto}" for termo, substituto in compostos_detectados])
 
-# Geração do corpus
-if file is not None:
+    # Geração do corpus
     if st.button("🚀 GERAR CORPUS TEXTUAL"):
         corpus, estatisticas = gerar_corpus(pd.read_excel(file, sheet_name="textos_selecionados"), df_compostos, df_siglas)
         
