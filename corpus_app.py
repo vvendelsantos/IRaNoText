@@ -65,9 +65,14 @@ def detectar_siglas(texto):
     siglas = re.findall(r'\b[A-Z]{2,}\b', texto)
     return list(set(siglas))
 
-# Função para detectar palavras compostas
+# Função para detectar palavras compostas de forma mais precisa
 def detectar_palavras_compostas(texto):
-    palavras_compostas = re.findall(r'\b\w+-\w+\b', texto)
+    # Vamos considerar palavras compostas por hífen, incluindo prefixos e sufixos comuns
+    palavras_compostas = re.findall(r'\b\w+(?:-\w+)+\b', texto)
+    
+    # Também podemos adicionar mais casos específicos
+    palavras_compostas += re.findall(r'\b(?:pré|anti|auto|hiper|infra|macro|micro|multi|neo|trans|des|re)-\w+\b', texto)
+    
     return list(set(palavras_compostas))
 
 # Função principal
