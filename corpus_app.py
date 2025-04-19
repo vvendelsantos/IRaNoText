@@ -7,7 +7,7 @@ from word2number import w2n
 from collections import Counter
 from nltk.util import ngrams
 
-nltk.download('punkt')
+nltk.download('punkt', quiet=True)
 
 # Função para converter números por extenso para algarismos
 def converter_numeros_por_extenso(texto):
