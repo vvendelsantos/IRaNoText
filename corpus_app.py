@@ -8,6 +8,7 @@ from collections import Counter
 from nltk.corpus import stopwords
 from nltk.util import ngrams
 
+# Baixando os recursos necessários do NLTK
 nltk.download("punkt")
 nltk.download("stopwords")
 
@@ -113,7 +114,7 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
     corpus_final = ""
 
     for _, row in df_textos.iterrows():
-        texto = str(row.get("textos selecionados", "")) 
+        texto = str(row.get("textos selecionados", ""))
         id_val = row.get("id", "")
         if not texto.strip():
             continue
@@ -167,7 +168,7 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 st.set_page_config(layout="wide")
 st.title("Gerador de corpus textual para IRaMuTeQ")
 
-st.markdown("""
+st.markdown(""" 
 ### 📌 Instruções
 
 Esta ferramenta foi desenvolvida para facilitar a geração de corpus textual compatível com o IRaMuTeQ.
@@ -192,8 +193,8 @@ if texto_inicial:
         st.markdown("**🧩 Sugestões de palavras compostas:**")
         st.code("\n".join(compostas_sugeridas))
 
-st.markdown("""
----
+st.markdown(""" 
+--- 
 ### 📥 Envio da planilha
 
 Sua planilha deve conter **três abas (planilhas internas)** com os seguintes nomes e finalidades:
@@ -230,18 +231,8 @@ if file:
 
                 buf = io.BytesIO()
                 buf.write(corpus.encode("utf-8"))
-                st.download_button("📄 BAIXAR CORPUS TEXTUAL", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
+                st.download_button("📄 BAIXAR CORPUS TEXTUAL", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt")
             else:
-                st.warning("Nenhum texto processado. Verifique os dados da planilha.")
-
+                st.warning("⚠️ Não foi possível gerar o corpus. Verifique os dados de entrada.")
     except Exception as e:
-        st.error(f"Erro ao processar o arquivo: {e}")
-
-st.markdown("""
----
-👨‍🏫 **Sobre o autor**
-
-**Autor:** José Wendel dos Santos  
-**Instituição:** Universidade Federal de Sergipe (UFS)  
-**Contato:** eng.wendel@gmail.com
-""")
+        st.error(f"Erro ao processar a planilha: {str(e)}")
