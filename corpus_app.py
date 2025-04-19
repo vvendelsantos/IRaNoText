@@ -270,9 +270,9 @@ with tabs[1]:
 
                     buf = io.BytesIO()
                     buf.write(corpus.encode("utf-8"))
-                    st.download_button("📄 BAIXAR CORPUS TEXTUAL", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
+                    st.download_button("📄 BAIXAR CORPUS TEXTUAL", data=buf.getvalue(), file_name="corpus.txt", mime="text/plain")
                 else:
-                    st.warning("Nenhum texto processado. Verifique os dados da planilha.")
+                    st.warning("Não há dados para gerar o corpus.")
 
         except Exception as e:
             st.error(f"Erro ao processar a planilha: {e}")
