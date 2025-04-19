@@ -3,14 +3,6 @@ import pandas as pd
 import re
 import io
 from word2number import w2n
-import spacy
-from spacy.cli import download
-
-# Baixar o modelo do spaCy para português (caso não esteja disponível)
-download('pt-core-news-sm')
-
-# Carregar o modelo do spaCy
-nlp = spacy.load('pt-core-news-sm')
 
 # Função para converter números por extenso para algarismos
 def converter_numeros_por_extenso(texto):
@@ -70,12 +62,14 @@ def processar_pronomes_pospostos(texto):
 
 # Função para sugerir palavras compostas a partir de texto inicial
 def sugerir_palavras_compostas(texto):
-    doc = nlp(texto)
-    compostas_sugeridas = []
-    for token in doc:
-        if token.dep_ == 'compound' and not token.is_stop:
-            compostas_sugeridas.append(token.text)
-    return list(set(compostas_sugeridas))
+    # Detectando palavras compostas, utilizando hífen e ignorando palavras com stopwords
+    stopwords = ["de", "a", "o", "as", "os", "da", "das", "do", "dos", "em", "para", "por"]
+    palavras = texto.split()
+    compostas = []
+    for i in range(1, len(palavras)):
+        if palavras[i-1] not in stopwords and palavras[i] not in stopwords:
+            compostas.append(f"{palavras[i-1]} {palavras[i]}")
+    return compostas
 
 # Função para gerar o corpus final
 def gerar_corpus(df_textos, df_compostos, df_siglas):
@@ -197,4 +191,3 @@ if uploaded_file is not None:
         st.text(estatisticas)
     else:
         st.warning("Não há dados de textos selecionados na planilha.")
-
