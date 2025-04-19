@@ -9,7 +9,11 @@ from nltk.corpus import stopwords
 from nltk.util import ngrams
 
 # Baixando os recursos necessários do NLTK
-nltk.download("punkt")
+try:
+    nltk.data.find('tokenizers/punkt')
+except LookupError:
+    nltk.download('punkt')
+    
 nltk.download("stopwords")
 
 # Função para converter números por extenso para algarismos
@@ -74,7 +78,7 @@ def sugerir_siglas(texto):
 
 def sugerir_palavras_compostas(texto):
     stop_words = set(stopwords.words('portuguese'))
-    tokens = nltk.word_tokenize(texto)
+    tokens = nltk.word_tokenize(texto)  # Usando a função word_tokenize do NLTK
     tokens_limpos = [t for t in tokens if t.isalpha() and t.lower() not in stop_words]
 
     candidatos = []
@@ -150,7 +154,7 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
         metadata = f"**** *ID_{id_val}"
         for col in row.index:
             if col.lower() not in ["id", "textos selecionados"]:
-                metadata += f" *{col.replace(' ', '_')}_{str(row[col]).replace(' ', '_')}" 
+                metadata += f" *{col.replace(' ', '_')}_{str(row[col]).replace(' ', '_')}"
 
         corpus_final += f"{metadata}\n{texto_corrigido}\n"
 
@@ -168,7 +172,7 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 st.set_page_config(layout="wide")
 st.title("Gerador de corpus textual para IRaMuTeQ")
 
-st.markdown(""" 
+st.markdown("""
 ### 📌 Instruções
 
 Esta ferramenta foi desenvolvida para facilitar a geração de corpus textual compatível com o IRaMuTeQ.
@@ -184,55 +188,27 @@ if texto_inicial:
     siglas_sugeridas = sugerir_siglas(texto_inicial)
     compostas_sugeridas = sugerir_palavras_compostas(texto_inicial)
 
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown("**🔠 Sugestões de siglas:**")
-        st.code("\n".join(siglas_sugeridas))
+    st.subheader("🔍 Sugestões encontradas")
+    st.write("**Siglas sugeridas:**", siglas_sugeridas)
+    st.write("**Palavras compostas sugeridas:**", compostas_sugeridas)
 
-    with col2:
-        st.markdown("**🧩 Sugestões de palavras compostas:**")
-        st.code("\n".join(compostas_sugeridas))
+# Upload de planilhas
+uploaded_file = st.file_uploader("📤 Carregue sua planilha (Excel)", type=["xlsx"])
 
-st.markdown(""" 
---- 
-### 📥 Envio da planilha
+if uploaded_file:
+    df = pd.read_excel(uploaded_file)
+    if 'Textos selecionados' in df.columns:
+        df_compostos = pd.DataFrame(compostas_sugeridas, columns=["Palavra composta"])
+        df_siglas = pd.DataFrame(siglas_sugeridas, columns=["Sigla"])
 
-Sua planilha deve conter **três abas (planilhas internas)** com os seguintes nomes e finalidades:
+        corpus, estatisticas = gerar_corpus(df, df_compostos, df_siglas)
 
-1. **`textos_selecionados`** : coleção de textos a serem processados;
-2. **`dic_palavras_compostas`** : substituição de expressões por formas normalizadas;
-3. **`dic_siglas`** : expansão de siglas para maior clareza textual.
-""")
+        st.download_button(
+            label="📥 Baixar Corpus Gerado",
+            data=corpus,
+            file_name="corpus_iramuteq.txt",
+            mime="text/plain"
+        )
 
-with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
-    st.download_button(
-        label="📅 Baixar modelo de planilha",
-        data=exemplo,
-        file_name="gerar_corpus_iramuteq.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
-
-file = st.file_uploader("📂 Envie sua planilha preenchida", type=["xlsx"])
-
-if file:
-    try:
-        xls = pd.ExcelFile(file)
-        df_textos = xls.parse("textos_selecionados")
-        df_compostos = xls.parse("dic_palavras_compostas")
-        df_siglas = xls.parse("dic_siglas")
-        df_textos.columns = [col.strip().lower() for col in df_textos.columns]
-
-        if st.button("🚀 GERAR CORPUS TEXTUAL"):
-            corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
-
-            if corpus.strip():
-                st.success("Corpus gerado com sucesso!")
-                st.text_area("📊 Estatísticas do processamento", estatisticas, height=250)
-
-                buf = io.BytesIO()
-                buf.write(corpus.encode("utf-8"))
-                st.download_button("📄 BAIXAR CORPUS TEXTUAL", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt")
-            else:
-                st.warning("⚠️ Não foi possível gerar o corpus. Verifique os dados de entrada.")
-    except Exception as e:
-        st.error(f"Erro ao processar a planilha: {str(e)}")
+        st.subheader("📊 Estatísticas do processamento")
+        st.write(estatisticas)
