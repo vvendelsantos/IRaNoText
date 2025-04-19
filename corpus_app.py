@@ -2,80 +2,29 @@ import streamlit as st
 import pandas as pd
 import re
 import io
-from word2number import w2n
-
-# Função para converter números por extenso para algarismos
-def converter_numeros_por_extenso(texto):
-    unidades = {
-        "zero": 0, "dois": 2, "duas": 2, "três": 3, "quatro": 4, "cinco": 5,
-        "seis": 6, "sete": 7, "oito": 8, "nove": 9
-    }
-    dezenas = {
-        "dez": 10, "onze": 11, "doze": 12, "treze": 13, "quatorze": 14, "quinze": 15,
-        "dezesseis": 16, "dezessete": 17, "dezoito": 18, "dezenove": 19, "vinte": 20
-    }
-    centenas = {
-        "cem": 100, "cento": 100, "duzentos": 200, "trezentos": 300, "quatrocentos": 400,
-        "quinhentos": 500, "seiscentos": 600, "setecentos": 700, "oitocentos": 800, "novecentos": 900
-    }
-    multiplicadores = {
-        "mil": 1000, "milhão": 1000000, "milhões": 1000000, "bilhão": 1000000000,
-        "bilhões": 1000000000
-    }
-
-    def processar_palavra(palavra):
-        try:
-            return str(w2n.word_to_num(palavra))
-        except:
-            return palavra
-
-    palavras = texto.split()
-    resultado = []
-    for palavra in palavras:
-        palavra_lower = palavra.lower()
-        if palavra_lower in unidades:
-            resultado.append(str(unidades[palavra_lower]))
-        elif palavra_lower in dezenas:
-            resultado.append(str(dezenas[palavra_lower]))
-        elif palavra_lower in centenas:
-            resultado.append(str(centenas[palavra_lower]))
-        elif palavra_lower in multiplicadores:
-            resultado.append(str(multiplicadores[palavra_lower]))
-        else:
-            resultado.append(processar_palavra(palavra))
-
-    return " ".join(resultado)
-
-# Função para processar palavras compostas com "-se"
-def processar_palavras_com_se(texto):
-    return re.sub(r"(\b\w+)-se\b", r"se \1", texto)
-
-# Função para processar pronomes oblíquos pós-verbais
-def processar_pronomes_pospostos(texto):
-    texto = re.sub(r'\b(\w+)-se\b', r'se \1', texto)
-    texto = re.sub(r'\b(\w+)-([oa]s?)\b', r'\2 \1', texto)
-    texto = re.sub(r'\b(\w+)-(lhe|lhes)\b', r'\2 \1', texto)
-    texto = re.sub(r'\b(\w+)-(me|te|nos|vos)\b', r'\2 \1', texto)
-    texto = re.sub(r'\b(\w+)[áéíóúâêô]?-([oa]s?)\b', r'\2 \1', texto)
-    texto = re.sub(r'\b(\w+)[áéíóúâêô]-(lo|la|los|las)-ia\b', r'\2 \1ia', texto)
-    return texto
 
 # Função para detectar siglas
 def detectar_siglas(texto):
+    # Regex para encontrar siglas com 2 ou mais letras maiúsculas
     siglas = re.findall(r'\b[A-Z]{2,}\b', texto)
     return list(set(siglas))
 
-# Função para detectar palavras compostas de forma mais precisa
+# Função para detectar palavras compostas dinâmicas (termos compostos de múltiplas palavras)
 def detectar_palavras_compostas(texto):
-    # Vamos considerar palavras compostas por hífen, incluindo prefixos e sufixos comuns
-    palavras_compostas = re.findall(r'\b\w+(?:-\w+)+\b', texto)
-    
-    # Também podemos adicionar mais casos específicos
-    palavras_compostas += re.findall(r'\b(?:pré|anti|auto|hiper|infra|macro|micro|multi|neo|trans|des|re)-\w+\b', texto)
-    
+    # Regex para encontrar palavras compostas por mais de uma palavra separadas por espaços
+    # Exemplo de padrões comuns como 'termo composto', 'expressão chave', etc.
+    palavras_compostas = re.findall(r'\b(?:[A-Z][a-z]+(?: [a-z]+)+)\b', texto)
+
+    # Retorna apenas as expressões encontradas (sem duplicados)
     return list(set(palavras_compostas))
 
-# Função principal
+# Função para processar palavras compostas com "-" e pronomes oblíquos pós-verbais
+def processar_texto(texto):
+    texto = re.sub(r"(\b\w+)-se\b", r"se \1", texto)  # Ajuste para palavras com '-se'
+    texto = re.sub(r"\b(\w+)-([oa]s?)\b", r"\2 \1", texto)  # Ajuste para pronomes pós-verbais
+    return texto
+
+# Função para gerar o corpus conforme a planilha de entrada
 def gerar_corpus(df_textos, df_compostos, df_siglas):
     dict_compostos = {
         str(row["Palavra composta"]).lower(): str(row["Palavra normalizada"]).lower()
@@ -108,9 +57,8 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
             continue
 
         texto_corrigido = texto.lower()
-        texto_corrigido = converter_numeros_por_extenso(texto_corrigido)
-        texto_corrigido = processar_palavras_com_se(texto_corrigido)
-        texto_corrigido = processar_pronomes_pospostos(texto_corrigido)
+        texto_corrigido = processar_texto(texto_corrigido)
+
         total_textos += 1
 
         for sigla, significado in dict_siglas.items():
@@ -126,7 +74,6 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
         for char in caracteres_especiais:
             count = texto_corrigido.count(char)
             if count:
-                # Se o caractere for '%' não substituímos por '_', apenas removemos
                 if char == "%":
                     texto_corrigido = texto_corrigido.replace(char, "")
                 else:
@@ -139,7 +86,7 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
         metadata = f"**** *ID_{id_val}"
         for col in row.index:
             if col.lower() not in ["id", "textos selecionados"]:
-                metadata += f" *{col.replace(' ', '_')}_{str(row[col]).replace(' ', '_')}"
+                metadata += f" *{col.replace(' ', '_')}_{str(row[col]).replace(' ', '_')}" 
 
         corpus_final += f"{metadata}\n{texto_corrigido}\n"
 
@@ -152,6 +99,7 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
             estatisticas += f" - {nome} ({char}) : {contagem_caracteres[char]}\n"
 
     return corpus_final, estatisticas
+
 
 # Interface Streamlit
 st.set_page_config(layout="wide")
