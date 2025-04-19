@@ -4,7 +4,7 @@ import re
 import io
 from word2number import w2n
 
-# Função para converter números por extenso para algarismos
+# Conversão de números por extenso
 def converter_numeros_por_extenso(texto):
     unidades = {
         "zero": 0, "dois": 2, "duas": 2, "três": 3, "quatro": 4, "cinco": 5,
@@ -32,25 +32,23 @@ def converter_numeros_por_extenso(texto):
     palavras = texto.split()
     resultado = []
     for palavra in palavras:
-        palavra_lower = palavra.lower()
-        if palavra_lower in unidades:
-            resultado.append(str(unidades[palavra_lower]))
-        elif palavra_lower in dezenas:
-            resultado.append(str(dezenas[palavra_lower]))
-        elif palavra_lower in centenas:
-            resultado.append(str(centenas[palavra_lower]))
-        elif palavra_lower in multiplicadores:
-            resultado.append(str(multiplicadores[palavra_lower]))
+        pl = palavra.lower()
+        if pl in unidades:
+            resultado.append(str(unidades[pl]))
+        elif pl in dezenas:
+            resultado.append(str(dezenas[pl]))
+        elif pl in centenas:
+            resultado.append(str(centenas[pl]))
+        elif pl in multiplicadores:
+            resultado.append(str(multiplicadores[pl]))
         else:
             resultado.append(processar_palavra(palavra))
-
     return " ".join(resultado)
 
-# Função para processar palavras compostas com "-se"
+# Ajuste de pronomes
 def processar_palavras_com_se(texto):
     return re.sub(r"(\b\w+)-se\b", r"se \1", texto)
 
-# Função para processar pronomes oblíquos pós-verbais
 def processar_pronomes_pospostos(texto):
     texto = re.sub(r'\b(\w+)-se\b', r'se \1', texto)
     texto = re.sub(r'\b(\w+)-([oa]s?)\b', r'\2 \1', texto)
@@ -60,18 +58,7 @@ def processar_pronomes_pospostos(texto):
     texto = re.sub(r'\b(\w+)[áéíóúâêô]-(lo|la|los|las)-ia\b', r'\2 \1ia', texto)
     return texto
 
-# Função para sugerir palavras compostas a partir de texto inicial
-def sugerir_palavras_compostas(texto):
-    # Detectando palavras compostas, utilizando hífen e ignorando palavras com stopwords
-    stopwords = ["de", "a", "o", "as", "os", "da", "das", "do", "dos", "em", "para", "por"]
-    palavras = texto.split()
-    compostas = []
-    for i in range(1, len(palavras)):
-        if palavras[i-1] not in stopwords and palavras[i] not in stopwords:
-            compostas.append(f"{palavras[i-1]} {palavras[i]}")
-    return compostas
-
-# Função para gerar o corpus final
+# Geração do corpus
 def gerar_corpus(df_textos, df_compostos, df_siglas):
     dict_compostos = {
         str(row["Palavra composta"]).lower(): str(row["Palavra normalizada"]).lower()
@@ -91,10 +78,7 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
         "/": "Barra", "%": "Porcentagem"
     }
     contagem_caracteres = {k: 0 for k in caracteres_especiais}
-    total_textos = 0
-    total_siglas = 0
-    total_compostos = 0
-    total_remocoes = 0
+    total_textos = total_siglas = total_compostos = total_remocoes = 0
     corpus_final = ""
 
     for _, row in df_textos.iterrows():
@@ -122,11 +106,7 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
         for char in caracteres_especiais:
             count = texto_corrigido.count(char)
             if count:
-                # Se o caractere for '%' não substituímos por '_', apenas removemos
-                if char == "%":
-                    texto_corrigido = texto_corrigido.replace(char, "")
-                else:
-                    texto_corrigido = texto_corrigido.replace(char, "_")
+                texto_corrigido = texto_corrigido.replace(char, "_" if char != "%" else "")
                 contagem_caracteres[char] += count
                 total_remocoes += count
 
@@ -136,7 +116,6 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
         for col in row.index:
             if col.lower() not in ["id", "textos selecionados"]:
                 metadata += f" *{col.replace(' ', '_')}_{str(row[col]).replace(' ', '_')}"
-
         corpus_final += f"{metadata}\n{texto_corrigido}\n"
 
     estatisticas = f"Textos processados: {total_textos}\n"
@@ -153,41 +132,58 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 st.set_page_config(layout="wide")
 st.title("Gerador de corpus textual para IRaMuTeQ")
 
-st.markdown("""
-### 📌 Instruções
+# Sugestão a partir de texto colado
+st.markdown("### ✏️ Colar um texto para obter sugestões")
+texto_inicial = st.text_area("Cole aqui um trecho do texto para extrair palavras compostas e siglas automaticamente:")
 
-Esta ferramenta foi desenvolvida para facilitar a geração de corpus textual compatível com o IRaMuTeQ.
+if texto_inicial:
+    stopwords = {"de", "a", "o", "as", "os", "da", "das", "do", "dos", "em", "para", "por", "e", "ou", "com", "sem", "um", "uma", "uns", "umas"}
+    palavras = re.findall(r'\b\w+\b', texto_inicial.lower())
+    compostas = sorted(set(
+        f"{palavras[i]} {palavras[i+1]}"
+        for i in range(len(palavras) - 1)
+        if palavras[i] not in stopwords and palavras[i+1] not in stopwords
+    ))
+    siglas = sorted(set(re.findall(r'\b[A-Z]{2,}\b', texto_inicial)))
 
-Envie um arquivo do Excel **.xlsx** com a estrutura correta para que o corpus possa ser gerado automaticamente.
+    st.subheader("🔗 Sugestões de palavras compostas")
+    st.write(compostas if compostas else "Nenhuma sugestão encontrada.")
 
-Sua planilha deve conter **três abas (planilhas internas)** com os seguintes nomes e finalidades:
+    st.subheader("🔤 Sugestões de siglas")
+    st.write(siglas if siglas else "Nenhuma sigla encontrada.")
 
-1. **`textos_selecionados`** : coleção de textos que serão transformados de acordo com as regras de normalização.  
-2. **`dic_palavras_compostas`** : permite substituir palavras compostas por suas formas normalizadas, garantindo uma maior consistência no corpus textual gerado.  
-3. **`dic_siglas`** : tem a finalidade de expandir siglas para suas formas completas, aumentando a legibilidade e a clareza do texto.
+# Upload do arquivo
+st.markdown("""---  
+### 📁 Envie sua planilha preenchida""")
+file = st.file_uploader("Upload do arquivo Excel", type=["xlsx"])
+
+if file:
+    try:
+        xls = pd.ExcelFile(file)
+        df_textos = xls.parse("textos_selecionados")
+        df_compostos = xls.parse("dic_palavras_compostas")
+        df_siglas = xls.parse("dic_siglas")
+        df_textos.columns = [col.strip().lower() for col in df_textos.columns]
+
+        if st.button("🚀 GERAR CORPUS TEXTUAL"):
+            corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
+
+            if corpus.strip():
+                st.success("Corpus gerado com sucesso!")
+                st.text_area("📊 Estatísticas do processamento", estatisticas, height=250)
+
+                buf = io.BytesIO()
+                buf.write(corpus.encode("utf-8"))
+                st.download_button("📄 BAIXAR CORPUS TEXTUAL", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
+            else:
+                st.warning("Nenhum texto processado. Verifique os dados da planilha.")
+    except Exception as e:
+        st.error(f"Erro ao processar o arquivo: {e}")
+
+# Rodapé
+st.markdown("""---  
+👨‍🏫 **Sobre o autor**  
+**Autor:** José Wendel dos Santos  
+**Instituição:** Universidade Federal de Sergipe (UFS)  
+**Contato:** eng.wendel@gmail.com
 """)
-
-with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
-    st.download_button("Baixar exemplo de planilha", exemplo, file_name="exemplo_planilha.xlsx")
-
-uploaded_file = st.file_uploader("Carregar a planilha", type="xlsx")
-
-if uploaded_file is not None:
-    df = pd.read_excel(uploaded_file, sheet_name=None)
-    df_textos = df.get("textos_selecionados", pd.DataFrame())
-    df_compostos = df.get("dic_palavras_compostas", pd.DataFrame())
-    df_siglas = df.get("dic_siglas", pd.DataFrame())
-
-    if not df_textos.empty:
-        st.write(f"**Textos selecionados (total de {len(df_textos)})**:")
-        st.write(df_textos)
-
-        corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
-
-        st.subheader("Corpus gerado:")
-        st.text(corpus)
-
-        st.subheader("Estatísticas:")
-        st.text(estatisticas)
-    else:
-        st.warning("Não há dados de textos selecionados na planilha.")
