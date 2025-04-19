@@ -1,111 +1,109 @@
 import streamlit as st
 import pandas as pd
 import re
-import io
 import spacy
-from word2number import w2n
+import base64
+from io import StringIO
 
-# Configuração básica da página
-st.set_page_config(
-    page_title="Ferramenta de Análise Textual",
-    layout="wide",
-    initial_sidebar_state="collapsed"
-)
+# Carrega o modelo do spaCy
+nlp = spacy.load("pt_core_news_sm")
 
-# Carregar modelo do spaCy
-@st.cache_resource
-def load_nlp_model():
-    return spacy.load("pt_core_news_sm")
+st.set_page_config(page_title="Analisador de Texto - IRaMuTeQ", layout="wide")
+st.markdown("# Analisador de Texto - Detecção de Siglas e Palavras Compostas")
 
-nlp = load_nlp_model()
-
-# Funções de análise
-@st.cache_data
+# Funções auxiliares
 def detectar_siglas(texto):
-    tokens = re.findall(r"\b[A-Z]{2,}\b", texto)
-    return sorted(set(tokens))
+    siglas = set(re.findall(r'\b[A-Z]{2,}\b', texto))
+    return sorted(siglas)
 
-@st.cache_data
-def detectar_palavras_compostas(texto):
+def detectar_palavras_compostas_spacy(texto):
     doc = nlp(texto)
-    compostas = [ent.text for ent in doc.ents if len(ent.text.split()) > 1]
-    return list(set(compostas))
+    palavras_compostas = set()
+    for ent in doc.ents:
+        if len(ent.text.split()) > 1:
+            palavras_compostas.add(ent.text)
+    return sorted(palavras_compostas)
 
-# Layout principal com abas
-tab1, tab2 = st.tabs(["📝 Análise de Texto", "📚 Gerador de Corpus"])
+def gerar_corpus(df, dicionario_pc, dicionario_siglas):
+    corpus = []
+    for index, row in df.iterrows():
+        texto = row['texto']
+        for _, pc_row in dicionario_pc.iterrows():
+            original = pc_row['original']
+            substituto = pc_row['substituto']
+            texto = re.sub(rf'\b{re.escape(original)}\b', substituto, texto)
+        for _, sigla_row in dicionario_siglas.iterrows():
+            original = sigla_row['original']
+            substituto = sigla_row['substituto']
+            texto = re.sub(rf'\b{re.escape(original)}\b', substituto, texto)
+        corpus.append(f"**** *{row['id']}*\n{texto}\n")
+    return '\n'.join(corpus)
+
+def botao_download_premium(texto, nome_arquivo, tipo_mime):
+    b64 = base64.b64encode(texto.encode()).decode()
+    href = f"""
+    <a href="data:{tipo_mime};base64,{b64}" download="{nome_arquivo}" 
+       style="
+            background-color:#4CAF50;
+            color:white;
+            padding:10px 20px;
+            text-align:center;
+            text-decoration:none;
+            display:inline-block;
+            font-size:16px;
+            border-radius:8px;
+            margin-top: 10px;
+            box-shadow: 0px 4px 6px rgba(0,0,0,0.2);
+            transition: 0.3s;
+        "
+        title="Clique para baixar o corpus gerado">
+        📀 Baixar Corpus Gerado
+    </a>
+    """
+    st.markdown(href, unsafe_allow_html=True)
+
+# Layout com abas
+tab1, tab2 = st.tabs(["✍️ Análise de Texto", "📤 Gerar Corpus"])
 
 with tab1:
-    st.header("Análise de Texto Automática")
-    st.markdown("Identifique siglas e palavras compostas em seus textos.")
-    
-    texto_input = st.text_area(
-        "Insira seu texto para análise:",
-        height=200,
-        placeholder="Digite ou cole seu texto aqui..."
-    )
-    
-    if st.button("Analisar Texto", key="analyze_btn"):
-        if texto_input.strip():
-            with st.spinner("Processando..."):
-                siglas = detectar_siglas(texto_input)
-                compostas = detectar_palavras_compostas(texto_input)
-            
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                st.subheader("Palavras Compostas")
-                if compostas:
-                    st.write(pd.DataFrame(compostas, columns=["Termo"]))
-                else:
-                    st.info("Nenhuma palavra composta encontrada")
-            
-            with col2:
-                st.subheader("Siglas Identificadas")
-                if siglas:
-                    st.write(pd.DataFrame(siglas, columns=["Sigla"]))
-                else:
-                    st.info("Nenhuma sigla encontrada")
-        else:
-            st.warning("Por favor, insira um texto para análise")
+    texto_usuario = st.text_area("Digite ou cole o texto para análise:", height=300)
+    if st.button("🔍 Analisar texto"):
+        with st.spinner("Analisando texto..."):
+            siglas = detectar_siglas(texto_usuario)
+            palavras_compostas = detectar_palavras_compostas_spacy(texto_usuario)
+
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown("### 🧩 Palavras Compostas Detectadas:")
+            for pc in palavras_compostas:
+                st.write(f"- {pc}")
+        with col2:
+            st.markdown("### 🔠 Siglas Detectadas:")
+            for sigla in siglas:
+                st.write(f"- {sigla}")
 
 with tab2:
-    st.header("Gerador de Corpus para IRaMuTeQ")
-    st.markdown("Transforme seus textos em corpus formatado para análise.")
-    
-    with st.expander("ℹ️ Instruções"):
-        st.markdown("""
-        - Prepare uma planilha Excel com três abas:
-          1. `textos_selecionados` (textos brutos)
-          2. `dic_palavras_compostas` (termos compostos)
-          3. `dic_siglas` (siglas e significados)
-        - Faça upload do arquivo abaixo
-        """)
-    
-    file = st.file_uploader("Upload do arquivo Excel", type=["xlsx"])
-    
-    if file:
-        try:
-            xls = pd.ExcelFile(file)
-            sheets = xls.sheet_names
-            
-            if st.button("Processar Arquivo", key="process_btn"):
-                with st.spinner("Gerando corpus..."):
-                    # Simulação de processamento
-                    corpus = "**** *ID_1\nExemplo de texto processado\n"
-                    
-                    st.success("Processamento concluído!")
-                    st.text_area("Corpus Gerado", corpus, height=200)
-                    
-                    st.download_button(
-                        "Baixar Corpus",
-                        data=corpus,
-                        file_name="corpus.txt",
-                        mime="text/plain"
-                    )
-        
-        except Exception as e:
-            st.error(f"Erro: {str(e)}")
+    st.markdown("### 📂 Envie a planilha com as abas 'textos_selecionados', 'dic_palavras_compostas' e 'dic_siglas'")
+    arquivo = st.file_uploader("Escolha o arquivo Excel", type=["xlsx"])
 
-# Rodapé simples
-st.markdown("---")
-st.markdown("Desenvolvido por Text Analytics Tool | 2023")
+    if arquivo:
+        planilha = pd.read_excel(arquivo, sheet_name=None)
+        try:
+            df_textos = planilha['textos_selecionados']
+            df_pc = planilha['dic_palavras_compostas']
+            df_siglas = planilha['dic_siglas']
+
+            corpus = gerar_corpus(df_textos, df_pc, df_siglas)
+            st.success("Corpus gerado com sucesso!")
+
+            st.text_area("Corpus:", corpus, height=300)
+            botao_download_premium(corpus, "corpus_para_IRaMuTeQ.txt", "text/plain")
+
+        except KeyError as e:
+            st.error(f"A planilha deve conter as abas: textos_selecionados, dic_palavras_compostas e dic_siglas. Abas ausentes: {e}")
+
+# Rodapé com assinatura
+st.markdown("""
+---
+<p style='text-align: center;'>Desenvolvido por Seu Nome - 2025</p>
+""", unsafe_allow_html=True)
