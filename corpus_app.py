@@ -1,14 +1,25 @@
 import streamlit as st
 import pandas as pd
 import re
+import spacy
 import io
 from word2number import w2n
-import spacy
 
 # Carregar o modelo spaCy para NER
 nlp = spacy.load("pt_core_news_sm")
 
-# Função para converter números por extenso para algarismos
+def detectar_siglas(texto):
+    siglas = re.findall(r"\b[A-Z]{2,}\b", texto)
+    return sorted(set(siglas))
+
+def detectar_palavras_compostas(texto):
+    doc = nlp(texto)
+    compostas = []
+    for ent in doc.ents:
+        if len(ent.text.split()) > 1:
+            compostas.append(ent.text)
+    return sorted(set(compostas))
+
 def converter_numeros_por_extenso(texto):
     unidades = {
         "zero": 0, "dois": 2, "duas": 2, "três": 3, "quatro": 4, "cinco": 5,
@@ -50,11 +61,9 @@ def converter_numeros_por_extenso(texto):
 
     return " ".join(resultado)
 
-# Função para processar palavras compostas com "-se"
 def processar_palavras_com_se(texto):
     return re.sub(r"(\b\w+)-se\b", r"se \1", texto)
 
-# Função para processar pronomes oblíquos pós-verbais
 def processar_pronomes_pospostos(texto):
     texto = re.sub(r'\b(\w+)-se\b', r'se \1', texto)
     texto = re.sub(r'\b(\w+)-([oa]s?)\b', r'\2 \1', texto)
@@ -64,32 +73,6 @@ def processar_pronomes_pospostos(texto):
     texto = re.sub(r'\b(\w+)[áéíóúâêô]-(lo|la|los|las)-ia\b', r'\2 \1ia', texto)
     return texto
 
-# Função para detectar siglas
-def detectar_siglas(texto):
-    """
-    Detecta siglas no texto. Siglas são sequências de letras maiúsculas (2 ou mais).
-    """
-    siglas = re.findall(r"\b[A-Z]{2,}\b", texto)
-    return sorted(set(siglas))
-
-# Função para detectar palavras compostas
-def detectar_palavras_compostas(texto):
-    """
-    Detecta palavras compostas no texto. 
-    Uma palavra composta é uma sequência de palavras onde cada palavra significativa 
-    começa com letra maiúscula (exemplo: Inteligência Artificial, Universidade de Aveiro).
-    """
-    doc = nlp(texto)
-    compostas = []
-
-    # A função NER detecta entidades nomeadas como palavras compostas (exemplo: 'Universidade de Aveiro')
-    for ent in doc.ents:
-        if len(ent.text.split()) > 1:
-            compostas.append(ent.text)
-
-    return sorted(set(compostas))
-
-# Função principal para gerar o corpus
 def gerar_corpus(df_textos, df_compostos, df_siglas):
     dict_compostos = {
         str(row["Palavra composta"]).lower(): str(row["Palavra normalizada"]).lower()
@@ -168,7 +151,7 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 
 # Interface Streamlit
 st.set_page_config(layout="wide")
-st.title("Gerador de corpus textual para IRaMuTeQ")
+st.title("Analisador de Siglas e Palavras Compostas e Gerador de Corpus IRaMuTeQ")
 
 # Caixa de texto para o usuário inserir o texto
 texto_input = st.text_area("Insira o texto a ser analisado:")
@@ -189,7 +172,33 @@ if st.button("🔍 Analisar texto"):
         with col2:
             st.subheader("Palavras compostas detectadas")
             st.write("\n".join(palavras_compostas_detectadas) if palavras_compostas_detectadas else "Nenhuma palavra composta detectada")
+
+        # Disponibilizar upload da planilha para gerar corpus
+        file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
+
+        if file:
+            try:
+                xls = pd.ExcelFile(file)
+                df_textos = xls.parse("textos_selecionados")
+                df_compostos = xls.parse("dic_palavras_compostas")
+                df_siglas = xls.parse("dic_siglas")
+                df_textos.columns = [col.strip().lower() for col in df_textos.columns]
+
+                if st.button("🚀 GERAR CORPUS TEXTUAL"):
+                    corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
+
+                    if corpus.strip():
+                        st.success("Corpus gerado com sucesso!")
+                        st.text_area("📊 Estatísticas do processamento", estatisticas, height=250)
+
+                        buf = io.BytesIO()
+                        buf.write(corpus.encode("utf-8"))
+                        st.download_button("📄 BAIXAR CORPUS TEXTUAL", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
+                    else:
+                        st.warning("Nenhum texto processado. Verifique os dados da planilha.")
+
+            except Exception as e:
+                st.error(f"Erro ao processar o arquivo: {e}")
+
     else:
         st.warning("Por favor, insira um texto para análise.")
-
-# O restante do código continua igual, mantendo a parte de upload e geração de corpus.
