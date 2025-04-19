@@ -2,146 +2,121 @@ import streamlit as st
 import pandas as pd
 import re
 import io
+import pyperclip
 from word2number import w2n
 
-# Função para exibir as sugestões de palavras compostas e siglas com opção de cópia
-def show_suggestions(compound_words, acronyms):
-    # Exibição das sugestões de palavras compostas
-    st.markdown("### 🔹 Sugestões de palavras compostas:")
-    for i, word in enumerate(compound_words):
-        st.write(f"🔹 [{word['start']} - {word['end']}]: {word['phrase']}")
-    
-    # Caixa de texto para copiar as palavras compostas
-    st.text_area("Copiar Sugestões de Palavras Compostas", value="\n".join([f"[{word['start']} - {word['end']}]: {word['phrase']}" for word in compound_words]), height=200)
+# [Mantenha todas as outras funções existentes...]
 
-    # Exibição das siglas detectadas
-    st.markdown("### 🔹 Siglas detectadas no texto:")
-    for i, acronym in enumerate(acronyms):
-        st.write(f"🔹 {acronym}")
-    
-    # Caixa de texto para copiar as siglas
-    st.text_area("Copiar Siglas Detectadas", value="\n".join(acronyms), height=100)
+# Funções para análise de texto (atualizadas)
+def detectar_siglas(texto):
+    """Detecta siglas no formato 'AB' ou 'ABC' (2+ letras maiúsculas)"""
+    try:
+        siglas = re.findall(r'\b[A-Z]{2,}\b', texto)
+        return list(set(siglas))
+    except Exception as e:
+        st.error(f"Erro ao detectar siglas: {e}")
+        return []
 
-# Função para processar o texto e identificar palavras compostas e siglas
-def process_text(text):
-    # Definindo padrões para palavras compostas e siglas
-    compound_word_pattern = re.compile(r'\b[A-Z][a-z]+\s+[A-Z][a-z]+\b')  # Exemplo de palavras compostas
-    acronym_pattern = re.compile(r'\b[A-Z]{2,}\b')  # Exemplo de siglas (todas em maiúsculas)
-
-    compound_words = []
-    acronyms = []
-
-    # Encontrando palavras compostas
-    for match in compound_word_pattern.finditer(text):
-        compound_words.append({'start': match.start(), 'end': match.end(), 'phrase': match.group()})
-
-    # Encontrando siglas
-    acronyms = acronym_pattern.findall(text)
-
-    return compound_words, acronyms
-
-# Função para converter números por extenso para algarismos
-def converter_numeros_por_extenso(texto):
-    unidades = {
-        "zero": 0, "dois": 2, "duas": 2, "três": 3, "quatro": 4, "cinco": 5,
-        "seis": 6, "sete": 7, "oito": 8, "nove": 9
-    }
-    dezenas = {
-        "dez": 10, "onze": 11, "doze": 12, "treze": 13, "quatorze": 14, "quinze": 15,
-        "dezesseis": 16, "dezessete": 17, "dezoito": 18, "dezenove": 19, "vinte": 20
-    }
-    centenas = {
-        "cem": 100, "cento": 100, "duzentos": 200, "trezentos": 300, "quatrocentos": 400,
-        "quinhentos": 500, "seiscentos": 600, "setecentos": 700, "oitocentos": 800, "novecentos": 900
-    }
-    multiplicadores = {
-        "mil": 1000, "milhão": 1000000, "milhões": 1000000, "bilhão": 1000000000,
-        "bilhões": 1000000000
-    }
-
-    def processar_palavra(palavra):
-        try:
-            return str(w2n.word_to_num(palavra))
-        except:
-            return palavra
-
-    palavras = texto.split()
-    resultado = []
-    for palavra in palavras:
-        palavra_lower = palavra.lower()
-        if palavra_lower in unidades:
-            resultado.append(str(unidades[palavra_lower]))
-        elif palavra_lower in dezenas:
-            resultado.append(str(dezenas[palavra_lower]))
-        elif palavra_lower in centenas:
-            resultado.append(str(centenas[palavra_lower]))
-        elif palavra_lower in multiplicadores:
-            resultado.append(str(multiplicadores[palavra_lower]))
-        else:
-            resultado.append(processar_palavra(palavra))
-
-    return " ".join(resultado)
-
-# Função para processar palavras compostas com "-se"
-def processar_palavras_com_se(texto):
-    return re.sub(r"(\b\w+)-se\b", r"se \1", texto)
-
-# Função para processar pronomes oblíquos pós-verbais
-def processar_pronomes_pospostos(texto):
-    texto = re.sub(r'\b(\w+)-se\b', r'se \1', texto)
-    texto = re.sub(r'\b(\w+)-([oa]s?)\b', r'\2 \1', texto)
-    texto = re.sub(r'\b(\w+)-(lhe|lhes)\b', r'\2 \1', texto)
-    texto = re.sub(r'\b(\w+)-(me|te|nos|vos)\b', r'\2 \1', texto)
-    texto = re.sub(r'\b(\w+)[áéíóúâêô]?-([oa]s?)\b', r'\2 \1', texto)
-    texto = re.sub(r'\b(\w+)[áéíóúâêô]-(lo|la|los|las)-ia\b', r'\2 \1ia', texto)
-    return texto
-
-# Função para gerar o corpus a partir do texto processado
-def generate_corpus(compound_words, acronyms, processed_text):
-    corpus = []
-
-    # Adicionando palavras compostas ao corpus
-    for word in compound_words:
-        corpus.append(f"[{word['start']} - {word['end']}]: {word['phrase']}")
-    
-    # Adicionando siglas ao corpus
-    corpus.extend(acronyms)
-
-    # Adicionando o texto processado
-    corpus.append("\nTexto Processado:")
-    corpus.append(processed_text)
-
-    return "\n".join(corpus)
-
-# Função principal
-def main():
-    st.title("Analisador de Texto - Geração de Corpus")
-
-    # Carregar arquivo de texto
-    uploaded_file = st.file_uploader("Escolha um arquivo de texto para gerar o corpus", type="txt")
-
-    # Se um arquivo for enviado
-    if uploaded_file is not None:
-        text = uploaded_file.getvalue().decode("utf-8")
+def sugerir_palavras_compostas(texto):
+    """Sugere combinações de palavras com iniciais maiúsculas"""
+    try:
+        candidatos = re.findall(r'\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)\b', texto)
+        compostos_sugeridos = []
         
-        # Processa o texto para identificar palavras compostas e siglas
-        compound_words, acronyms = process_text(text)
+        for termo in candidatos:
+            if len(termo.split()) >= 2 and len(termo) > 5:
+                compostos_sugeridos.append(termo)
+        
+        return list(set(compostos_sugeridos))
+    except Exception as e:
+        st.error(f"Erro ao sugerir palavras compostas: {e}")
+        return []
 
-        # Exibe as sugestões de palavras compostas e siglas detectadas
-        show_suggestions(compound_words, acronyms)
+# Função para copiar para área de transferência
+def copiar_para_clipboard(texto):
+    try:
+        pyperclip.copy(texto)
+        st.success("Copiado para área de transferência!")
+    except Exception as e:
+        st.error(f"Erro ao copiar: {e}")
 
-        # Processa o texto com as funções de conversão e correção
-        processed_text = text
-        processed_text = converter_numeros_por_extenso(processed_text)
-        processed_text = processar_palavras_com_se(processed_text)
-        processed_text = processar_pronomes_pospostos(processed_text)
+# Interface Streamlit (parte atualizada)
+with st.expander("🔍 Pré-análise de texto (opcional)", expanded=True):
+    texto_usuario = st.text_area(
+        "Cole seu texto aqui para detectar siglas e palavras compostas:",
+        height=150,
+        placeholder="Ex: A UFS oferece cursos em Inteligência Artificial..."
+    )
+    
+    if st.button("Analisar 🔍", key="analisar_texto"):
+        if texto_usuario.strip():
+            siglas = detectar_siglas(texto_usuario)
+            compostos = sugerir_palavras_compostas(texto_usuario)
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.subheader("Palavras compostas detectadas")
+                df_compostos = pd.DataFrame({"Palavra composta": compostos})
+                
+                # Exibe como tabela estilo planilha
+                st.dataframe(
+                    df_compostos,
+                    height=300,
+                    hide_index=True,
+                    use_container_width=True
+                )
+                
+                # Opções de cópia
+                col1_1, col1_2 = st.columns(2)
+                with col1_1:
+                    if st.button("📋 Copiar Tudo", key="copy_all_compostos"):
+                        copiar_para_clipboard("\n".join(compostos))
+                with col1_2:
+                    selected_composto = st.selectbox(
+                        "Selecione para copiar:",
+                        compostos,
+                        key="select_composto"
+                    )
+                    if st.button("📋 Copiar Selecionado", key="copy_selected_composto"):
+                        copiar_para_clipboard(selected_composto)
+            
+            with col2:
+                st.subheader("Siglas detectadas")
+                df_siglas = pd.DataFrame({"Sigla": siglas})
+                
+                # Exibe como tabela estilo planilha
+                st.dataframe(
+                    df_siglas,
+                    height=300,
+                    hide_index=True,
+                    use_container_width=True
+                )
+                
+                # Opções de cópia
+                col2_1, col2_2 = st.columns(2)
+                with col2_1:
+                    if st.button("📋 Copiar Tudo", key="copy_all_siglas"):
+                        copiar_para_clipboard("\n".join(siglas))
+                with col2_2:
+                    selected_sigla = st.selectbox(
+                        "Selecione para copiar:",
+                        siglas,
+                        key="select_sigla"
+                    )
+                    if st.button("📋 Copiar Selecionado", key="copy_selected_sigla"):
+                        copiar_para_clipboard(selected_sigla)
+            
+            st.markdown("---")
+            planilha_sugestoes = gerar_planilha_sugestoes(siglas, compostos)
+            if planilha_sugestoes:
+                st.download_button(
+                    label="📥 Baixar planilha com termos detectados",
+                    data=planilha_sugestoes,
+                    file_name="termos_detectados.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
+        else:
+            st.warning("Por favor, insira um texto para análise.")
 
-        # Geração do corpus com as palavras compostas, siglas e texto processado
-        corpus = generate_corpus(compound_words, acronyms, processed_text)
-
-        # Exibe o corpus final
-        st.markdown("### 🔹 Corpus Gerado:")
-        st.text_area("Corpus Gerado", value=corpus, height=300)
-
-if __name__ == "__main__":
-    main()
+# [Mantenha o resto do código original...]
