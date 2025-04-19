@@ -1,12 +1,5 @@
-# Bibliotecas essenciais
-streamlit==1.32.2
+streamlit==1.33.0
 pandas==2.2.1
-numpy==1.26.4
 openpyxl==3.1.2
-
-# NLP - Processamento de linguagem natural
-nltk==3.8.1
-spacy==3.5.4
-
-# Modelo de linguagem português (compatível com SpaCy 3.5.4)
-pt-core-news-lg @ https://github.com/explosion/spacy-models/releases/download/pt_core_news_lg-3.5.0/pt_core_news_lg-3.5.0-py3-none-any.whl
+spacy==3.7.2
+pt_core_news_lg @ https://github.com/explosion/spacy-models/releases/download/pt_core_news_lg-3.7.0/pt_core_news_lg-3.7.0.tar.gz
