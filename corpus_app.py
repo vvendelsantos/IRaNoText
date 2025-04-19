@@ -68,7 +68,7 @@ def gerar_ngramas(texto, n=2):
     ngramas_frequentes = Counter(n_gramas)
     return ngramas_frequentes
 
-# Função principal
+# Função principal para gerar o corpus e as estatísticas
 def gerar_corpus(df_textos, df_compostos, df_siglas):
     dict_compostos = {
         str(row["Palavra composta"]).lower(): str(row["Palavra normalizada"]).lower()
