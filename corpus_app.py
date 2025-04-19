@@ -2,28 +2,25 @@ import streamlit as st
 import pandas as pd
 import re
 import io
-import pyperclip
 from word2number import w2n
 
-# Function to convert written numbers to digits
+# Função para converter números por extenso para algarismos
 def converter_numeros_por_extenso(texto):
     unidades = {
-        "zero": 0, "um": 1, "dois": 2, "duas": 2, "três": 3, "quatro": 4, 
-        "cinco": 5, "seis": 6, "sete": 7, "oito": 8, "nove": 9
+        "zero": 0, "dois": 2, "duas": 2, "três": 3, "quatro": 4, "cinco": 5,
+        "seis": 6, "sete": 7, "oito": 8, "nove": 9
     }
     dezenas = {
-        "dez": 10, "onze": 11, "doze": 12, "treze": 13, "quatorze": 14, 
-        "quinze": 15, "dezesseis": 16, "dezessete": 17, "dezoito": 18, 
-        "dezenove": 19, "vinte": 20
+        "dez": 10, "onze": 11, "doze": 12, "treze": 13, "quatorze": 14, "quinze": 15,
+        "dezesseis": 16, "dezessete": 17, "dezoito": 18, "dezenove": 19, "vinte": 20
     }
     centenas = {
-        "cem": 100, "cento": 100, "duzentos": 200, "trezentos": 300, 
-        "quatrocentos": 400, "quinhentos": 500, "seiscentos": 600, 
-        "setecentos": 700, "oitocentos": 800, "novecentos": 900
+        "cem": 100, "cento": 100, "duzentos": 200, "trezentos": 300, "quatrocentos": 400,
+        "quinhentos": 500, "seiscentos": 600, "setecentos": 700, "oitocentos": 800, "novecentos": 900
     }
     multiplicadores = {
-        "mil": 1000, "milhão": 1000000, "milhões": 1000000, 
-        "bilhão": 1000000000, "bilhões": 1000000000
+        "mil": 1000, "milhão": 1000000, "milhões": 1000000, "bilhão": 1000000000,
+        "bilhões": 1000000000
     }
 
     def processar_palavra(palavra):
@@ -49,11 +46,11 @@ def converter_numeros_por_extenso(texto):
 
     return " ".join(resultado)
 
-# Function to process compound words with "-se"
+# Função para processar palavras compostas com "-se"
 def processar_palavras_com_se(texto):
     return re.sub(r"(\b\w+)-se\b", r"se \1", texto)
 
-# Function to process post-verbal pronouns
+# Função para processar pronomes oblíquos pós-verbais
 def processar_pronomes_pospostos(texto):
     texto = re.sub(r'\b(\w+)-se\b', r'se \1', texto)
     texto = re.sub(r'\b(\w+)-([oa]s?)\b', r'\2 \1', texto)
@@ -63,7 +60,24 @@ def processar_pronomes_pospostos(texto):
     texto = re.sub(r'\b(\w+)[áéíóúâêô]-(lo|la|los|las)-ia\b', r'\2 \1ia', texto)
     return texto
 
-# Main corpus generation function
+# Função para detectar siglas e sugerir palavras compostas
+def detectar_siglas_e_sugerir_palavras_compostas(texto, dic_siglas, dic_compostos):
+    siglas_detectadas = []
+    palavras_compostas_sugeridas = []
+    
+    for sigla, significado in dic_siglas.items():
+        if sigla in texto:
+            siglas_detectadas.append(f"{sigla} → {significado}")
+            texto = texto.replace(sigla, significado)
+
+    for termo, substituto in dic_compostos.items():
+        if termo in texto:
+            palavras_compostas_sugeridas.append(f"{termo} → {substituto}")
+            texto = texto.replace(termo, substituto)
+
+    return siglas_detectadas, palavras_compostas_sugeridas, texto
+
+# Função principal
 def gerar_corpus(df_textos, df_compostos, df_siglas):
     dict_compostos = {
         str(row["Palavra composta"]).lower(): str(row["Palavra normalizada"]).lower()
@@ -140,187 +154,56 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 
     return corpus_final, estatisticas
 
-# Text analysis functions
-def detectar_siglas(texto):
-    """Detects acronyms in the format 'AB' or 'ABC' (2+ uppercase letters)"""
-    try:
-        siglas = re.findall(r'\b[A-Z]{2,}\b', texto)
-        return list(set(siglas))
-    except Exception as e:
-        st.error(f"Erro ao detectar siglas: {e}")
-        return []
-
-def sugerir_palavras_compostas(texto):
-    """Suggests compound words (combinations of capitalized words)"""
-    try:
-        candidatos = re.findall(r'\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)\b', texto)
-        compostos_sugeridos = []
-        
-        for termo in candidatos:
-            if len(termo.split()) >= 2 and len(termo) > 5:
-                compostos_sugeridos.append(termo)
-        
-        return list(set(compostos_sugeridos))
-    except Exception as e:
-        st.error(f"Erro ao sugerir palavras compostas: {e}")
-        return []
-
-def gerar_planilha_sugestoes(siglas, compostos):
-    """Creates a DataFrame with suggestions for download"""
-    try:
-        df_siglas = pd.DataFrame({"Sigla": siglas})
-        df_compostos = pd.DataFrame({"Palavra composta": compostos})
-        
-        output = io.BytesIO()
-        with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            df_siglas.to_excel(writer, sheet_name="dic_siglas", index=False)
-            df_compostos.to_excel(writer, sheet_name="dic_palavras_compostas", index=False)
-        
-        return output.getvalue()
-    except Exception as e:
-        st.error(f"Erro ao gerar planilha: {e}")
-        return None
-
-# Copy to clipboard function
-def copiar_para_clipboard(texto):
-    try:
-        pyperclip.copy(texto)
-        st.success("Copiado para área de transferência!")
-    except Exception as e:
-        st.error(f"Erro ao copiar: {e}")
-
-# Streamlit UI
+# Interface Streamlit
 st.set_page_config(layout="wide")
 st.title("Gerador de corpus textual para IRaMuTeQ")
 
-# Text analysis section
-with st.expander("🔍 Pré-análise de texto (opcional)", expanded=True):
-    texto_usuario = st.text_area(
-        "Cole seu texto aqui para detectar siglas e palavras compostas:",
-        height=150,
-        placeholder="Ex: A UFS oferece cursos em Inteligência Artificial..."
-    )
-    
-    if st.button("Analisar 🔍", key="analisar_texto"):
-        if texto_usuario.strip():
-            siglas = detectar_siglas(texto_usuario)
-            compostos = sugerir_palavras_compostas(texto_usuario)
-            
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                st.subheader("Palavras compostas detectadas")
-                df_compostos = pd.DataFrame({"Palavra composta": compostos})
-                
-                # Display as spreadsheet-style table
-                st.dataframe(
-                    df_compostos,
-                    height=300,
-                    hide_index=True,
-                    use_container_width=True
-                )
-                
-                # Copy options
-                col1_1, col1_2 = st.columns(2)
-                with col1_1:
-                    if st.button("📋 Copiar Tudo", key="copy_all_compostos"):
-                        copiar_para_clipboard("\n".join(compostos))
-                with col1_2:
-                    selected_composto = st.selectbox(
-                        "Selecione para copiar:",
-                        compostos,
-                        key="select_composto"
-                    )
-                    if st.button("📋 Copiar Selecionado", key="copy_selected_composto"):
-                        copiar_para_clipboard(selected_composto)
-            
-            with col2:
-                st.subheader("Siglas detectadas")
-                df_siglas = pd.DataFrame({"Sigla": siglas})
-                
-                # Display as spreadsheet-style table
-                st.dataframe(
-                    df_siglas,
-                    height=300,
-                    hide_index=True,
-                    use_container_width=True
-                )
-                
-                # Copy options
-                col2_1, col2_2 = st.columns(2)
-                with col2_1:
-                    if st.button("📋 Copiar Tudo", key="copy_all_siglas"):
-                        copiar_para_clipboard("\n".join(siglas))
-                with col2_2:
-                    selected_sigla = st.selectbox(
-                        "Selecione para copiar:",
-                        siglas,
-                        key="select_sigla"
-                    )
-                    if st.button("📋 Copiar Selecionado", key="copy_selected_sigla"):
-                        copiar_para_clipboard(selected_sigla)
-            
-            st.markdown("---")
-            planilha_sugestoes = gerar_planilha_sugestoes(siglas, compostos)
-            if planilha_sugestoes:
-                st.download_button(
-                    label="📥 Baixar planilha com termos detectados",
-                    data=planilha_sugestoes,
-                    file_name="termos_detectados.xlsx",
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                )
-        else:
-            st.warning("Por favor, insira um texto para análise.")
-
-# Main upload section
-st.markdown("---")
-st.markdown("### 📌 Envie sua planilha completa para gerar o corpus")
-
-with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
-    st.download_button(
-        label="📅 Baixar modelo de planilha",
-        data=exemplo,
-        file_name="gerar_corpus_iramuteq.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
-
-file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
-
-if file:
-    try:
-        xls = pd.ExcelFile(file)
-        df_textos = xls.parse("textos_selecionados")
-        df_compostos = xls.parse("dic_palavras_compostas")
-        df_siglas = xls.parse("dic_siglas")
-        df_textos.columns = [col.strip().lower() for col in df_textos.columns]
-
-        if st.button("🚀 GERAR CORPUS TEXTUAL"):
-            corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
-
-            if corpus.strip():
-                st.success("Corpus gerado com sucesso!")
-                st.text_area("📊 Estatísticas do processamento", estatisticas, height=250)
-
-                buf = io.BytesIO()
-                buf.write(corpus.encode("utf-8"))
-                st.download_button(
-                    "📄 BAIXAR CORPUS TEXTUAL", 
-                    data=buf.getvalue(), 
-                    file_name="corpus_IRaMuTeQ.txt", 
-                    mime="text/plain"
-                )
-            else:
-                st.warning("Nenhum texto processado. Verifique os dados da planilha.")
-
-    except Exception as e:
-        st.error(f"Erro ao processar o arquivo: {e}")
-
-# Footer
 st.markdown("""
----
-👨‍🏫 **Sobre o autor**
+### 📌 Instruções
 
-**Autor:** José Wendel dos Santos  
-**Instituição:** Universidade Federal de Sergipe (UFS)  
-**Contato:** eng.wendel@gmail.com
+Esta ferramenta foi desenvolvida para facilitar a geração de corpus textual compatível com o IRaMuTeQ.
+
+Envie um arquivo do Excel **.xlsx** com a estrutura correta para que o corpus possa ser gerado automaticamente.
+
+Sua planilha deve conter **três abas (planilhas internas)** com os seguintes nomes e finalidades:
+
+1. **textos_selecionados** : coleção de textos que serão transformados de acordo com as regras de normalização.  
+2. **dic_palavras_compostas** : permite substituir palavras compostas por suas formas normalizadas, garantindo uma maior consistência no corpus textual gerado.  
+3. **dic_siglas** : tem a finalidade de expandir siglas para suas formas completas, aumentando a legibilidade e a clareza do texto.
 """)
+
+# Campo para o usuário inserir o texto
+texto_usuario = st.text_area("Insira o texto a ser analisado:", "")
+
+# Botão de análise
+if st.button("🔍 Analisar"):
+    if texto_usuario.strip():
+        # Carregar dicionários de siglas e palavras compostas
+        dic_siglas = {
+            'ifes': 'Instituto Federal do Espírito Santo',  # Exemplo de sigla
+            # Adicionar mais siglas conforme necessário
+        }
+        dic_compostos = {
+            'inteligência artificial': 'IA',
+            'instituto federal de sergipe': 'IFS',
+            # Adicionar mais palavras compostas conforme necessário
+        }
+
+        # Detectar siglas e sugerir palavras compostas
+        siglas_detectadas, palavras_compostas, texto_corrigido = detectar_siglas_e_sugerir_palavras_compostas(
+            texto_usuario, dic_siglas, dic_compostos
+        )
+
+        # Mostrar resultados em janelas lado a lado
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.subheader("Siglas Detectadas")
+            st.write("\n".join(siglas_detectadas))
+
+        with col2:
+            st.subheader("Palavras Compostas Sugeridas")
+            st.write("\n".join(palavras_compostas))
+
+    else:
+        st.warning("Por favor, insira um texto para análise.")
