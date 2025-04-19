@@ -156,14 +156,25 @@ Sua planilha deve conter **três abas (planilhas internas)** com os seguintes no
 3. **`dic_siglas`** : tem a finalidade de expandir siglas para suas formas completas, aumentando a legibilidade e a clareza do texto.
 """)
 
-# Download do modelo de planilha
-with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
-    st.download_button(
-        label="📅 Baixar modelo de planilha",
-        data=exemplo,
-        file_name="gerar_corpus_iramuteq.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
+# Caixa de texto para input manual
+st.subheader("💬 Digite seu texto para sugestões de palavras compostas e siglas")
+
+texto_input = st.text_area("Cole seu texto abaixo", height=150)
+
+# Caixa de texto para sugestões
+if texto_input:
+    palavras_compostas = set()
+    siglas = set()
+
+    palavras = texto_input.split()
+    for palavra in palavras:
+        if len(palavra) > 1 and palavra.lower() not in dict_compostos:
+            palavras_compostas.add(palavra.lower())
+        if len(palavra) > 1 and palavra.isupper() and palavra not in dict_siglas:
+            siglas.add(palavra)
+
+    st.text_area("📝 Sugestões de palavras compostas", "\n".join(sorted(palavras_compostas)))
+    st.text_area("📝 Sugestões de siglas", "\n".join(sorted(siglas)))
 
 # Upload da planilha do usuário
 file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
@@ -176,23 +187,6 @@ if file:
         df_compostos = xls.parse("dic_palavras_compostas")
         df_siglas = xls.parse("dic_siglas")
         df_textos.columns = [col.strip().lower() for col in df_textos.columns]
-
-        # Sugestão de palavras compostas e siglas
-        if st.button("🔍 Sugerir Palavras Compostas e Siglas"):
-            palavras_compostas = set()
-            siglas = set()
-
-            for _, row in df_textos.iterrows():
-                texto = str(row.get("textos selecionados", ""))
-                palavras = texto.split()
-                for palavra in palavras:
-                    if len(palavra) > 1 and palavra.lower() not in dict_compostos:
-                        palavras_compostas.add(palavra.lower())
-                    if len(palavra) > 1 and palavra.isupper() and palavra not in dict_siglas:
-                        siglas.add(palavra)
-
-            st.text_area("📝 Sugestões de palavras compostas", "\n".join(sorted(palavras_compostas)))
-            st.text_area("📝 Sugestões de siglas", "\n".join(sorted(siglas)))
 
         # Gerar o corpus
         if st.button("🚀 GERAR CORPUS TEXTUAL"):
