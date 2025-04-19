@@ -126,6 +126,10 @@ def gerar_corpus(df_textos, df_compostos, df_siglas, stopwords, texto_usuario=No
         palavras_compostas_relevantes = sugerir_palavras_compostas_e_siglas(texto_corrigido, stopwords)
         total_compostos += len(palavras_compostas_relevantes)
 
+        # Mostrar sugestões na interface
+        st.subheader("Sugestões de Palavras Compostas")
+        st.write(", ".join(palavras_compostas_relevantes))
+
         # Gerar corpus
         for sigla, significado in dict_siglas.items():
             texto_corrigido = re.sub(rf"\({sigla}\)", "", texto_corrigido)
