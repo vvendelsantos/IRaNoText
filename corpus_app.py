@@ -2,11 +2,10 @@ import streamlit as st
 import pandas as pd
 import re
 import io
-import nltk
 from word2number import w2n
-from collections import Counter
-from nltk.util import ngrams
+import nltk
 
+# Baixar o recurso necessário do NLTK
 nltk.download('punkt', quiet=True)
 
 # Função para converter números por extenso para algarismos
@@ -50,23 +49,6 @@ def converter_numeros_por_extenso(texto):
             resultado.append(processar_palavra(palavra))
 
     return " ".join(resultado)
-
-# Função para identificar e unir palavras compostas automaticamente
-def unificar_palavras_compostas_automaticamente(texto, limite_frequencia=2):
-    palavras = nltk.word_tokenize(texto, language="portuguese")
-    bigramas = list(ngrams(palavras, 2))
-    contagem = Counter(bigramas)
-
-    compostas_frequentes = {
-        " ".join(bi): "_".join(bi)
-        for bi, freq in contagem.items()
-        if freq >= limite_frequencia and all(p.isalpha() for p in bi)
-    }
-
-    for original, unido in compostas_frequentes.items():
-        texto = re.sub(rf"\b{original}\b", unido, texto)
-
-    return texto
 
 # Função para processar palavras compostas com "-se"
 def processar_palavras_com_se(texto):
@@ -115,14 +97,13 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
             continue
 
         texto_corrigido = texto.lower()
-        texto_corrigido = unificar_palavras_compostas_automaticamente(texto_corrigido)
         texto_corrigido = converter_numeros_por_extenso(texto_corrigido)
         texto_corrigido = processar_palavras_com_se(texto_corrigido)
         texto_corrigido = processar_pronomes_pospostos(texto_corrigido)
         total_textos += 1
 
         for sigla, significado in dict_siglas.items():
-            texto_corrigido = re.sub(rf"\\({sigla}\\)", "", texto_corrigido)
+            texto_corrigido = re.sub(rf"\({sigla}\)", "", texto_corrigido)
             texto_corrigido = re.sub(rf"\b{sigla}\b", significado, texto_corrigido, flags=re.IGNORECASE)
             total_siglas += 1
 
@@ -161,7 +142,7 @@ def gerar_corpus(df_textos, df_compostos, df_siglas):
 st.set_page_config(layout="wide")
 st.title("Gerador de corpus textual para IRaMuTeQ")
 
-st.markdown("""
+st.markdown("""  
 ### 📌 Instruções
 
 Esta ferramenta foi desenvolvida para facilitar a geração de corpus textual compatível com o IRaMuTeQ.
@@ -209,11 +190,11 @@ if file:
     except Exception as e:
         st.error(f"Erro ao processar o arquivo: {e}")
 
-st.markdown("""
----
+st.markdown("""  
+---  
 👨‍🏫 **Sobre o autor**
 
 **Autor:** José Wendel dos Santos  
 **Instituição:** Universidade Federal de Sergipe (UFS)  
-**Contato:** eng.wendel@gmail.com
+**Contato:** eng.wendel@gmail.com  
 """)
