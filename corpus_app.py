@@ -19,50 +19,13 @@ def detectar_palavras_compostas(texto):
     return list(set(compostas))
 
 # ========================== ABAS ==========================
-st.set_page_config(page_title="Analisador de Texto", page_icon="🔍", layout="wide")
-
-# Customizando o layout da página
-st.markdown("""
-    <style>
-        .main {
-            font-family: 'Arial', sans-serif;
-        }
-        h1, h2, h3 {
-            color: #333;
-        }
-        .stButton>button {
-            background-color: #4CAF50;
-            color: white;
-            font-size: 16px;
-            border-radius: 10px;
-            padding: 10px 24px;
-            margin-top: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        .stButton>button:hover {
-            background-color: #45a049;
-        }
-        .stTextInput>label {
-            font-weight: bold;
-        }
-        .stTextArea>label {
-            font-weight: bold;
-        }
-        .stTextArea>div {
-            background-color: #f9f9f9;
-            border-radius: 10px;
-            padding: 20px;
-        }
-    </style>
-""", unsafe_allow_html=True)
-
 st.title("Analisador de Texto - Detecção de Siglas e Palavras Compostas")
 
 tabs = st.tabs(["📝 Pré-análise", "📑 Geração de Corpus"])
 
 with tabs[0]:
     # ========================== PARTE 1 - PRÉ-ANÁLISE ==========================
-    st.header("🔍 Detecção de Siglas e Palavras Compostas")
+    st.header("Detecção de Siglas e Palavras Compostas")
 
     texto_input = st.text_area("✍️ Insira um texto para pré-análise", height=200)
 
@@ -92,12 +55,20 @@ with tabs[0]:
 
 with tabs[1]:
     # ========================== PARTE 2 - GERAÇÃO DE CORPUS ==========================
-    st.header("📚 Gerador de Corpus Textual para IRaMuTeQ")
+    st.header("Gerador de Corpus Textual para IRaMuTeQ")
 
     st.markdown("""   
     ### 📌 Instruções
+
     Esta ferramenta foi desenvolvida para facilitar a geração de corpus textual compatível com o IRaMuTeQ.
+
     Envie um arquivo do Excel **.xlsx** com a estrutura correta para que o corpus possa ser gerado automaticamente.
+
+    Sua planilha deve conter **três abas (planilhas internas)** com os seguintes nomes e finalidades:
+
+    1. **`textos_selecionados`** : coleção de textos que serão transformados de acordo com as regras de normalização.  
+    2. **`dic_palavras_compostas`** : permite substituir palavras compostas por suas formas normalizadas, garantindo uma maior consistência no corpus textual gerado.  
+    3. **`dic_siglas`** : tem a finalidade de expandir siglas para suas formas completas, aumentando a legibilidade e a clareza do texto.
     """)
 
     # Botões para download
@@ -130,7 +101,7 @@ with tabs[1]:
         }
         dezenas = {
             "dez": 10, "onze": 11, "doze": 12, "treze": 13, "quatorze": 14, "quinze": 15,
-            "dezesseis": 16, "dezessete": 17, "dezoito": 18, "vinte": 20
+            "dezesseis": 16, "dezessete": 17, "dezoito": 18, "dezenove": 19, "vinte": 20
         }
         centenas = {
             "cem": 100, "cento": 100, "duzentos": 200, "trezentos": 300, "quatrocentos": 400,
@@ -203,7 +174,7 @@ with tabs[1]:
 
         for _, row in df_textos.iterrows():
             texto = str(row.get("textos selecionados", ""))
-
+            id_val = row.get("id", "")
             if not texto.strip():
                 continue
 
@@ -235,7 +206,10 @@ with tabs[1]:
 
             texto_corrigido = re.sub(r"\s+", " ", texto_corrigido.strip())
 
-            metadata = f"**** *ID_{row.get('id', '')}"
+            metadata = f"**** *ID_{id_val}"
+            for col in row.index:
+                if col.lower() not in ["id", "textos selecionados"]:
+                    metadata += f" *{col.replace(' ', '_')}_{str(row[col]).replace(' ', '_')}"
 
             corpus_final += f"{metadata}\n{texto_corrigido}\n"
 
@@ -255,6 +229,7 @@ with tabs[1]:
             df_textos = xls.parse("textos_selecionados")
             df_compostos = xls.parse("dic_palavras_compostas")
             df_siglas = xls.parse("dic_siglas")
+            df_textos.columns = [col.strip().lower() for col in df_textos.columns]
 
             if st.button("🚀 GERAR CORPUS TEXTUAL"):
                 corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
@@ -270,9 +245,19 @@ with tabs[1]:
 
                     buf = io.BytesIO()
                     buf.write(corpus.encode("utf-8"))
-                    st.download_button("📄 BAIXAR CORPUS TEXTUAL", data=buf.getvalue(), file_name="corpus.txt", mime="text/plain")
+                    st.download_button("📄 BAIXAR CORPUS TEXTUAL", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
                 else:
-                    st.warning("Não há dados para gerar o corpus.")
+                    st.warning("Nenhum texto processado. Verifique os dados da planilha.")
 
         except Exception as e:
-            st.error(f"Erro ao processar a planilha: {e}")
+            st.error(f"Erro ao processar o arquivo: {e}")
+
+# Rodapé
+st.markdown("""  
+---  
+👨‍🏫 **Sobre o autor**  
+
+**Autor:** José Wendel dos Santos  
+**Instituição:** Universidade Federal de Sergipe (UFS)  
+**Contato:** eng.wendel@gmail.com
+""")
