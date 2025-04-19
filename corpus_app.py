@@ -19,8 +19,6 @@ def detectar_palavras_compostas(texto):
     return list(set(compostas))
 
 # ========================== ABAS ==========================
-st.set_page_config(layout="wide")  # Ajusta o layout para ocupar mais espaço na tela
-
 st.title("Analisador de Texto - Detecção de Siglas e Palavras Compostas")
 
 tabs = st.tabs(["📝 Pré-análise", "📑 Geração de Corpus"])
@@ -29,8 +27,7 @@ with tabs[0]:
     # ========================== PARTE 1 - PRÉ-ANÁLISE ==========================
     st.header("Detecção de Siglas e Palavras Compostas")
 
-    # Permitindo que o usuário cole o texto sem restrição
-    texto_input = st.text_area("✍️ Insira um texto para pré-análise", height=200)  # Sem max_chars
+    texto_input = st.text_area("✍️ Insira um texto para pré-análise", height=200)
 
     if st.button("🔍 Analisar texto"):
         if texto_input.strip():
@@ -74,26 +71,25 @@ with tabs[1]:
     3. **`dic_siglas`** : tem a finalidade de expandir siglas para suas formas completas, aumentando a legibilidade e a clareza do texto.
     """)
 
-    # Ajustando os botões para ficarem mais elegantes
-    col1, col2 = st.columns([1, 1])
-    with col1:
-        with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
-            st.download_button(
-                label="📥 Baixar modelo de planilha",
-                data=exemplo,
-                file_name="gerar_corpus_iramuteq.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                use_container_width=True  # Faz o botão ocupar toda a largura disponível
-            )
-    with col2:
-        with open("textos_selecionados.xlsx", "rb") as textos:
-            st.download_button(
-                label="📥 Baixar textos para análise",
-                data=textos,
-                file_name="textos_selecionados.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                use_container_width=True  # Faz o botão ocupar toda a largura disponível
-            )
+    # Botões para download
+    with st.container():
+        col1, col2 = st.columns(2)
+        with col1:
+            with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
+                st.download_button(
+                    label="📥 Baixar modelo de planilha",
+                    data=exemplo,
+                    file_name="gerar_corpus_iramuteq.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
+        with col2:
+            with open("textos_selecionados.xlsx", "rb") as textos:
+                st.download_button(
+                    label="📥 Baixar textos para análise",
+                    data=textos,
+                    file_name="textos_selecionados.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
 
     file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
 
@@ -233,34 +229,34 @@ with tabs[1]:
             df_textos = xls.parse("textos_selecionados")
             df_compostos = xls.parse("dic_palavras_compostas")
             df_siglas = xls.parse("dic_siglas")
+            df_textos.columns = [col.strip().lower() for col in df_textos.columns]
 
-            corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
+            if st.button("🚀 GERAR CORPUS TEXTUAL"):
+                corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
 
-            st.download_button(
-                label="📥 Baixar Corpus Processado",
-                data=corpus,
-                file_name="corpus_textual.txt",
-                mime="text/plain"
-            )
+                if corpus.strip():
+                    st.success("Corpus gerado com sucesso!")
 
-            st.markdown(f"**Estatísticas do processamento:**\n\n{estatisticas}")
+                    # Nova aba para mostrar o corpus antes do download
+                    st.subheader("📄 Corpus Textual Gerado")
+                    st.text_area("Veja o corpus gerado antes de baixar", corpus, height=300)
+
+                    st.text_area("📊 Estatísticas do processamento", estatisticas, height=250)
+
+                    buf = io.BytesIO()
+                    buf.write(corpus.encode("utf-8"))
+                    st.download_button("📄 BAIXAR CORPUS TEXTUAL", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
+                else:
+                    st.warning("Nenhum texto processado. Verifique os dados da planilha.")
+
         except Exception as e:
-            st.error(f"Ocorreu um erro ao processar a planilha: {str(e)}")
+            st.error(f"Erro ao processar o arquivo: {e}")
 
-# ========================== RODAPÉ ==========================
-st.markdown("""
-    <style>
-        .footer {
-            text-align: center;
-            padding: 10px;
-            background-color: #f1f1f1;
-            color: #333;
-        }
-    </style>
-    <div class="footer">
-        👨‍🏫 **Sobre o autor**<br>
-        **Autor:** José Wendel dos Santos<br>
-        **Instituição:** Universidade Federal de Sergipe (UFS)<br>
-        **Contato:** eng.wendel@gmail.com
-    </div>
-""", unsafe_allow_html=True)
+st.markdown("""  
+---  
+👨‍🏫 **Sobre o autor**  
+
+**Autor:** José Wendel dos Santos  
+**Instituição:** Universidade Federal de Sergipe (UFS)  
+**Contato:** eng.wendel@gmail.com
+""")
