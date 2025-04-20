@@ -34,7 +34,7 @@ with tabs[0]:
             siglas = detectar_siglas(texto_input)
             compostas = detectar_palavras_compostas(texto_input)
 
-            col1, col2 = st.columns(2)
+            col1, col2 = st.columns([1, 1])
             with col1:
                 st.markdown("### 🕵️‍♂️ Palavras compostas detectadas")
                 if compostas:
@@ -74,14 +74,15 @@ with tabs[1]:
 
     # Botões para download
     with st.container():
-        col1, col2 = st.columns(2)
+        col1, col2 = st.columns([1, 1])
         with col1:
             with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
                 st.download_button(
                     label="📥 Baixar modelo de planilha",
                     data=exemplo,
                     file_name="gerar_corpus_iramuteq.xlsx",
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    use_container_width=True
                 )
         with col2:
             with open("textos_selecionados.xlsx", "rb") as textos:
@@ -89,7 +90,8 @@ with tabs[1]:
                     label="📥 Baixar textos para análise",
                     data=textos,
                     file_name="textos_selecionados.xlsx",
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    use_container_width=True
                 )
 
     file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
@@ -209,54 +211,45 @@ with tabs[1]:
 
             metadata = f"**** *ID_{id_val}"
             for col in row.index:
-                if col.lower() not in ["id", "textos selecionados"]:
-                    metadata += f" *{col.replace(' ', '_')}_{str(row[col]).replace(' ', '_')}"
+                if col not in ["id", "textos selecionados"]:
+                    texto_corrigido += f" *** {col}: {row[col]}"
 
-            corpus_final += f"{metadata}\n{texto_corrigido}\n"
+            corpus_final += f"{metadata} {texto_corrigido}\n\n"
 
-        estatisticas = f"Textos processados: {total_textos}\n"
-        estatisticas += f"Siglas removidas/substituídas: {total_siglas}\n"
-        estatisticas += f"Palavras compostas substituídas: {total_compostos}\n"
-        estatisticas += f"Caracteres especiais removidos: {total_remocoes}\n"
-        for char, nome in caracteres_especiais.items():
-            if contagem_caracteres[char] > 0:
-                estatisticas += f" - {nome} ({char}) : {contagem_caracteres[char]}\n"
+        return corpus_final, contagem_caracteres, total_textos, total_siglas, total_compostos, total_remocoes
 
-        return corpus_final, estatisticas
-
-    if file:
+    if file is not None:
         try:
-            xls = pd.ExcelFile(file)
-            df_textos = xls.parse("textos_selecionados")
-            df_compostos = xls.parse("dic_palavras_compostas")
-            df_siglas = xls.parse("dic_siglas")
-            df_textos.columns = [col.strip().lower() for col in df_textos.columns]
+            df = pd.read_excel(file, sheet_name=None)
+            df_textos = df.get("textos_selecionados", pd.DataFrame())
+            df_compostos = df.get("dic_palavras_compostas", pd.DataFrame())
+            df_siglas = df.get("dic_siglas", pd.DataFrame())
+            corpus_final, contagem_caracteres, total_textos, total_siglas, total_compostos, total_remocoes = gerar_corpus(
+                df_textos, df_compostos, df_siglas)
 
-            if st.button("🚀 GERAR CORPUS TEXTUAL"):
-                corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
-
-                if corpus.strip():
-                    st.success("Corpus gerado com sucesso!")
-
-                    # Nova aba para mostrar o corpus antes do download
-                    st.subheader("📄 Corpus Textual Gerado")
-                    st.text_area("Veja o corpus gerado antes de baixar", corpus, height=300)
-
-                    st.text_area("📊 Estatísticas do processamento", estatisticas, height=250)
-
-                    buf = io.BytesIO()
-                    buf.write(corpus.encode("utf-8"))
-                    st.download_button("💾 SALVAR CORPUS TEXTUAL", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
-                else:
-                    st.warning("Nenhum corpus gerado.")
+            st.markdown("### Resultado do Corpus Gerado")
+            st.write(corpus_final)
+            st.download_button(
+                label="Baixar Corpus Gerado",
+                data=corpus_final,
+                file_name="corpus_textual_iramuteq.txt",
+                mime="text/plain",
+                use_container_width=True
+            )
         except Exception as e:
             st.error(f"Erro ao processar o arquivo: {e}")
 
-st.markdown("""  
----  
-👨‍🏫 **Sobre o autor**  
-
-**Autor:** José Wendel dos Santos  
-**Instituição:** Universidade Federal de Sergipe (UFS)  
-**Contato:** eng.wendel@gmail.com
-""")
+# Rodapé
+st.markdown("""
+    <style>
+        footer { 
+            visibility: hidden; 
+        }
+    </style>
+    <footer>
+        👨‍🏫 **Sobre o autor**<br>
+        **Autor:** José Wendel dos Santos<br>
+        **Instituição:** Universidade Federal de Sergipe (UFS)<br>
+        **Contato:** eng.wendel@gmail.com
+    </footer>
+""", unsafe_allow_html=True)
