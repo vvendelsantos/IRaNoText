@@ -25,11 +25,11 @@ st.title("IRaText: Geração de Corpus Textual para IRaMuTeQ")
 st.markdown("""
     <style>
         .streamlit-expanderHeader {
-            font-size: 20px !important;
+            font-size: 40px !important;
             font-weight: bold !important;
         }
         .streamlit-tabs {
-            font-size: 18px !important;
+            font-size: 24px !important;
         }
     </style>
 """, unsafe_allow_html=True)
