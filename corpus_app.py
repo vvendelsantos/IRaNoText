@@ -24,9 +24,7 @@ st.title("IRaText: Geração de Corpus Textual")
 tabs = st.tabs(["📝 Análise preliminar dos textos", "🛠️ Normalização do corpus textual"])
 
 with tabs[0]:
-    # ========================== PARTE 1 - PRÉ-ANÁLISE ==========================
     st.header("")
-
     texto_input = st.text_area("", height=250)
 
     if st.button("🔍 Analisar textos"):
@@ -38,26 +36,22 @@ with tabs[0]:
             with col1:
                 st.markdown("### 🕵️‍♂️ Palavras compostas detectadas")
                 if compostas:
-                    for termo in compostas:
-                        st.write(f"- {termo}")
+                    st.text_area("Copie e cole no Excel", "\n".join(sorted(compostas)), height=250)
                 else:
                     st.info("Nenhuma palavra composta encontrada.")
 
             with col2:
                 st.markdown("### 🔠 Siglas detectadas")
                 if siglas:
-                    for sigla in siglas:
-                        st.write(f"- {sigla}")
+                    st.text_area("Copie e cole no Excel", "\n".join(sorted(siglas)), height=250)
                 else:
                     st.info("Nenhuma sigla encontrada.")
         else:
             st.warning("Por favor, insira um texto antes de analisar.")
 
 with tabs[1]:
-    # ========================== PARTE 2 - GERAÇÃO DE CORPUS ==========================
     st.header("")
 
-    # Exibir as instruções na sidebar
     st.sidebar.markdown("""   
     ### 📌 Como usar a ferramenta
 
@@ -72,7 +66,6 @@ with tabs[1]:
     3. **`dic_siglas`** : Liste de siglas e seus significados para substituições automáticas no texto.
     """)
 
-    # Botões para download
     with st.container():
         col1, col2 = st.columns(2)
         with col1:
@@ -238,10 +231,8 @@ with tabs[1]:
                 if corpus.strip():
                     st.success("Corpus gerado com sucesso!")
 
-                    # Nova aba para mostrar o corpus antes do download
                     st.subheader("📄 Corpus Textual Gerado")
                     st.text_area("Veja o corpus gerado antes de baixar", corpus, height=300)
-
                     st.text_area("📊 Estatísticas do processamento", estatisticas, height=250)
 
                     buf = io.BytesIO()
@@ -252,11 +243,11 @@ with tabs[1]:
         except Exception as e:
             st.error(f"Erro ao processar o arquivo: {e}")
 
-st.markdown("""  
----  
+# Rodapé
+st.markdown("""
+---
 👨‍🏫 **Sobre o autor**  
-
 **Autor:** José Wendel dos Santos  
 **Instituição:** Universidade Federal de Sergipe (UFS)  
-**Contato:** eng.wendel@email.com
+**Contato:** eng.wendel@gmail.com
 """)
