@@ -179,13 +179,3 @@ st.markdown("""
 **Instituição:** Universidade Federal de Sergipe (UFS)  
 **Contato:** eng.wendel@gmail.com
 """, unsafe_allow_html=True)
-
-
-st.markdown("""  
----  
-👨‍🏫 **Sobre o autor**  
-
-**Autor:** José Wendel dos Santos  
-**Instituição:** Universidade Federal de Sergipe (UFS)  
-**Contato:** eng.wendel@gmail.com
-""")
