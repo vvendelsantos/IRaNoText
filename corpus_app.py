@@ -74,7 +74,7 @@ with tabs[1]:
 
     # Botões para download
     with st.container():
-        col1, col2 = st.columns([1, 1])
+        col1, col2 = st.columns(2)
         with col1:
             with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
                 st.download_button(
@@ -82,8 +82,6 @@ with tabs[1]:
                     data=exemplo,
                     file_name="gerar_corpus_iramuteq.xlsx",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                    use_container_width=True
-                
                 )
         with col2:
             with open("textos_selecionados.xlsx", "rb") as textos:
@@ -92,7 +90,6 @@ with tabs[1]:
                     data=textos,
                     file_name="textos_selecionados.xlsx",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                    use_container_width=True
                 )
 
     file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
