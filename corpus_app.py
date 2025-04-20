@@ -36,7 +36,7 @@ with tabs[0]:
 
             col1, col2 = st.columns(2)
             with col1:
-                st.markdown("### 🕵️‍♂️ Palavras compostas detectadas no texto")
+                st.markdown("### 🕵️‍♂️ Palavras compostas detectadas")
                 if compostas:
                     for termo in compostas:
                         st.write(f"- {termo}")
@@ -44,7 +44,7 @@ with tabs[0]:
                     st.info("Nenhuma palavra composta encontrada.")
 
             with col2:
-                st.markdown("### 🔠 Siglas detectadas no texto")
+                st.markdown("### 🔠 Siglas detectadas")
                 if siglas:
                     for sigla in siglas:
                         st.write(f"- {sigla}")
@@ -59,17 +59,17 @@ with tabs[1]:
 
     # Exibir as instruções na sidebar
     st.sidebar.markdown("""   
-    ### 📌 Instruções
+    ### 📌 Como usar a ferramenta
 
-    Esta ferramenta foi desenvolvida para facilitar a geração de corpus textual compatível com o IRaMuTeQ.
+    Bem-vindo à aplicação IRaText: Geração de Corpus Textual para IRaMuTeQ. Aqui, você pode realizar duas etapas principais:
+    1. Análise preliminar dos textos: Insira um texto na caixa de entrada e a ferramenta fará uma varredura para detectar siglas e palavras compostas, exibindo os resultados de forma clara.
+    2. Geração do corpus textual: Após analisar os textos, você pode iniciar o processo de normalização e geração do seu corpus textual.
+    
+    ⚠️ Sua planilha deve conter **três abas (planilhas internas)** com os seguintes nomes e finalidades:
 
-    Envie um arquivo do Excel **.xlsx** com a estrutura correta para que o corpus possa ser gerado automaticamente.
-
-    Sua planilha deve conter **três abas (planilhas internas)** com os seguintes nomes e finalidades:
-
-    1. **`textos_selecionados`** : coleção de textos que serão transformados de acordo com as regras de normalização.  
-    2. **`dic_palavras_compostas`** : permite substituir palavras compostas por suas formas normalizadas, garantindo uma maior consistência no corpus textual gerado.  
-    3. **`dic_siglas`** : tem a finalidade de expandir siglas para suas formas completas, aumentando a legibilidade e a clareza do texto.
+    1. **`textos_selecionados`** : coleção de textos que serão normalizados e processados. 
+    2. **`dic_palavras_compostas`** : palavras compostas e suas formas normalizadas para garantir consistência no corpus.  
+    3. **`dic_siglas`** : Liste de siglas e seus significados para substituições automáticas no texto.
     """)
 
     # Botões para download
