@@ -56,8 +56,8 @@ with tabs[1]:
     # 📌 Como usar a ferramenta
 
     Seja bem-vindo ao IRaText — uma aplicação voltada para a geração e preparação de corpus textual compatível com o IRaMuTeQ. A ferramenta permite realizar duas etapas fundamentais para a análise de dados qualitativos.
-      📝  **Análise preliminar dos textos:** O processo é realizado por meio da técnica de Reconhecimento de Entidades Nomeadas (REN), que permite à ferramenta identificar e classificar automaticamente entidades no texto, como nomes de pessoas, organizações e locais, facilitando a extração e a organização das informações.
-      🛠️  **Geração do corpus textual:** A ferramenta realiza a normalização dos textos inseridos, utilizando expressões regulares para ajustar e padronizar palavras e formatos. Isso inclui a substituição de siglas, correção de palavras compostas e a remoção de caracteres especiais, garantindo que o corpus final atenda aos requisitos do IRaMuTeQ.
+    1. **Análise preliminar dos textos:** O processo é realizado por meio da técnica de Reconhecimento de Entidades Nomeadas (REN), que permite à ferramenta identificar e classificar automaticamente entidades no texto, como nomes de pessoas, organizações e locais, facilitando a extração e a organização das informações.
+    2. **Geração do corpus textual:** A ferramenta realiza a normalização dos textos inseridos, utilizando expressões regulares para ajustar e padronizar palavras e formatos. Isso inclui a substituição de siglas, correção de palavras compostas e a remoção de caracteres especiais, garantindo que o corpus final atenda aos requisitos do IRaMuTeQ.
     
     ⚠️ Sua planilha deve conter **três abas (planilhas internas)** com os seguintes nomes e finalidades:
 
