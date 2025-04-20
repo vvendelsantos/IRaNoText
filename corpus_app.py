@@ -36,7 +36,7 @@ with tabs[0]:
 
             col1, col2 = st.columns(2)
             with col1:
-                st.markdown("### 🧩 Palavras Compostas Detectadas")
+                st.markdown("### 🕵️‍♂️ Palavras compostas detectadas")
                 if compostas:
                     for termo in compostas:
                         st.write(f"- {termo}")
@@ -44,7 +44,7 @@ with tabs[0]:
                     st.info("Nenhuma palavra composta encontrada.")
 
             with col2:
-                st.markdown("### 🧾 Siglas Detectadas")
+                st.markdown("### 🔠 Siglas Detectadas")
                 if siglas:
                     for sigla in siglas:
                         st.write(f"- {sigla}")
@@ -246,7 +246,7 @@ with tabs[1]:
 
                     buf = io.BytesIO()
                     buf.write(corpus.encode("utf-8"))
-                    st.download_button("📄 BAIXAR CORPUS TEXTUAL", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
+                    st.download_button("💾 SALVAR CORPUS TEXTUAL", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
                 else:
                     st.warning("Nenhum corpus gerado.")
         except Exception as e:
