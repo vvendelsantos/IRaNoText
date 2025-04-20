@@ -21,7 +21,7 @@ def detectar_palavras_compostas(texto):
 # ========================== ABAS ==========================
 st.title("IRaText: Geração de Corpus Textual")
 
-tabs = st.tabs(["📝 Análise preliminar dos textos", "🛠️ Normalização do corpus textual"])
+tabs = st.tabs(["📝 ANÁLISE PRELIMINAR DOS TEXTOS", "🛠️ GERAÇÃO DO CORPUS TEXTUAL"])
 
 with tabs[0]:
     st.header("")
@@ -56,8 +56,8 @@ with tabs[1]:
     ### 📌 Como usar a ferramenta
 
     Bem-vindo à aplicação IRaText: Geração de Corpus Textual para IRaMuTeQ. Aqui, você pode realizar duas etapas principais:
-    1. **Análise preliminar dos textos:** Insira um texto na caixa de entrada e a ferramenta fará uma varredura para detectar siglas e reconhecimento de Entidades Nomeadas, exibindo os resultados de forma clara.
-    2. **Geração do corpus textual:** Após analisar os textos, você pode iniciar o processo de normalização e geração do seu corpus textual.
+    1. **Análise preliminar dos textos:** O processo é realizado por meio da técnica de Reconhecimento de Entidades Nomeadas (REN), que permite à ferramenta identificar e classificar automaticamente entidades no texto, como nomes de pessoas, organizações e locais, facilitando a extração e a organização das informações.
+    2. **Geração do corpus textual:** a ferramenta realiza a normalização dos textos inseridos, utilizando expressões regulares para ajustar e padronizar palavras e formatos. Isso inclui a substituição de siglas, correção de palavras compostas e a remoção de caracteres especiais, garantindo que o corpus final atenda aos requisitos do IRaMuTeQ.
     
     ⚠️ Sua planilha deve conter **três abas (planilhas internas)** com os seguintes nomes e finalidades:
 
