@@ -53,7 +53,7 @@ with tabs[1]:
     st.header("")
 
     st.sidebar.markdown("""   
-    ## 📌 Como usar a ferramenta
+    ##### 📌 Como usar a ferramenta
 
     Bem-vindo à aplicação IRaText: Geração de Corpus Textual para IRaMuTeQ. Aqui, você pode realizar duas etapas principais:
     1. **Análise preliminar dos textos:** O processo é realizado por meio da técnica de Reconhecimento de Entidades Nomeadas (REN), que permite à ferramenta identificar e classificar automaticamente entidades no texto, como nomes de pessoas, organizações e locais, facilitando a extração e a organização das informações.
