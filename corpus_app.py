@@ -82,6 +82,8 @@ with tabs[1]:
                     data=exemplo,
                     file_name="gerar_corpus_iramuteq.xlsx",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    use_container_width=True
+                
                 )
         with col2:
             with open("textos_selecionados.xlsx", "rb") as textos:
@@ -90,6 +92,7 @@ with tabs[1]:
                     data=textos,
                     file_name="textos_selecionados.xlsx",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    use_container_width=True
                 )
 
     file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
