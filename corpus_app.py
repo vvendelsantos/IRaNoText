@@ -25,18 +25,18 @@ tabs = st.tabs(["📝 Análise preliminar dos textos", "🛠️ Normalização d
 
 with tabs[0]:
     # ========================== PARTE 1 - PRÉ-ANÁLISE ==========================
-    st.header("📄 Detecção de siglas e palavras compostas")
+    st.header("")
 
     texto_input = st.text_area("", height=250)
 
-    if st.button("🔍 Analisar texto"):
+    if st.button("🔍 Analisar textos"):
         if texto_input.strip():
             siglas = detectar_siglas(texto_input)
             compostas = detectar_palavras_compostas(texto_input)
 
             col1, col2 = st.columns(2)
             with col1:
-                st.markdown("### 🕵️‍♂️ Palavras compostas detectadas")
+                st.markdown("### 🕵️‍♂️ Palavras compostas detectadas no texto")
                 if compostas:
                     for termo in compostas:
                         st.write(f"- {termo}")
@@ -44,7 +44,7 @@ with tabs[0]:
                     st.info("Nenhuma palavra composta encontrada.")
 
             with col2:
-                st.markdown("### 🔠 Siglas Detectadas")
+                st.markdown("### 🔠 Siglas detectadas no texto")
                 if siglas:
                     for sigla in siglas:
                         st.write(f"- {sigla}")
@@ -55,7 +55,7 @@ with tabs[0]:
 
 with tabs[1]:
     # ========================== PARTE 2 - GERAÇÃO DE CORPUS ==========================
-    st.header("Gerador de Corpus Textual para IRaMuTeQ")
+    st.header("")
 
     # Exibir as instruções na sidebar
     st.sidebar.markdown("""   
