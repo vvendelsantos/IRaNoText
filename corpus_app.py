@@ -56,7 +56,7 @@ with tabs[1]:
     ### 📌 Como usar a ferramenta
 
     Bem-vindo à aplicação IRaText: Geração de Corpus Textual para IRaMuTeQ. Aqui, você pode realizar duas etapas principais:
-    1. Análise preliminar dos textos: Insira um texto na caixa de entrada e a ferramenta fará uma varredura para detectar siglas e palavras compostas, exibindo os resultados de forma clara.
+    1. *Análise preliminar dos textos:* Insira um texto na caixa de entrada e a ferramenta fará uma varredura para detectar siglas e reconhecimento de Entidades Nomeadas, exibindo os resultados de forma clara.
     2. Geração do corpus textual: Após analisar os textos, você pode iniciar o processo de normalização e geração do seu corpus textual.
     
     ⚠️ Sua planilha deve conter **três abas (planilhas internas)** com os seguintes nomes e finalidades:
