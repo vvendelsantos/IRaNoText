@@ -27,7 +27,7 @@ with tabs[0]:
     # ========================== PARTE 1 - PRÉ-ANÁLISE ==========================
     st.header("🔍 Detecção de siglas e palavras compostas")
 
-    texto_input = st.text_area("📌 Insira um texto para pré-análise", height=700)
+    texto_input = st.text_area("", height=400)
 
     if st.button("🔍 Analisar texto"):
         if texto_input.strip():
