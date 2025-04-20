@@ -21,7 +21,7 @@ def detectar_palavras_compostas(texto):
 # ========================== ABAS ==========================
 st.title("Analisador de Texto - Detecção de Siglas e Palavras Compostas")
 
-tabs = st.tabs(["📝 Pré-análise", "📑 Geração de Corpus"])
+tabs = st.tabs(["📝 Análise preliminar dos textos", "🛠️ Normalização do corpus textual"])
 
 with tabs[0]:
     # ========================== PARTE 1 - PRÉ-ANÁLISE ==========================
