@@ -5,3 +5,4 @@ spacy==3.7.2
 pt_core_news_lg @ https://github.com/explosion/spacy-models/releases/download/pt_core_news_lg-3.7.0/pt_core_news_lg-3.7.0.tar.gz
 unidecode
 TextBlob
+matplotlib.pyplot
