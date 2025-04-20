@@ -38,7 +38,7 @@ with tabs[0]:
                 if compostas:
                     st.text_area("Copie e cole no Excel", "\n".join(sorted(compostas)), height=250)
                 else:
-                    st.info("Nenhuma entidade nomeada encontrada.")
+                    st.info("Nenhuma palavra composta encontrada.")
 
             with col2:
                 st.markdown("### 🔠 Siglas detectadas")
@@ -64,8 +64,8 @@ with tabs[1]:
     ⚠️ Sua planilha deve conter **três abas (planilhas internas)** com os seguintes nomes e finalidades:
 
     1. **`textos_selecionados`** : coleção de textos que serão normalizados e processados. 
-    2. **`dic_entidades_nomeadas`** : entidades nomeadas e suas formas normalizadas para garantir consistência no corpus.  
-    3. **`dic_siglas`** : Lista de siglas e seus significados para substituições automáticas no texto.
+    2. **`dic_palavras_compostas`** : palavras compostas e suas formas normalizadas para garantir consistência no corpus.  
+    3. **`dic_siglas`** : Liste de siglas e seus significados para substituições automáticas no texto.
     """)
 
     with st.container():
@@ -77,7 +77,7 @@ with tabs[1]:
                     data=exemplo,
                     file_name="gerar_corpus_iramuteq.xlsx",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    use_container_width=True
+                    use_container_width=True  # Força o botão a ocupar a largura total da coluna
                 )
         with col2:
             with open("textos_selecionados.xlsx", "rb") as textos:
@@ -86,7 +86,7 @@ with tabs[1]:
                     data=textos,
                     file_name="textos_selecionados.xlsx",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    use_container_width=True
+                    use_container_width=True  # Força o botão a ocupar a largura total da coluna
                 )
 
     file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
@@ -145,11 +145,11 @@ with tabs[1]:
         texto = re.sub(r'\b(\w+)[áéíóúâêô]-(lo|la|los|las)-ia\b', r'\2 \1ia', texto)
         return texto
 
-    def gerar_corpus(df_textos, df_entidades, df_siglas):
-        dict_entidades = {
-            str(row["Entidades nomeadas"]).lower(): str(row["Palavra normalizada"]).lower()
-            for _, row in df_entidades.iterrows()
-            if pd.notna(row["Entidades nomeadas"]) and pd.notna(row["Palavra normalizada"])
+    def gerar_corpus(df_textos, df_compostos, df_siglas):
+        dict_compostos = {
+            str(row["Palavra composta"]).lower(): str(row["Palavra normalizada"]).lower()
+            for _, row in df_compostos.iterrows()
+            if pd.notna(row["Palavra composta"]) and pd.notna(row["Palavra normalizada"])
         }
 
         dict_siglas = {
@@ -166,7 +166,7 @@ with tabs[1]:
         contagem_caracteres = {k: 0 for k in caracteres_especiais}
         total_textos = 0
         total_siglas = 0
-        total_entidades = 0
+        total_compostos = 0
         total_remocoes = 0
         corpus_final = ""
 
@@ -187,10 +187,10 @@ with tabs[1]:
                 texto_corrigido = re.sub(rf"\b{sigla}\b", significado, texto_corrigido, flags=re.IGNORECASE)
                 total_siglas += 1
 
-            for termo, substituto in dict_entidades.items():
+            for termo, substituto in dict_compostos.items():
                 if termo in texto_corrigido:
                     texto_corrigido = re.sub(rf"\b{termo}\b", substituto, texto_corrigido, flags=re.IGNORECASE)
-                    total_entidades += 1
+                    total_compostos += 1
 
             for char in caracteres_especiais:
                 count = texto_corrigido.count(char)
@@ -213,7 +213,7 @@ with tabs[1]:
 
         estatisticas = f"Textos processados: {total_textos}\n"
         estatisticas += f"Siglas removidas/substituídas: {total_siglas}\n"
-        estatisticas += f"Entidades nomeadas substituídas: {total_entidades}\n"
+        estatisticas += f"Palavras compostas substituídas: {total_compostos}\n"
         estatisticas += f"Caracteres especiais removidos: {total_remocoes}\n"
         for char, nome in caracteres_especiais.items():
             if contagem_caracteres[char] > 0:
@@ -225,12 +225,12 @@ with tabs[1]:
         try:
             xls = pd.ExcelFile(file)
             df_textos = xls.parse("textos_selecionados")
-            df_entidades = xls.parse("dic_entidades_nomeadas")
+            df_compostos = xls.parse("dic_palavras_compostas")
             df_siglas = xls.parse("dic_siglas")
             df_textos.columns = [col.strip().lower() for col in df_textos.columns]
 
             if st.button("🚀 GERAR CORPUS TEXTUAL"):
-                corpus, estatisticas = gerar_corpus(df_textos, df_entidades, df_siglas)
+                corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
 
                 if corpus.strip():
                     st.success("Corpus gerado com sucesso!")
