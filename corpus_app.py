@@ -19,7 +19,7 @@ def detectar_palavras_compostas(texto):
     return list(set(compostas))
 
 # ========================== ABAS ==========================
-st.title("Analisador de Texto - Detecção de Siglas e Palavras Compostas")
+st.title("IRaText: Geração de Corpus Textual para IRaMuTeQ")
 
 tabs = st.tabs(["📝 Análise preliminar dos textos", "🛠️ Normalização do corpus textual"])
 
@@ -27,7 +27,7 @@ with tabs[0]:
     # ========================== PARTE 1 - PRÉ-ANÁLISE ==========================
     st.header("Detecção de Siglas e Palavras Compostas")
 
-    texto_input = st.text_area("✍️ Insira um texto para pré-análise", height=200)
+    texto_input = st.text_area("📌 Insira um texto para pré-análise", height=200)
 
     if st.button("🔍 Analisar texto"):
         if texto_input.strip():
