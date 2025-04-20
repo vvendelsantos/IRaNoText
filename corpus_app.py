@@ -67,7 +67,7 @@ with tabs[1]:
     """)
 
     with st.container():
-        col1, col2 = st.columns([1, 1])
+        col1, col2 = st.columns(2)
         with col1:
             with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
                 st.download_button(
@@ -249,5 +249,5 @@ st.markdown("""
 👨‍🏫 **Sobre o autor**  
 **Autor:** José Wendel dos Santos  
 **Instituição:** Universidade Federal de Sergipe (UFS)  
-**Contato:** eng.wendel@gmail.com  
+**Contato:** eng.wendel@gmail.com
 """)
