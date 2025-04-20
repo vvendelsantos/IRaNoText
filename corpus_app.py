@@ -57,7 +57,8 @@ with tabs[1]:
     # ========================== PARTE 2 - GERAÇÃO DE CORPUS ==========================
     st.header("Gerador de Corpus Textual para IRaMuTeQ")
 
-    st.markdown("""   
+    # Exibir as instruções na sidebar
+    st.sidebar.markdown("""   
     ### 📌 Instruções
 
     Esta ferramenta foi desenvolvida para facilitar a geração de corpus textual compatível com o IRaMuTeQ.
@@ -247,8 +248,7 @@ with tabs[1]:
                     buf.write(corpus.encode("utf-8"))
                     st.download_button("📄 BAIXAR CORPUS TEXTUAL", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
                 else:
-                    st.warning("Nenhum texto processado. Verifique os dados da planilha.")
-
+                    st.warning("Nenhum corpus gerado.")
         except Exception as e:
             st.error(f"Erro ao processar o arquivo: {e}")
 
