@@ -27,59 +27,31 @@ with tabs[0]:
     # ========================== PARTE 1 - PRÉ-ANÁLISE ==========================
     st.header("Detecção de Siglas e Palavras Compostas")
 
-    # Inicializa o estado da sessão se não existir
-    if 'texto_input' not in st.session_state:
-        st.session_state.texto_input = ""
-    if 'analise_realizada' not in st.session_state:
-        st.session_state.analise_realizada = False
+    texto_input = st.text_area("📌 Insira um texto para pré-análise", height=200)
 
-    texto_input = st.text_area(
-        "📌 Insira um texto para pré-análise", 
-        height=200, 
-        key="texto_input",
-        value=st.session_state.texto_input
-    )
+    if st.button("🔍 Analisar texto"):
+        if texto_input.strip():
+            siglas = detectar_siglas(texto_input)
+            compostas = detectar_palavras_compostas(texto_input)
 
-    # Cria colunas para os botões
-    col1, col2 = st.columns(2)
-    with col1:
-        analisar = st.button("🔍 Analisar texto")
-    with col2:
-        limpar = st.button("🧹 Limpar texto")
+            col1, col2 = st.columns(2)
+            with col1:
+                st.markdown("### 🧩 Palavras Compostas Detectadas")
+                if compostas:
+                    for termo in compostas:
+                        st.write(f"- {termo}")
+                else:
+                    st.info("Nenhuma palavra composta encontrada.")
 
-    if limpar:
-        st.session_state.texto_input = ""
-        st.session_state.analise_realizada = False
-        st.experimental_rerun()
-
-    if analisar:
-        if st.session_state.texto_input.strip():
-            siglas = detectar_siglas(st.session_state.texto_input)
-            compostas = detectar_palavras_compostas(st.session_state.texto_input)
-            st.session_state.analise_realizada = True
+            with col2:
+                st.markdown("### 🧾 Siglas Detectadas")
+                if siglas:
+                    for sigla in siglas:
+                        st.write(f"- {sigla}")
+                else:
+                    st.info("Nenhuma sigla encontrada.")
         else:
             st.warning("Por favor, insira um texto antes de analisar.")
-
-    if st.session_state.analise_realizada:
-        siglas = detectar_siglas(st.session_state.texto_input)
-        compostas = detectar_palavras_compostas(st.session_state.texto_input)
-
-        col1, col2 = st.columns(2)
-        with col1:
-            st.markdown("### 🧩 Palavras Compostas Detectadas")
-            if compostas:
-                for termo in compostas:
-                    st.write(f"- {termo}")
-            else:
-                st.info("Nenhuma palavra composta encontrada.")
-
-        with col2:
-            st.markdown("### 🧾 Siglas Detectadas")
-            if siglas:
-                for sigla in siglas:
-                    st.write(f"- {sigla}")
-            else:
-                st.info("Nenhuma sigla encontrada.")
 
 with tabs[1]:
     # ========================== PARTE 2 - GERAÇÃO DE CORPUS ==========================
