@@ -30,12 +30,12 @@ with tabs[0]:
     if "texto_input" not in st.session_state:
         st.session_state["texto_input"] = ""
 
-    st.session_state["texto_input"] = st.text_area("📌 Insira um texto para pré-análise", value=st.session_state["texto_input"], height=200)
+    texto_input = st.text_area("📌 Insira um texto para pré-análise", value=st.session_state["texto_input"], height=200)
 
-    col1, col2 = st.columns([1, 1])
-    with col1:
+    col_btn1, col_btn2 = st.columns([1, 1])
+    with col_btn1:
         analisar = st.button("🔍 Analisar texto")
-    with col2:
+    with col_btn2:
         limpar = st.button("🧹 Limpar")
 
     if limpar:
@@ -43,8 +43,8 @@ with tabs[0]:
         st.experimental_rerun()
 
     if analisar:
-        texto_input = st.session_state["texto_input"]
         if texto_input.strip():
+            st.session_state["texto_input"] = texto_input
             siglas = detectar_siglas(texto_input)
             compostas = detectar_palavras_compostas(texto_input)
 
@@ -86,7 +86,6 @@ with tabs[1]:
     3. **`dic_siglas`** : tem a finalidade de expandir siglas para suas formas completas, aumentando a legibilidade e a clareza do texto.
     """)
 
-    # Botões para download
     with st.container():
         col1, col2 = st.columns(2)
         with col1:
@@ -264,13 +263,12 @@ with tabs[1]:
                     st.warning("Nenhum corpus gerado.")
         except Exception as e:
             st.error(f"Erro ao processar o arquivo: {e}")
-            st.markdown("""  
----  
-👨‍🏫 **Sobre o autor**  
 
+# ========================== RODAPÉ ==========================
+st.markdown("---")
+st.markdown("""
+👨‍🏫 **Sobre o autor**  
 **Autor:** José Wendel dos Santos  
 **Instituição:** Universidade Federal de Sergipe (UFS)  
 **Contato:** eng.wendel@gmail.com
 """)
-
-            
