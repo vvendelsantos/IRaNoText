@@ -34,7 +34,7 @@ with tabs[0]:
 
             col1, col2 = st.columns(2)
             with col1:
-                st.markdown("### 🕵️‍♂️ Palavras compostas detectadas")
+                st.markdown("### 🕵️‍♂️ Reconhecimento de Entidades Nomeadas (REN)")
                 if compostas:
                     st.text_area("Copie e cole no Excel", "\n".join(sorted(compostas)), height=250)
                 else:
