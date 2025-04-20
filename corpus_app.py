@@ -19,7 +19,7 @@ def detectar_palavras_compostas(texto):
     return list(set(compostas))
 
 # ========================== ABAS ==========================
-st.title("IRaText: Geração de Corpus Textual para IRaMuTeQ")
+st.title("IRaText: Geração de Corpus Textual")
 
 tabs = st.tabs(["📝 Análise preliminar dos textos", "🛠️ Normalização do corpus textual"])
 
