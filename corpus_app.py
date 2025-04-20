@@ -21,6 +21,19 @@ def detectar_palavras_compostas(texto):
 # ========================== ABAS ==========================
 st.title("IRaText: Geração de Corpus Textual para IRaMuTeQ")
 
+# Adicionar o CSS personalizado para aumentar o tamanho das abas
+st.markdown("""
+    <style>
+        .streamlit-expanderHeader {
+            font-size: 20px !important;
+            font-weight: bold !important;
+        }
+        .streamlit-tabs {
+            font-size: 18px !important;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
 tabs = st.tabs(["📝 Análise preliminar dos textos", "🛠️ Normalização do corpus textual"])
 
 with tabs[0]:
@@ -232,31 +245,23 @@ with tabs[1]:
             df_siglas = xls.parse("dic_siglas")
             df_textos.columns = [col.strip().lower() for col in df_textos.columns]
 
-            if st.button("🚀 GERAR CORPUS TEXTUAL"):
+            if st.button("🚀 GERAR CORPUS"):
                 corpus, estatisticas = gerar_corpus(df_textos, df_compostos, df_siglas)
-
-                if corpus.strip():
-                    st.success("Corpus gerado com sucesso!")
-
-                    # Nova aba para mostrar o corpus antes do download
-                    st.subheader("📄 Corpus Textual Gerado")
-                    st.text_area("Veja o corpus gerado antes de baixar", corpus, height=300)
-
-                    st.text_area("📊 Estatísticas do processamento", estatisticas, height=250)
-
-                    buf = io.BytesIO()
-                    buf.write(corpus.encode("utf-8"))
-                    st.download_button("💾 SALVAR CORPUS TEXTUAL", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
-                else:
-                    st.warning("Nenhum corpus gerado.")
+                st.markdown(f"### Estatísticas da geração do corpus")
+                st.markdown(estatisticas)
+                st.markdown(f"### Corpus gerado:")
+                st.text(corpus)
         except Exception as e:
             st.error(f"Erro ao processar o arquivo: {e}")
 
-st.markdown("""  
----  
-👨‍🏫 **Sobre o autor**  
-
-**Autor:** José Wendel dos Santos  
-**Instituição:** Universidade Federal de Sergipe (UFS)  
-**Contato:** eng.wendel@gmail.com
-""")
+# ========================== RODAPÉ ==========================
+st.markdown("""
+    <footer>
+        <div style="text-align: center; padding-top: 20px;">
+            👨‍🏫 **Sobre o autor**<br>
+            **Autor:** José Wendel dos Santos<br>
+            **Instituição:** Universidade Federal de Sergipe (UFS)<br>
+            **Contato:** eng.wendel@gmail.com
+        </div>
+    </footer>
+""", unsafe_allow_html=True)
