@@ -74,7 +74,8 @@ with tabs[1]:
                     label="📥 Baixar modelo de planilha",
                     data=exemplo,
                     file_name="gerar_corpus_iramuteq.xlsx",
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    use_container_width=True  # Força o botão a ocupar a largura total da coluna
                 )
         with col2:
             with open("textos_selecionados.xlsx", "rb") as textos:
@@ -82,7 +83,8 @@ with tabs[1]:
                     label="📥 Baixar textos para análise",
                     data=textos,
                     file_name="textos_selecionados.xlsx",
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    use_container_width=True  # Força o botão a ocupar a largura total da coluna
                 )
 
     file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
