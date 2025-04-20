@@ -74,7 +74,7 @@ with tabs[1]:
 
     # Botões para download
     with st.container():
-        col1, col2 = st.columns(2)
+        col1, col2 = st.columns([1, 1])
         with col1:
             with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
                 st.download_button(
