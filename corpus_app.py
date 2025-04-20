@@ -25,9 +25,9 @@ tabs = st.tabs(["📝 Análise preliminar dos textos", "🛠️ Normalização d
 
 with tabs[0]:
     # ========================== PARTE 1 - PRÉ-ANÁLISE ==========================
-    st.header("Detecção de Siglas e Palavras Compostas")
+    st.header("🔍 Detecção de siglas e palavras compostas")
 
-    texto_input = st.text_area("📌 Insira um texto para pré-análise", height=200)
+    texto_input = st.text_area("📌 Insira um texto para pré-análise", height=700)
 
     if st.button("🔍 Analisar texto"):
         if texto_input.strip():
