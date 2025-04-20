@@ -61,11 +61,11 @@ with tabs[1]:
     ### 🛠️ **Geração do corpus textual:**
     A ferramenta realiza a normalização dos textos inseridos, utilizando expressões regulares para ajustar e padronizar palavras e formatos. Isso inclui a substituição de siglas, correção de palavras compostas e a remoção de caracteres especiais, garantindo que o corpus final atenda aos requisitos do IRaMuTeQ.
     
-    ⚠️ Sua planilha deve conter **três abas (planilhas internas)** com os seguintes nomes e finalidades:
+    ⚠️ Sua planilha deve conter **três abas** com os seguintes nomes e finalidades:
 
     1. **`textos_selecionados`** : coleção de textos que serão normalizados e processados. 
-    2. **`dic_entidades_nomeadas`** : entidades nomeadas e suas formas normalizadas para garantir consistência no corpus.  
-    3. **`dic_siglas`** : Lista de siglas e seus significados para substituições automáticas no texto.
+    2. **`dic_entidades_nomeadas`** : entidades nomeadas e suas formas normalizadas para garantir consistência no corpus textual.  
+    3. **`dic_siglas`** : Lista de siglas e seus significados para substituições automáticas no corpus textual.
     """)
 
     with st.container():
