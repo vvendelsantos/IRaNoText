@@ -196,7 +196,7 @@ with tabs[1]:
                 count = texto_corrigido.count(char)
                 if count:
                     if char == "%":
-                        texto_corrigido = texto_corrigido.replace(char, "")
+                        texto_corrigido = texto_corrigido.replace(char, "_por_cento")
                     else:
                         texto_corrigido = texto_corrigido.replace(char, "_")
                     contagem_caracteres[char] += count
