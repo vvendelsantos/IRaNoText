@@ -93,20 +93,20 @@ with tabs[1]:
     with st.container():
         col3, col4 = st.columns(2)
         with col3:
-            with open("corpus_textual_artigos", "rb") as artigos:
+            with open("corpus_textual_artigos.txt", "rb") as artigos:
                 st.download_button(
                     label="📥 Corpus Textual - Artigos",
                     data=artigos,
-                    file_name="corpus_textual_artigos",
+                    file_name="corpus_textual_artigos.txt",
                     mime="text/plain",
                     use_container_width=True
                 )
         with col4:
-            with open("corpus_textual_resumos", "rb") as resumos:
+            with open("corpus_textual_resumos.txt", "rb") as resumos:
                 st.download_button(
                     label="📥 Corpus Textual - Resumos",
                     data=resumos,
-                    file_name="corpus_textual_resumos",
+                    file_name="corpus_textual_resumos.txt",
                     mime="text/plain",
                     use_container_width=True
                 )
