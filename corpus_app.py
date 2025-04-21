@@ -1,4 +1,4 @@
-import streamlit as st 
+import streamlit as st
 import pandas as pd
 import re
 import io
@@ -6,7 +6,7 @@ import spacy
 from word2number import w2n
 
 # Carregar modelo do spaCy
-nlp = spacy.load("pt_core_news_sm")
+nlp = spacy.load("pt_core_news_lg")
 
 # Funções da parte 1
 def detectar_siglas(texto):
@@ -60,7 +60,7 @@ with tabs[1]:
     O processo é realizado por meio da técnica de Reconhecimento de Entidades Nomeadas (REN), que permite à ferramenta identificar e classificar automaticamente entidades no texto, como nomes de pessoas, organizações e locais, facilitando a extração e a organização das informações.
     ### 🛠️ **Geração do corpus textual:**
     A ferramenta realiza a normalização dos textos inseridos, utilizando expressões regulares para ajustar e padronizar palavras e formatos. Isso inclui a substituição de siglas, correção de palavras compostas e a remoção de caracteres especiais, garantindo que o corpus final atenda aos requisitos do IRaMuTeQ.
-
+    
     ⚠️ Sua planilha deve conter **três abas** com os seguintes nomes e finalidades:
 
     1. **`textos_selecionados`** : coleção de textos que serão normalizados e processados. 
@@ -69,7 +69,8 @@ with tabs[1]:
     """)
 
     with st.container():
-        col1, col2 = st.columns(2)
+        # Ajustando a disposição dos botões para ficar mais organizado
+        col1, col2 = st.columns([2, 2])
         with col1:
             with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
                 st.download_button(
@@ -88,25 +89,10 @@ with tabs[1]:
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                     use_container_width=True
                 )
-            with open("corpus_textual_resumos.txt", "rb") as resumos:
-                st.download_button(
-                    label="📥 Corpus textual - Resumos",
-                    data=resumos,
-                    file_name="corpus_textual_resumos.txt",
-                    mime="text/plain",
-                    use_container_width=True
-                )
-            with open("corpus_textual_artigos.txt", "rb") as artigos:
-                st.download_button(
-                    label="📥 Corpus Textual - Artigos",
-                    data=artigos,
-                    file_name="corpus_textual_artigos.txt",
-                    mime="text/plain",
-                    use_container_width=True
-                )
 
     file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
 
+    # Funções auxiliares da parte 2
     def converter_numeros_por_extenso(texto):
         unidades = {
             "zero": 0, "dois": 2, "duas": 2, "três": 3, "quatro": 4, "cinco": 5,
@@ -198,13 +184,13 @@ with tabs[1]:
             total_textos += 1
 
             for sigla, significado in dict_siglas.items():
-                texto_corrigido = re.sub(rf"\\({sigla}\\)", "", texto_corrigido)
-                texto_corrigido = re.sub(rf"\\b{sigla}\\b", significado, texto_corrigido, flags=re.IGNORECASE)
+                texto_corrigido = re.sub(rf"\({sigla}\)", "", texto_corrigido)
+                texto_corrigido = re.sub(rf"\b{sigla}\b", significado, texto_corrigido, flags=re.IGNORECASE)
                 total_siglas += 1
 
             for termo, substituto in dict_entidades.items():
                 if termo in texto_corrigido:
-                    texto_corrigido = re.sub(rf"\\b{termo}\\b", substituto, texto_corrigido, flags=re.IGNORECASE)
+                    texto_corrigido = re.sub(rf"\b{termo}\b", substituto, texto_corrigido, flags=re.IGNORECASE)
                     total_entidades += 1
 
             for char in caracteres_especiais:
