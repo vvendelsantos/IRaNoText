@@ -8,7 +8,7 @@ from word2number import w2n
 # Cache do modelo spaCy
 @st.cache_resource
 def carregar_modelo_spacy():
-    return spacy.load("pt_core_news_md")  # ou "pt_core_news_sm" para mais leveza
+    return spacy.load("pt_core_news_lg")  # ou "pt_core_news_sm" para mais leveza
 
 nlp = carregar_modelo_spacy()
 
