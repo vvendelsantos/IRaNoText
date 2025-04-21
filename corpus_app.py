@@ -1,4 +1,4 @@
-import streamlit as st
+import streamlit as st 
 import pandas as pd
 import re
 import io
@@ -86,6 +86,14 @@ with tabs[1]:
                     data=textos,
                     file_name="textos_selecionados.xlsx",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    use_container_width=True
+                )
+            with open("corpus_textual_resumos.txt", "rb") as resumos:
+                st.download_button(
+                    label="📥 Corpus textual - Resumos",
+                    data=resumos,
+                    file_name="corpus_textual_resumos.txt",
+                    mime="text/plain",
                     use_container_width=True
                 )
 
