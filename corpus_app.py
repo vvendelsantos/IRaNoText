@@ -1,4 +1,4 @@
-import streamlit as st
+import streamlit as st 
 import pandas as pd
 import re
 import io
@@ -60,7 +60,7 @@ with tabs[1]:
     O processo é realizado por meio da técnica de Reconhecimento de Entidades Nomeadas (REN), que permite à ferramenta identificar e classificar automaticamente entidades no texto, como nomes de pessoas, organizações e locais, facilitando a extração e a organização das informações.
     ### 🛠️ **Geração do corpus textual:**
     A ferramenta realiza a normalização dos textos inseridos, utilizando expressões regulares para ajustar e padronizar palavras e formatos. Isso inclui a substituição de siglas, correção de palavras compostas e a remoção de caracteres especiais, garantindo que o corpus final atenda aos requisitos do IRaMuTeQ.
-    
+
     ⚠️ Sua planilha deve conter **três abas** com os seguintes nomes e finalidades:
 
     1. **`textos_selecionados`** : coleção de textos que serão normalizados e processados. 
@@ -68,8 +68,9 @@ with tabs[1]:
     3. **`dic_siglas`** : Lista de siglas e seus significados para substituições automáticas no corpus textual.
     """)
 
+    # Container com três botões de download, lado a lado
     with st.container():
-        col1, col2 = st.columns(2)
+        col1, col2, col3 = st.columns(3)
         with col1:
             with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
                 st.download_button(
@@ -88,10 +89,6 @@ with tabs[1]:
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                     use_container_width=True
                 )
-
-    # Novos botões de download
-    with st.container():
-        col3, col4 = st.columns(2)
         with col3:
             with open("corpus_textual_artigos.txt", "rb") as artigos:
                 st.download_button(
@@ -101,19 +98,10 @@ with tabs[1]:
                     mime="text/plain",
                     use_container_width=True
                 )
-        with col4:
-            with open("corpus_textual_resumos.txt", "rb") as resumos:
-                st.download_button(
-                    label="📥 Corpus Textual - Resumos",
-                    data=resumos,
-                    file_name="corpus_textual_resumos.txt",
-                    mime="text/plain",
-                    use_container_width=True
-                )
 
     file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
 
-    # Funções auxiliares da parte 2
+    # As demais funções e lógica permanecem como estavam
     def converter_numeros_por_extenso(texto):
         unidades = {
             "zero": 0, "dois": 2, "duas": 2, "três": 3, "quatro": 4, "cinco": 5,
