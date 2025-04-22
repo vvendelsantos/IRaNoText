@@ -21,7 +21,7 @@ def detectar_palavras_compostas(texto):
 # ========================== ABAS ==========================
 st.title("IRaText: Geração de Corpus Textual")
 
-tabs = st.tabs(["📝 ANÁLISE PRELIMINAR DOS TEXTOS", "🛠️ GERAR CORPUS TEXTUAL"])
+tabs = st.tabs(["📝 ANÁLISE PRELIMINAR DOS TEXTOS", "🛠️ GERAÇÃO DO CORPUS TEXTUAL"])
 
 with tabs[0]:
     st.header("")
