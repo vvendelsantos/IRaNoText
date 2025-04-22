@@ -270,7 +270,7 @@ with tabs[1]:
 
 with tabs[2]:
     st.header("🚧 EM CONSTRUÇÃO")
-    st.info("Esta funcionalidade ainda está em desenvolvimento. Fique atento às próximas atualizações! 😊")
+    st.info("Novos recursos ainda estão em desenvolvimento.")
 
 # Rodapé
 st.markdown("""  
