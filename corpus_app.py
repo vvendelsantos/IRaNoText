@@ -19,7 +19,7 @@ def detectar_palavras_compostas(texto):
     return list(set(compostas))
 
 # ========================== ABAS ==========================
-st.title("IRaText: Geração de Corpus Textual")
+st.title("IRaText: Gerador de Corpus Textual")
 
 tabs = st.tabs(["📝 ANÁLISE PRELIMINAR DOS TEXTOS", "🛠️ GERAÇÃO DO CORPUS TEXTUAL"])
 
@@ -53,13 +53,13 @@ with tabs[1]:
     st.header("")
 
     st.sidebar.markdown("""   
-    # 📌 Sobre a ferramenta
+    # ℹ️ Sobre a ferramenta
 
     Seja bem-vindo ao IRaText — um aplicativo que vai ajudar você a preparar e gerar seu corpus textual compatível com o IRaMuTeQ. A ferramenta permite realizar duas etapas fundamentais para a análise de dados qualitativos.
     ### 📝 **Análise preliminar dos textos:**
-    O processo é realizado por meio da técnica de Reconhecimento de Entidades Nomeadas (REN), que permite à ferramenta identificar e classificar automaticamente entidades no texto, como nomes de pessoas, organizações e locais, facilitando a extração e a organização das informações.
+    O processo é realizado por meio da técnica de Reconhecimento de Entidades Nomeadas (REN), que permite à ferramenta identificar e classificar automaticamente entidades no texto, como nomes de pessoas, organizações e locais, facilitando a extração e a organização das informações. O aplicativo exibe as siglas e entidades detectadas em áreas de texto para cópia e preenchimento da planilha.
     ### 🛠️ **Geração do corpus textual:**
-    A ferramenta realiza a normalização dos textos inseridos, utilizando expressões regulares para ajustar e padronizar palavras e formatos. Isso inclui a substituição de siglas, correção de palavras compostas e a remoção de caracteres especiais, garantindo que o corpus final atenda aos requisitos do IRaMuTeQ.
+    A ferramenta realiza a normalização dos textos inseridos em uma planilha, utilizando expressões regulares para ajustar e padronizar palavras e formatos. Isso inclui: (1) Normalização de números por extenso, (2) Tratamento de flexões verbo-pronominais, (3) Substituição de siglas, (4) Substituição de entidades nomeadas, (5) Remoção de caracteres especiais e, (6) Geração de metadados (linhas de comando). Ao final, o aplicativo permite visualizar o corpus textual gerado antes de salvá-lo, além de exibir as estatísticas de processamento.
 
     ⚠️ Sua planilha deve conter **três abas** com os seguintes nomes e finalidades:
 
