@@ -55,7 +55,7 @@ with tabs[1]:
     st.sidebar.markdown("""   
     # 📌 Sobre a ferramenta
 
-    Seja bem-vindo ao IRaText — uma aplicação voltada para a geração e preparação de corpus textual compatível com o IRaMuTeQ. A ferramenta permite realizar duas etapas fundamentais para a análise de dados qualitativos.
+    Seja bem-vindo ao IRaText — um aplicativo que vai ajudar você a preparar e gerar seu corpus textual compatível com o IRaMuTeQ. A ferramenta permite realizar duas etapas fundamentais para a análise de dados qualitativos.
     ### 📝 **Análise preliminar dos textos:**
     O processo é realizado por meio da técnica de Reconhecimento de Entidades Nomeadas (REN), que permite à ferramenta identificar e classificar automaticamente entidades no texto, como nomes de pessoas, organizações e locais, facilitando a extração e a organização das informações.
     ### 🛠️ **Geração do corpus textual:**
