@@ -21,7 +21,11 @@ def detectar_palavras_compostas(texto):
 # ========================== ABAS ==========================
 st.title("IRaText: Gerador de Corpus Textual")
 
-tabs = st.tabs(["📝 ANÁLISE PRELIMINAR DOS TEXTOS", "🛠️ GERAÇÃO DO CORPUS TEXTUAL"])
+tabs = st.tabs([
+    "📝 ANÁLISE PRELIMINAR DOS TEXTOS",
+    "🛠️ GERAÇÃO DO CORPUS TEXTUAL",
+    "🚧 EM CONSTRUÇÃO"
+])
 
 with tabs[0]:
     st.header("")
@@ -53,16 +57,13 @@ with tabs[1]:
     st.header("")
 
     # CSS para justificar texto na sidebar
-    st.markdown(
-        """
+    st.markdown("""
         <style>
         [data-testid="stSidebar"] div.stMarkdown p {
             text-align: justify;
         }
         </style>
-        """,
-        unsafe_allow_html=True
-    )
+    """, unsafe_allow_html=True)
 
     st.sidebar.markdown("""   
     # ℹ️ Sobre a ferramenta
@@ -80,7 +81,6 @@ with tabs[1]:
     3. **`dic_siglas`** : Lista de siglas e seus significados.
     """)
 
-    # Container com três botões de download, lado a lado
     with st.container():
         col1, col2, col3 = st.columns(3)
         with col1:
@@ -113,7 +113,6 @@ with tabs[1]:
 
     file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
 
-    # As demais funções e lógica permanecem como estavam
     def converter_numeros_por_extenso(texto):
         unidades = {
             "zero": 0, "dois": 2, "duas": 2, "três": 3, "quatro": 4, "cinco": 5,
@@ -269,10 +268,13 @@ with tabs[1]:
         except Exception as e:
             st.error(f"Erro ao processar o arquivo: {e}")
 
+with tabs[2]:
+    st.header("🚧 EM CONSTRUÇÃO")
+    st.info("Esta funcionalidade ainda está em desenvolvimento. Fique atento às próximas atualizações! 😊")
+
 # Rodapé
 st.markdown("""  
 ---  
-
 **👨‍💻 Autor:** José Wendel dos Santos  
 **🏛️ Instituição:** Universidade Federal de Sergipe (UFS)  
 **📧 Contato:** eng.wendel@gmail.com
