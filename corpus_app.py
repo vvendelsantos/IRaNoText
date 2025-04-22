@@ -52,6 +52,18 @@ with tabs[0]:
 with tabs[1]:
     st.header("")
 
+    # CSS para justificar texto na sidebar
+    st.markdown(
+        """
+        <style>
+        [data-testid="stSidebar"] div.stMarkdown p {
+            text-align: justify;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
     st.sidebar.markdown("""   
     # ℹ️ Sobre a ferramenta
 
