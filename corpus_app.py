@@ -74,7 +74,7 @@ with tabs[1]:
         with col1:
             with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
                 st.download_button(
-                    label="📥 Baixar modelo de planilha",
+                    label="📥 Baixar planilha",
                     data=exemplo,
                     file_name="gerar_corpus_iramuteq.xlsx",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
