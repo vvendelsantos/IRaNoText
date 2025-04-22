@@ -57,15 +57,15 @@ with tabs[1]:
 
     Seja bem-vindo ao IRaText — um aplicativo que vai ajudar você a preparar e gerar seu corpus textual compatível com o IRaMuTeQ. A ferramenta permite realizar duas etapas fundamentais para a análise de dados qualitativos.
     ### 📝 **Análise preliminar dos textos:**
-    O processo é realizado por meio da técnica de Reconhecimento de Entidades Nomeadas (REN), que permite à ferramenta identificar e classificar automaticamente entidades no texto, como nomes de pessoas, organizações e locais, facilitando a extração e a organização das informações. O aplicativo exibe as siglas e entidades detectadas em áreas de texto para cópia e preenchimento da planilha.
+    O processo utiliza a técnica de Reconhecimento de Entidades Nomeadas (REN) para identificar e classificar automaticamente entidades no texto, como pessoas, organizações e locais, facilitando a extração e organização das informações. O aplicativo exibe as siglas e entidades detectadas em campos de texto para cópia e preenchimento da planilha.
     ### 🛠️ **Geração do corpus textual:**
-    A ferramenta realiza a normalização dos textos inseridos em uma planilha, utilizando expressões regulares para ajustar e padronizar palavras e formatos. Isso inclui: (1) Normalização de números por extenso, (2) Tratamento de flexões verbo-pronominais, (3) Substituição de siglas, (4) Substituição de entidades nomeadas, (5) Remoção de caracteres especiais e, (6) Geração de metadados (linhas de comando). Ao final, o aplicativo permite visualizar o corpus textual gerado antes de salvá-lo, além de exibir as estatísticas de processamento.
+    A ferramenta normaliza textos em uma planilha usando expressões regulares para ajustar palavras e formatos. Inclui: (1) normalização de números por extenso, (2) tratamento de flexões verbo-pronominais, (3) substituição de siglas e entidades nomeadas, (4) remoção de caracteres especiais e (5) geração de metadados. Ao final, o aplicativo exibe o corpus gerado e as estatísticas de processamento antes de salvá-lo.
 
     ⚠️ Sua planilha deve conter **três abas** com os seguintes nomes e finalidades:
 
-    1. **`textos_selecionados`** : coleção de textos que serão normalizados e processados. 
-    2. **`dic_entidades_nomeadas`** : entidades nomeadas e suas formas normalizadas para garantir consistência no corpus textual.  
-    3. **`dic_siglas`** : Lista de siglas e seus significados para substituições automáticas no corpus textual.
+    1. **`textos_selecionados`** : textos que serão normalizados e processados. 
+    2. **`dic_entidades_nomeadas`** : entidades nomeadas e suas formas normalizadas.  
+    3. **`dic_siglas`** : Lista de siglas e seus significados.
     """)
 
     # Container com três botões de download, lado a lado
