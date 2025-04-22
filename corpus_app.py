@@ -25,35 +25,38 @@ tabs = st.tabs(["📝 ANÁLISE PRELIMINAR DOS TEXTOS", "🛠️ GERAÇÃO DO COR
 
 with tabs[0]:
     st.header("")
-    texto_input = st.text_area("", height=250)
+    texto_input = st.text_area("", height=250, key="texto_input")
 
-    col1, col2 = st.columns([3, 1])  # Ajustando as colunas para o tamanho adequado
+    col1, col2 = st.columns(2)
     with col1:
-        if st.button("🔍 Analisar textos"):
-            if texto_input.strip():
-                siglas = detectar_siglas(texto_input)
-                compostas = detectar_palavras_compostas(texto_input)
+        if st.button("🔍 Analisar texto"):
+            if st.session_state.texto_input.strip():
+                siglas = detectar_siglas(st.session_state.texto_input)
+                compostas = detectar_palavras_compostas(st.session_state.texto_input)
 
                 col1, col2 = st.columns(2)
                 with col1:
                     st.markdown("### 🕵️‍♂️ Entidades Nomeadas")
                     if compostas:
-                        st.text_area("Copie e cole no Excel", "\n".join(sorted(compostas)), height=250)
+                        st.text_area("Copie e cole no Excel", "\n".join(sorted(compostas)), height=250, key="entidades")
                     else:
                         st.info("Nenhuma entidade nomeada encontrada.")
 
                 with col2:
                     st.markdown("### 🔠 Siglas detectadas")
                     if siglas:
-                        st.text_area("Copie e cole no Excel", "\n".join(sorted(siglas)), height=250)
+                        st.text_area("Copie e cole no Excel", "\n".join(sorted(siglas)), height=250, key="siglas")
                     else:
                         st.info("Nenhuma sigla encontrada.")
             else:
                 st.warning("Por favor, insira um texto antes de analisar.")
+    
     with col2:
-        if st.button("Limpar"):
-            texto_input = ""  # Limpa o texto
-            st.text_area("", value=texto_input, height=250)  # Atualiza o campo de texto com o valor vazio
+        if st.button("🧹 Limpar"):
+            st.session_state.texto_input = ""
+            st.session_state.entidades = ""
+            st.session_state.siglas = ""
+            st.rerun()
 
 with tabs[1]:
     st.header("")
@@ -187,7 +190,7 @@ with tabs[1]:
         corpus_final = ""
 
         for _, row in df_textos.iterrows():
-            texto = str(row.get("textos selecionados", "")) 
+            texto = str(row.get("textos selecionados", ""))
             id_val = row.get("id", "")
             if not texto.strip():
                 continue
