@@ -93,11 +93,11 @@ with tabs[1]:
                     use_container_width=True
                 )
         with col2:
-            with open("textos_selecionados.xlsx", "rb") as textos:
+            with open("corpus_textual_resumos.txt", "rb") as textos:
                 st.download_button(
-                    label="📥 Baixar textos para análise",
+                    label="📥 Corpus Textual - Resumos",
                     data=textos,
-                    file_name="textos_selecionados.xlsx",
+                    file_name="corpus_textual_resumos.txt",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                     use_container_width=True
                 )
