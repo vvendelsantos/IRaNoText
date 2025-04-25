@@ -167,7 +167,7 @@ with tabs[1]:
         return " ".join(resultado)
 
     def processar_palavras_com_se(texto):
-        return re.sub(r"(\b\w+)-se\b", r"se ", texto)
+        return re.sub(r"(\b\w+)-se\b", r"se \1", texto)
 
     def processar_pronomes_pospostos(texto):
         texto = re.sub(r'\b(\w+)-se\b', r'se \1', texto)
