@@ -11,9 +11,9 @@ st.sidebar.markdown("""
     Bem-vindo ao IRaText, uma ferramenta desenvolvida para preparar e gerar seu corpus textual compatível com o IRaMuTeQ.
     # 🗺️ Fluxo de uso
     ### 📝 **Análise preliminar dos textos:**
-    Nesta aba, o usuário deve inserir os textos que deseja analisar. A ferramenta realiza automaticamente a identificação de siglas e de entidades nomeadas. Além disso, o usuário pode sugerir manualmente outras entidades, conforme necessário. Para essa tarefa, é utilizado o Reconhecimento de Entidades Nomeadas (REN), que permite identificar e classificar termos como nomes próprios, locais, instituições, entre outros.
+    Envie textos para análise automatizada com foco em siglas e entidades nomeadas, incluindo nomes próprios, localizações geográficas e instituições. Além disso, recomendamos que você incorpore manualmente quaisquer termos compostos adicionais relevantes que possam ser padronizados em seu corpus textual.
     ### 🛠️ **Geração do corpus textual:**
-    Nesta aba, o usuário insere os textos que deseja processar, define os dicionários de entidades nomeadas, siglas e as variáveis associadas. O processamento é realizado por meio de expressões regulares que executam os seguintes ajustes: (1) normalização de números por extenso, (2) tratamento de flexões verbo-pronominais, (3) substituição de siglas e entidades nomeadas, (4) remoção de caracteres incompatíveis com o IRaMuTeQ e (5) geração de metadados. Ao final, o corpus textual processado é exibido juntamente com estatísticas detalhadas, permitindo ao usuário revisar os dados antes de salvá-los.
+    Insera os textos que deseja processar, defina os dicionários de entidades nomeadas, siglas e as variáveis associadas. O processamento utilizará expressões regulares para executar as seguintes funções: (1) normalização de números por extenso, (2) tratamento de flexões verbo-pronominais, (3) substituição de siglas e entidades nomeadas, (4) remoção de caracteres incompatíveis com o IRaMuTeQ e (5) geração de metadados. Ao final, o corpus textual processado é exibido juntamente com estatísticas detalhadas, permitindo ao usuário revisar os dados antes de salvá-los.
 """)
 
 # Carregar modelo do spaCy
