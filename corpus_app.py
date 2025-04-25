@@ -170,12 +170,12 @@ with tabs[1]:
         return re.sub(r"(\b\w+)-se\b", r"se ", texto)
 
     def processar_pronomes_pospostos(texto):
-        texto = re.sub(r'\b(\w+)-se\b', r'se ', texto)
-        texto = re.sub(r'\b(\w+)-([oa]s?)\b', r' ', texto)
-        texto = re.sub(r'\b(\w+)-(lhe|lhes)\b', r' ', texto)
-        texto = re.sub(r'\b(\w+)-(me|te|nos|vos)\b', r' ', texto)
-        texto = re.sub(r'\b(\w+)[áéíóúâêô]?-([oa]s?)\b', r' ', texto)
-        texto = re.sub(r'\b(\w+)[áéíóúâêô]-(lo|la|los|las)-ia\b', r' ia', texto)
+        texto = re.sub(r'\b(\w+)-se\b', r'se \1', texto)
+        texto = re.sub(r'\b(\w+)-([oa]s?)\b', r'\2 \1', texto)
+        texto = re.sub(r'\b(\w+)-(lhe|lhes)\b', r'\2 \1', texto)
+        texto = re.sub(r'\b(\w+)-(me|te|nos|vos)\b', r'\2 \1', texto)
+        texto = re.sub(r'\b(\w+)[áéíóúâêô]?-([oa]s?)\b', r'\2 \1', texto)
+        texto = re.sub(r'\b(\w+)[áéíóúâêô]-(lo|la|los|las)-ia\b', r'\2 \1ia', texto)
         return texto
 
     def gerar_corpus(textos, entidades, siglas, metadados):
