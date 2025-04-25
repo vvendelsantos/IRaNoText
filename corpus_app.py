@@ -56,7 +56,6 @@ with tabs[0]:
 with tabs[1]:
     st.header("")
 
-    # CSS para justificar texto na sidebar
     st.markdown("""
         <style>
         [data-testid="stSidebar"] div.stMarkdown p {
@@ -75,10 +74,8 @@ with tabs[1]:
     Processa textos com expressões regulares, ajustando palavras e formatos. Inclui: (1) normalização de números por extenso, (2) tratamento de flexões verbo-pronominais, (3) substituição de siglas e entidades nomeadas, (4) remoção de caracteres especiais e (5) geração de metadados. Ao final, exibe o corpus gerado e as estatísticas de processamento antes de salvá-lo.
     """)
 
-    # Interface para entrada de dados
     st.subheader("📝 Inserir Textos para Processamento")
 
-    # Adicionar múltiplos textos com IDs
     textos = []
     input_textos_brutos = st.text_area("Cole aqui os textos (um por linha):", height=200)
     if input_textos_brutos.strip():
@@ -86,7 +83,6 @@ with tabs[1]:
         for i, linha in enumerate(linhas):
             textos.append({"id": f"texto_{i+1}", "texto": linha})
 
-    # Dicionário de entidades nomeadas
     st.subheader("📚 Dicionário de Entidades Nomeadas")
     entidades_brutas = st.text_area("Cole aqui as entidades (uma por linha):", height=150)
     entidades = []
@@ -97,7 +93,6 @@ with tabs[1]:
                 forma_normalizada = entidade.replace(" ", "_")
                 entidades.append({"Entidades nomeadas": entidade, "Palavra normalizada": forma_normalizada})
 
-    # Dicionário de siglas
     st.subheader("🔠 Dicionário de Siglas")
     siglas = []
     num_siglas = st.number_input("Quantidade de siglas", min_value=0, max_value=100, value=0)
@@ -109,10 +104,9 @@ with tabs[1]:
         with col2:
             significado = st.text_input(f"Significado {i+1}", key=f"sign_{i}")
         if sigla and significado:
-    significado_formatado = significado.lower().replace(" ", "_")
-    siglas.append({"Sigla": sigla, "Significado": significado_formatado})
+            significado_formatado = significado.lower().replace(" ", "_")
+            siglas.append({"Sigla": sigla, "Significado": significado_formatado})
 
-    # Metadados adicionais
     st.subheader("📊 Metadados Adicionais (opcional)")
     metadados = {}
     num_metadados = st.number_input("Quantidade de campos de metadados", min_value=0, max_value=10, value=0)
