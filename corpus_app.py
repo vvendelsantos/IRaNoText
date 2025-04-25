@@ -1,29 +1,9 @@
-import streamlit as st
+import streamlit as st 
 import pandas as pd
 import re
 import io
 import spacy
 from word2number import w2n
-from collections import Counter
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.decomposition import LatentDirichletAllocation
-
-# Sidebar
-st.sidebar.markdown("""   
-    # ℹ️ Sobre a ferramenta
-
-    Bem-vindo ao IRaText — ferramenta para preparar e gerar seu corpus textual compatível com o IRaMuTeQ. Com ele, você realiza duas etapas essenciais para análise de dados qualitativos de forma eficiente.
-    ### 📝 **Análise preliminar dos textos:**
-    Utiliza Reconhecimento de Entidades Nomeadas (REN) para identificar e classificar automaticamente termos como nomes, siglas e outras entidades no texto, facilitando a organização das informações para o preenchimento da planilha.
-    ### 🛠️ **Geração do corpus textual:**
-    Processa textos em uma planilha com expressões regulares, ajustando palavras e formatos. Inclui: (1) normalização de números por extenso, (2) tratamento de flexões verbo-pronominais, (3) substituição de siglas e entidades nomeadas, (4) remoção de caracteres especiais e (5) geração de metadados. Ao final, exibe o corpus gerado e as estatísticas de processamento antes de salvá-lo.
-
-    ⚠️ Sua planilha deve conter **três abas** com os seguintes nomes e finalidades:
-
-    1. **`textos_selecionados`** : textos a serem normalizados e processados. 
-    2. **`dic_entidades_nomeadas`** : entidades nomeadas e suas formas normalizadas.  
-    3. **`dic_siglas`** : Lista de siglas e seus significados.
-""")
 
 # Carregar modelo do spaCy
 nlp = spacy.load("pt_core_news_sm")
@@ -44,7 +24,7 @@ st.title("IRaText: Gerador de Corpus Textual")
 tabs = st.tabs([
     "📝 ANÁLISE PRELIMINAR DOS TEXTOS",
     "🛠️ GERAÇÃO DO CORPUS TEXTUAL",
-    "📊 ANÁLISE EXPLORATÓRIA"  # Nova aba
+    "🚧 EM CONSTRUÇÃO"
 ])
 
 with tabs[0]:
@@ -109,7 +89,11 @@ with tabs[1]:
             significado_formatado = significado.lower().replace(" ", "_")
             siglas.append({"Sigla": sigla, "Significado": significado_formatado})
 
+    # ==================== SEÇÃO ATUALIZADA DE METADADOS ====================
     st.subheader("📊 Metadados por Texto")
+
+    # 1. Definir estrutura de metadados (campos comuns a todos textos)
+    st.markdown("**1. Definir Campos de Metadados**")
     num_campos_metadados = st.number_input("Quantidade de campos de metadados para todos os textos", 
                                          min_value=0, max_value=10, value=0, 
                                          key="meta_global_n")
@@ -121,8 +105,12 @@ with tabs[1]:
         if campo:
             campos_metadados.append(campo.strip())
 
+    # 2. Preencher valores para cada texto
     metadados_por_texto = {}
     if campos_metadados and textos:
+        st.markdown("**2. Preencher Valores para Cada Texto**")
+        
+        # Cria tabela editável
         dados = []
         for texto in textos:
             row = {"ID Texto": texto['id']}
@@ -138,6 +126,7 @@ with tabs[1]:
             use_container_width=True
         )
 
+        # Converte para o formato original
         for _, row in df_editado.iterrows():
             metadados = {}
             for campo in campos_metadados:
@@ -145,6 +134,7 @@ with tabs[1]:
                     metadados[campo] = row[campo].strip()
             metadados_por_texto[row['ID Texto']] = metadados
 
+    # ==================== FUNÇÕES DE PROCESSAMENTO ====================
     def converter_numeros_por_extenso(texto):
         if not isinstance(texto, str):
             return texto
@@ -194,7 +184,8 @@ with tabs[1]:
         dict_entidades = {e["Entidades nomeadas"].lower(): e["Palavra normalizada"].lower() for e in entidades}
         dict_siglas = {s["Sigla"].lower(): s["Significado"] for s in siglas}
         caracteres_especiais = {
-            "-": "Hífen", ";": "Ponto e vírgula", '"': "Aspas duplas", "'": "Aspas simples", "…": "Reticências", "–": "Travessão", "(": "Parêntese esquerdo", ")": "Parêntese direito", "/": "Barra", "%": "Porcentagem", "[": "Colchete esquerdo", "]": "Colchete direito","{": "Chave esquerda", "}": "Chave direita", "&": "E comercial", "*": "Asterisco","@": "Arroba", "#": "Cerquilha", "$": "Cifrão", "+": "Mais", "=": "Igual","<": "Menor que", ">": "Maior que", "\\": "Barra invertida", "|": "Barra vertical", "~": "Til", "`": "Acento grave", "^": "Circunflexo"
+            "-": "Hífen", ";": "Ponto e vírgula", '"': "Aspas duplas", "'": "Aspas simples", "…": "Reticências", "–": "Travessão", "(": "Parêntese esquerdo", ")": "Parêntese direito", "/": "Barra", "%": "Porcentagem", "[": "Colchete esquerdo", "]": "Colchete direito","{": "Chave esquerda", "}": "Chave direita", "&": "E comercial", "*": "Asterisco","@": "Arroba", "#": "Cerquilha", "$": "Cifrão", "+": "Mais", "=": "Igual","<": "Menor que", ">": "Maior que", "\\": "Barra invertida", "|": "Barra vertical",       "~": "Til", "`": "Acento grave", "^": "Circunflexo"
+           
         }
 
         contagem_caracteres = {k: 0 for k in caracteres_especiais}
@@ -239,7 +230,7 @@ with tabs[1]:
             for k, v in metadados_por_texto.get(id_val, {}).items():
                 if v:
                     metadata += f" *{k.replace(' ', '_')}_{v.replace(' ', '_')}"
-
+            
             corpus_final += f"{metadata}\n{texto_corrigido}\n"
 
         estatisticas = f"Textos processados: {total_textos}\nSiglas substituídas: {total_siglas}\n"
@@ -267,79 +258,9 @@ with tabs[1]:
         else:
             st.warning("Por favor, insira pelo menos um texto para processar.")
 
-with tabs[2]:  # Nova aba de Análise Exploratória
-    st.header("📊 Análise Exploratória")
-    
-    # Verifica se há textos processados
-    if 'textos' not in globals() or not textos:
-        st.warning("⛔ Nenhum texto disponível. Processe os textos na aba 'Geração de Corpus' primeiro.")
-    else:
-        # Pré-processamento
-        st.subheader("1. Pré-processamento")
-        docs = [t["texto"] for t in textos if t["texto"].strip()]
-        
-        remove_stopwords = st.checkbox("Remover stopwords (palavras comuns como 'de', 'a', 'o')")
-        if remove_stopwords:
-            nlp = spacy.load("pt_core_news_sm")
-            stopwords = nlp.Defaults.stop_words
-            docs = [" ".join([word for word in doc.split() if word.lower() not in stopwords]) for doc in docs]
-        
-        # Palavras mais frequentes
-        st.subheader("2. Palavras Mais Frequentes")
-        all_words = " ".join(docs).split()
-        word_counts = Counter(all_words).most_common(20)
-        
-        col1, col2 = st.columns(2)
-        with col1:
-            st.bar_chart(dict(word_counts))
-        with col2:
-            st.dataframe(pd.DataFrame(word_counts, columns=["Palavra", "Frequência"]))
-        
-        # Matriz de Coocorrência
-        st.subheader("3. Matriz de Coocorrência")
-        st.markdown("**Palavras que aparecem juntas no mesmo contexto**")
-        
-        selected_words = st.multiselect(
-            "Selecione palavras para análise",
-            options=[w[0] for w in word_counts[:20]],
-            default=[w[0] for w in word_counts[:3]]
-        )
-        
-        if selected_words:
-            window_size = st.slider("Tamanho da janela de contexto (palavras)", 2, 10, 5)
-            
-            # Cria matriz de coocorrência simplificada
-            cooc_matrix = pd.DataFrame(0, index=selected_words, columns=selected_words)
-            
-            for doc in docs:
-                words = doc.split()
-                for i, word in enumerate(words):
-                    if word in selected_words:
-                        start = max(0, i - window_size)
-                        end = min(len(words), i + window_size + 1)
-                        context = words[start:end]
-                        for other_word in context:
-                            if other_word in selected_words and other_word != word:
-                                cooc_matrix.loc[word, other_word] += 1
-            
-            st.dataframe(cooc_matrix.style.background_gradient(cmap="Blues"))
-        
-        # Extração de Tópicos
-        st.subheader("4. Extração de Tópicos (LDA)")
-        num_topics = st.number_input("Número de tópicos para extrair", 2, 10, 3)
-        
-        if st.button("Identificar Tópicos"):
-            with st.spinner("Processando..."):
-                vectorizer = CountVectorizer(max_df=0.95, min_df=2)
-                X = vectorizer.fit_transform(docs)
-                
-                lda = LatentDirichletAllocation(n_components=num_topics, random_state=42)
-                lda.fit(X)
-                
-                st.success("Tópicos identificados!")
-                for i, topic in enumerate(lda.components_):
-                    top_words = [vectorizer.get_feature_names_out()[j] for j in topic.argsort()[-5:][::-1]]
-                    st.markdown(f"**Tópico {i+1}:** {', '.join(top_words)}")
+with tabs[2]:
+    st.header("🚧 EM CONSTRUÇÃO")
+    st.info("Novos recursos ainda estão em desenvolvimento.")
 
 # Rodapé
 st.markdown("""  
