@@ -43,21 +43,21 @@ with tabs[0]:
     st.header("")
     texto_input = st.text_area("", height=250)
 
-    if st.button("🔍 Analisar textos"):
+    if st.button("🔍 ANALISAR TEXTOS"):
         if texto_input.strip():
             siglas = detectar_siglas(texto_input)
             compostas = detectar_palavras_compostas(texto_input)
 
             col1, col2 = st.columns(2)
             with col1:
-                st.markdown("### 🕵️‍♂️ Entidades Nomeadas")
+                st.markdown("### 🕵️‍♂️ ENTIDADES NOMEADAS")
                 if compostas:
                     st.text_area("Copie e cole no Excel", "\n".join(sorted(compostas)), height=250)
                 else:
                     st.info("Nenhuma entidade nomeada encontrada.")
 
             with col2:
-                st.markdown("### 🔠 Siglas detectadas")
+                st.markdown("### 🔠 SIGLAS DETECTADAS")
                 if siglas:
                     st.text_area("Copie e cole no Excel", "\n".join(sorted(siglas)), height=250)
                 else:
@@ -68,7 +68,7 @@ with tabs[0]:
 with tabs[1]:
     st.header("")
 
-    st.subheader("📝 Inserir Textos para Processamento")
+    st.subheader("📥 INSERIR TEXTOS PARA PROCESSAMENTO")
 
     textos = []
     input_textos_brutos = st.text_area("Cole aqui os textos (um por linha):", height=200)
@@ -77,8 +77,8 @@ with tabs[1]:
         for i, linha in enumerate(linhas):
             textos.append({"id": f"texto_{i+1}", "texto": linha})
 
-    st.subheader("📚 Dicionário de Entidades Nomeadas")
-    entidades_brutas = st.text_area("Cole aqui as entidades (uma por linha):", height=150)
+    st.subheader("📚 DICIONÁRIO DE ENTIDADES NOMEADAS")
+    entidades_brutas = st.text_area("Cole aqui ou digite as entidades (uma por linha):", height=150)
     entidades = []
     if entidades_brutas.strip():
         for linha in entidades_brutas.strip().split("\n"):
@@ -87,7 +87,7 @@ with tabs[1]:
                 forma_normalizada = entidade.replace(" ", "_")
                 entidades.append({"Entidades nomeadas": entidade, "Palavra normalizada": forma_normalizada})
 
-    st.subheader("🔠 Dicionário de Siglas")
+    st.subheader("🔠 DICIONÁRIO DE SIGLAS")
     siglas = []
     num_siglas = st.number_input("Quantidade de siglas", min_value=0, max_value=100, value=0)
 
@@ -102,17 +102,17 @@ with tabs[1]:
             siglas.append({"Sigla": sigla, "Significado": significado_formatado})
 
     # ==================== SEÇÃO ATUALIZADA DE METADADOS ====================
-    st.subheader("📊 Metadados por Texto")
+    st.subheader("📊 VARIÁVEIS POR TEXTO")
 
     # 1. Definir estrutura de metadados (campos comuns a todos textos)
-    st.markdown("**1. Definir Campos de Metadados**")
-    num_campos_metadados = st.number_input("Quantidade de campos de metadados para todos os textos", 
+    st.markdown("**1. Definir campos de variáveis**")
+    num_campos_metadados = st.number_input("Quantidade de campos de variáveis para todos os textos", 
                                          min_value=0, max_value=10, value=0, 
                                          key="meta_global_n")
 
     campos_metadados = []
     for i in range(num_campos_metadados):
-        campo = st.text_input(f"Nome do campo {i+1} (ex: 'Autor', 'Data')", 
+        campo = st.text_input(f"Variável 1 {i+1} (ex: 'Objetivo', 'Método')", 
                              key=f"meta_campo_{i}")
         if campo:
             campos_metadados.append(campo.strip())
@@ -120,7 +120,7 @@ with tabs[1]:
     # 2. Preencher valores para cada texto
     metadados_por_texto = {}
     if campos_metadados and textos:
-        st.markdown("**2. Preencher Valores para Cada Texto**")
+        st.markdown("**2. Preencher as opções das variáveis para cada texto**")
         
         # Cria tabela editável
         dados = []
@@ -258,8 +258,8 @@ with tabs[1]:
             corpus, estatisticas = gerar_corpus(textos, entidades, siglas, metadados_por_texto)
             if corpus.strip():
                 st.success("Corpus gerado com sucesso!")
-                st.subheader("📄 Corpus Textual Gerado")
-                st.text_area("Veja o corpus gerado antes de baixar", corpus, height=300)
+                st.subheader("📄 CORPUS TEXTUAL GERADO")
+                st.text_area("🔍 Revise o corpus textual gerado antes de baixar", corpus, height=300)
                 st.text_area("📊 Estatísticas do processamento", estatisticas, height=250)
 
                 buf = io.BytesIO()
