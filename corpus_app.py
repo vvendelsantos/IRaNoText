@@ -5,6 +5,23 @@ import io
 import spacy
 from word2number import w2n
 
+# Sidebar
+st.sidebar.markdown("""   
+    # ℹ️ Sobre a ferramenta
+
+    Bem-vindo ao IRaText — ferramenta para preparar e gerar seu corpus textual compatível com o IRaMuTeQ. Com ele, você realiza duas etapas essenciais para análise de dados qualitativos de forma eficiente.
+    ### 📝 **Análise preliminar dos textos:**
+    Utiliza Reconhecimento de Entidades Nomeadas (REN) para identificar e classificar automaticamente termos como nomes, siglas e outras entidades no texto, facilitando a organização das informações para o preenchimento da planilha.
+    ### 🛠️ **Geração do corpus textual:**
+    Processa textos em uma planilha com expressões regulares, ajustando palavras e formatos. Inclui: (1) normalização de números por extenso, (2) tratamento de flexões verbo-pronominais, (3) substituição de siglas e entidades nomeadas, (4) remoção de caracteres especiais e (5) geração de metadados. Ao final, exibe o corpus gerado e as estatísticas de processamento antes de salvá-lo.
+
+    ⚠️ Sua planilha deve conter **três abas** com os seguintes nomes e finalidades:
+
+    1. **`textos_selecionados`** : textos a serem normalizados e processados. 
+    2. **`dic_entidades_nomeadas`** : entidades nomeadas e suas formas normalizadas.  
+    3. **`dic_siglas`** : Lista de siglas e seus significados.
+""")
+
 # Carregar modelo do spaCy
 nlp = spacy.load("pt_core_news_sm")
 
@@ -184,8 +201,7 @@ with tabs[1]:
         dict_entidades = {e["Entidades nomeadas"].lower(): e["Palavra normalizada"].lower() for e in entidades}
         dict_siglas = {s["Sigla"].lower(): s["Significado"] for s in siglas}
         caracteres_especiais = {
-            "-": "Hífen", ";": "Ponto e vírgula", '"': "Aspas duplas", "'": "Aspas simples", "…": "Reticências", "–": "Travessão", "(": "Parêntese esquerdo", ")": "Parêntese direito", "/": "Barra", "%": "Porcentagem", "[": "Colchete esquerdo", "]": "Colchete direito","{": "Chave esquerda", "}": "Chave direita", "&": "E comercial", "*": "Asterisco","@": "Arroba", "#": "Cerquilha", "$": "Cifrão", "+": "Mais", "=": "Igual","<": "Menor que", ">": "Maior que", "\\": "Barra invertida", "|": "Barra vertical",       "~": "Til", "`": "Acento grave", "^": "Circunflexo"
-           
+            "-": "Hífen", ";": "Ponto e vírgula", '"': "Aspas duplas", "'": "Aspas simples", "…": "Reticências", "–": "Travessão", "(": "Parêntese esquerdo", ")": "Parêntese direito", "/": "Barra", "%": "Porcentagem", "[": "Colchete esquerdo", "]": "Colchete direito","{": "Chave esquerda", "}": "Chave direita", "&": "E comercial", "*": "Asterisco","@": "Arroba", "#": "Cerquilha", "$": "Cifrão", "+": "Mais", "=": "Igual","<": "Menor que", ">": "Maior que", "\\": "Barra invertida", "|": "Barra vertical", "~": "Til", "`": "Acento grave", "^": "Circunflexo"
         }
 
         contagem_caracteres = {k: 0 for k in caracteres_especiais}
@@ -230,7 +246,7 @@ with tabs[1]:
             for k, v in metadados_por_texto.get(id_val, {}).items():
                 if v:
                     metadata += f" *{k.replace(' ', '_')}_{v.replace(' ', '_')}"
-            
+
             corpus_final += f"{metadata}\n{texto_corrigido}\n"
 
         estatisticas = f"Textos processados: {total_textos}\nSiglas substituídas: {total_siglas}\n"
