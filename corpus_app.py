@@ -7,14 +7,16 @@ from word2number import w2n
 
 # Sidebar
 st.sidebar.markdown("""   
-    # ℹ️ Sobre a ferramenta
-    Bem-vindo ao IRaText, uma ferramenta desenvolvida para preparar e gerar seu corpus textual compatível com o IRaMuTeQ.
-    # 🗺️ Fluxo de uso
-    ### 📝 **Análise preliminar dos textos:**
-    Envie textos para análise automatizada com foco em siglas e entidades nomeadas, incluindo nomes próprios, localizações geográficas e instituições. Além disso, recomendamos que você incorpore manualmente quaisquer termos compostos adicionais relevantes que possam ser padronizados em seu corpus textual.
-    ### 🛠️ **Geração do corpus textual:**
-    Insera os textos que deseja processar, defina os dicionários de entidades nomeadas, siglas e as variáveis associadas. O processamento utilizará expressões regulares para executar as seguintes funções: (1) normalização de números por extenso, (2) tratamento de flexões verbo-pronominais, (3) substituição de siglas e entidades nomeadas, (4) remoção de caracteres incompatíveis com o IRaMuTeQ e (5) geração de metadados. Ao final, o corpus textual processado é exibido juntamente com estatísticas detalhadas, permitindo ao usuário revisar os dados antes de salvá-los.
-""")
+   <div style='text-align: justify'>
+        <h1>ℹ️ Sobre a ferramenta</h1>
+        <p>Bem-vindo ao IRaText, uma ferramenta desenvolvida para preparar e gerar seu corpus textual compatível com o IRaMuTeQ.</p>
+        <h2>🗺️ Fluxo de uso</h2>
+        <h3>📝 <strong>Análise preliminar dos textos:</strong></h3>
+        <p>Envie textos para análise automatizada com foco em siglas e entidades nomeadas, incluindo nomes próprios, localizações geográficas e instituições. Além disso, recomendamos que você incorpore manualmente quaisquer termos compostos adicionais relevantes que possam ser padronizados em seu corpus textual.</p>
+        <h3>🛠️ <strong>Geração do corpus textual:</strong></h3>
+        <p>Insera os textos que deseja processar, defina os dicionários de entidades nomeadas, siglas e as variáveis associadas. O processamento utilizará expressões regulares para executar as seguintes funções: (1) normalização de números por extenso, (2) tratamento de flexões verbo-pronominais, (3) substituição de siglas e entidades nomeadas, (4) remoção de caracteres incompatíveis com o IRaMuTeQ e (5) geração de metadados. Ao final, o corpus textual processado é exibido juntamente com estatísticas detalhadas, permitindo ao usuário revisar os dados antes de salvá-los.</p>
+    </div>
+""", unsafe_allow_html=True)
 
 # Carregar modelo do spaCy
 nlp = spacy.load("pt_core_news_sm")
