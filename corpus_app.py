@@ -8,7 +8,7 @@ from word2number import w2n
 # Sidebar
 st.sidebar.markdown("""   
     # ℹ️ Sobre a ferramenta
-    Bem-vindo ao IRaText, uma ferramenta desenvolvida para preparar e gerar seu corpus textual compatível com o IRaMuTeQ. Com ela, você realiza duas etapas essenciais para analisar dados qualitativos com eficiência.
+    Bem-vindo ao IRaText, uma ferramenta desenvolvida para preparar e gerar seu corpus textual compatível com o IRaMuTeQ.
     # 🗺️ Fluxo de uso
     ### 📝 **Análise preliminar dos textos:**
     Nesta aba, o usuário deve inserir os textos que deseja analisar. A ferramenta realiza automaticamente a identificação de siglas e de entidades nomeadas. Além disso, o usuário pode sugerir manualmente outras entidades, conforme necessário. Para essa tarefa, é utilizado o Reconhecimento de Entidades Nomeadas (REN), que permite identificar e classificar termos como nomes próprios, locais, instituições, entre outros.
