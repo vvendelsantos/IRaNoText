@@ -5,6 +5,23 @@ import io
 import spacy
 from word2number import w2n
 
+# Sidebar
+st.sidebar.markdown("""   
+    # ℹ️ Sobre a ferramenta
+
+    Bem-vindo ao IRaText — ferramenta para preparar e gerar seu corpus textual compatível com o IRaMuTeQ. Com ele, você realiza duas etapas essenciais para análise de dados qualitativos de forma eficiente.
+    ### 📝 **Análise preliminar dos textos:**
+    Utiliza Reconhecimento de Entidades Nomeadas (REN) para identificar e classificar automaticamente termos como nomes, siglas e outras entidades no texto, facilitando a organização das informações para o preenchimento da planilha.
+    ### 🛠️ **Geração do corpus textual:**
+    Processa textos em uma planilha com expressões regulares, ajustando palavras e formatos. Inclui: (1) normalização de números por extenso, (2) tratamento de flexões verbo-pronominais, (3) substituição de siglas e entidades nomeadas, (4) remoção de caracteres especiais e (5) geração de metadados. Ao final, exibe o corpus gerado e as estatísticas de processamento antes de salvá-lo.
+
+    ⚠️ Sua planilha deve conter **três abas** com os seguintes nomes e finalidades:
+
+    1. **textos_selecionados** : textos a serem normalizados e processados. 
+    2. **dic_entidades_nomeadas** : entidades nomeadas e suas formas normalizadas.  
+    3. **dic_siglas** : Lista de siglas e seus significados.
+""")
+
 # Carregar modelo do spaCy
 nlp = spacy.load("pt_core_news_sm")
 
