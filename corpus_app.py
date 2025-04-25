@@ -8,6 +8,7 @@ from word2number import w2n
 # Carregar modelo do spaCy
 nlp = spacy.load("pt_core_news_sm")
 
+# Funções da parte 1
 def detectar_siglas(texto):
     tokens = re.findall(r"\b[A-Z]{2,}\b", texto)
     return sorted(set(tokens))
@@ -17,6 +18,7 @@ def detectar_palavras_compostas(texto):
     compostas = [ent.text for ent in doc.ents if len(ent.text.split()) > 1]
     return list(set(compostas))
 
+# ========================== ABAS ==========================
 st.title("IRaText: Gerador de Corpus Textual")
 
 tabs = st.tabs([
@@ -38,8 +40,7 @@ with tabs[0]:
             with col1:
                 st.markdown("### 🕵️‍♂️ Entidades Nomeadas")
                 if compostas:
-                    entidades_coladas = "\n".join(sorted(compostas))
-                    st.text_area("Copie e cole no Excel", entidades_coladas, height=250, key="entidades_copiadas")
+                    st.text_area("Copie e cole no Excel", "\n".join(sorted(compostas)), height=250)
                 else:
                     st.info("Nenhuma entidade nomeada encontrada.")
 
@@ -55,6 +56,7 @@ with tabs[0]:
 with tabs[1]:
     st.header("")
 
+    # CSS para justificar texto na sidebar
     st.markdown("""
         <style>
         [data-testid="stSidebar"] div.stMarkdown p {
@@ -73,38 +75,43 @@ with tabs[1]:
     Processa textos com expressões regulares, ajustando palavras e formatos. Inclui: (1) normalização de números por extenso, (2) tratamento de flexões verbo-pronominais, (3) substituição de siglas e entidades nomeadas, (4) remoção de caracteres especiais e (5) geração de metadados. Ao final, exibe o corpus gerado e as estatísticas de processamento antes de salvá-lo.
     """)
 
+    # Interface para entrada de dados
     st.subheader("📝 Inserir Textos para Processamento")
-    textos_colados = st.text_area("Cole os textos aqui (1 por linha)", height=200)
-    textos = []
 
-    if textos_colados.strip():
-        for i, linha in enumerate(textos_colados.strip().splitlines()):
+    # Adicionar múltiplos textos com IDs
+    textos = []
+    input_textos_brutos = st.text_area("Cole aqui os textos (um por linha):", height=200)
+    if input_textos_brutos.strip():
+        linhas = input_textos_brutos.strip().split("\n")
+        for i, linha in enumerate(linhas):
             textos.append({"id": f"texto_{i+1}", "texto": linha})
 
+    # Dicionário de entidades nomeadas
     st.subheader("📚 Dicionário de Entidades Nomeadas")
-    entidades_coladas = st.text_area("Cole as entidades nomeadas (uma por linha)", height=150)
+    entidades_brutas = st.text_area("Cole aqui as entidades (uma por linha):", height=150)
     entidades = []
-
-    if entidades_coladas.strip():
-        for linha in entidades_coladas.strip().splitlines():
+    if entidades_brutas.strip():
+        for linha in entidades_brutas.strip().split("\n"):
             entidade = linha.strip()
-            normalizada = entidade.replace(" ", "_").lower()
-            entidades.append({"Entidades nomeadas": entidade, "Palavra normalizada": normalizada})
+            if entidade:
+                forma_normalizada = entidade.replace(" ", "_")
+                entidades.append({"Entidades nomeadas": entidade, "Palavra normalizada": forma_normalizada})
 
+    # Dicionário de siglas
     st.subheader("🔠 Dicionário de Siglas")
-    siglas_coladas = st.text_area("Cole as siglas (uma por linha)", height=150)
     siglas = []
+    num_siglas = st.number_input("Quantidade de siglas", min_value=0, max_value=100, value=0)
 
-    if siglas_coladas.strip():
-        for linha in siglas_coladas.strip().splitlines():
-            sigla = linha.strip()
-            significado = ""
-            for ent in entidades:
-                if sigla.upper() == "".join([x[0] for x in ent["Entidades nomeadas"].split()]).upper():
-                    significado = ent["Palavra normalizada"]
-                    break
+    for i in range(num_siglas):
+        col1, col2 = st.columns(2)
+        with col1:
+            sigla = st.text_input(f"Sigla {i+1}", key=f"sigla_{i}")
+        with col2:
+            significado = st.text_input(f"Significado {i+1}", key=f"sign_{i}")
+        if sigla and significado:
             siglas.append({"Sigla": sigla, "Significado": significado})
 
+    # Metadados adicionais
     st.subheader("📊 Metadados Adicionais (opcional)")
     metadados = {}
     num_metadados = st.number_input("Quantidade de campos de metadados", min_value=0, max_value=10, value=0)
@@ -160,15 +167,15 @@ with tabs[1]:
         return " ".join(resultado)
 
     def processar_palavras_com_se(texto):
-        return re.sub(r"(\b\w+)-se\b", r"se \\1", texto)
+        return re.sub(r"(\b\w+)-se\b", r"se \1", texto)
 
     def processar_pronomes_pospostos(texto):
-        texto = re.sub(r'\b(\w+)-se\b', r'se \\1', texto)
-        texto = re.sub(r'\b(\w+)-([oa]s?)\b', r'\\2 \\1', texto)
-        texto = re.sub(r'\b(\w+)-(lhe|lhes)\b', r'\\2 \\1', texto)
-        texto = re.sub(r'\b(\w+)-(me|te|nos|vos)\b', r'\\2 \\1', texto)
-        texto = re.sub(r'\b(\w+)[áéíóúâêô]?-([oa]s?)\b', r'\\2 \\1', texto)
-        texto = re.sub(r'\b(\w+)[áéíóúâêô]-(lo|la|los|las)-ia\b', r'\\2 \\1ia', texto)
+        texto = re.sub(r'\b(\w+)-se\b', r'se \1', texto)
+        texto = re.sub(r'\b(\w+)-([oa]s?)\b', r'\2 \1', texto)
+        texto = re.sub(r'\b(\w+)-(lhe|lhes)\b', r'\2 \1', texto)
+        texto = re.sub(r'\b(\w+)-(me|te|nos|vos)\b', r'\2 \1', texto)
+        texto = re.sub(r'\b(\w+)[áéíóúâêô]?-([oa]s?)\b', r'\2 \1', texto)
+        texto = re.sub(r'\b(\w+)[áéíóúâêô]-(lo|la|los|las)-ia\b', r'\2 \1ia', texto)
         return texto
 
     def gerar_corpus(textos, entidades, siglas, metadados):
@@ -207,13 +214,13 @@ with tabs[1]:
             total_textos += 1
 
             for sigla, significado in dict_siglas.items():
-                texto_corrigido = re.sub(rf"\\({sigla}\\)", "", texto_corrigido)
-                texto_corrigido = re.sub(rf"\\b{sigla}\\b", significado, texto_corrigido, flags=re.IGNORECASE)
+                texto_corrigido = re.sub(rf"\({sigla}\)", "", texto_corrigido)
+                texto_corrigido = re.sub(rf"\b{sigla}\b", significado, texto_corrigido, flags=re.IGNORECASE)
                 total_siglas += 1
 
             for termo, substituto in dict_entidades.items():
                 if termo in texto_corrigido:
-                    texto_corrigido = re.sub(rf"\\b{termo}\\b", substituto, texto_corrigido, flags=re.IGNORECASE)
+                    texto_corrigido = re.sub(rf"\b{termo}\b", substituto, texto_corrigido, flags=re.IGNORECASE)
                     total_entidades += 1
 
             for char in caracteres_especiais:
@@ -251,6 +258,7 @@ with tabs[1]:
 
             if corpus.strip():
                 st.success("Corpus gerado com sucesso!")
+
                 st.subheader("📄 Corpus Textual Gerado")
                 st.text_area("Veja o corpus gerado antes de baixar", corpus, height=300)
                 st.text_area("📊 Estatísticas do processamento", estatisticas, height=250)
@@ -267,6 +275,7 @@ with tabs[2]:
     st.header("🚧 EM CONSTRUÇÃO")
     st.info("Novos recursos ainda estão em desenvolvimento.")
 
+# Rodapé
 st.markdown("""  
 ---  
 **👨‍💻 Autor:** José Wendel dos Santos  
