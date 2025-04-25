@@ -135,7 +135,7 @@ with tabs[1]:
             metadados_por_texto[row['ID Texto']] = metadados
 
     # ==================== FUNÇÕES DE PROCESSAMENTO ====================
-     def converter_numeros_por_extenso(texto):
+    def converter_numeros_por_extenso(texto):
         unidades = {
             "zero": 0, "dois": 2, "duas": 2, "três": 3, "quatro": 4, "cinco": 5,
             "seis": 6, "sete": 7, "oito": 8, "nove": 9
@@ -219,7 +219,7 @@ with tabs[1]:
             for k, v in metadados_por_texto.get(id_val, {}).items():
                 if v:
                     metadata += f" *{k.replace(' ', '_')}_{v.replace(' ', '_')}"
-
+            
             corpus_final += f"{metadata}\n{texto_corrigido}\n"
 
         estatisticas = f"Textos processados: {total_textos}\nSiglas substituídas: {total_siglas}\n"
