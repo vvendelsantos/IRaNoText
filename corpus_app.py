@@ -1,8 +1,8 @@
-import streamlit as st 
+import streamlit as st
 import pandas as pd
 import re
-import io
 import spacy
+import io
 from word2number import w2n
 
 # Carregar modelo do spaCy
@@ -102,12 +102,14 @@ with tabs[1]:
 
     st.subheader("📊 Metadados Adicionais (opcional)")
 
-    metadados_input = st.text_area("Cole os metadados aqui (formato: 'nome do metadado: valor')", height=200)
+    # Inserção de metadados em formato de planilha (múltiplos metadados de uma vez)
+    metadados_input = st.text_area("Cole os metadados aqui (formato: 'metadado1\tvalor1\nmetadado2\tvalor2...')", height=200)
     metadados = {}
     if metadados_input.strip():
         for linha in metadados_input.strip().split("\n"):
-            if ":" in linha:
-                nome_meta, valor_meta = linha.split(":", 1)
+            campos = linha.split("\t")
+            if len(campos) == 2:  # Apenas quando o formato for 'metadado\tvalor'
+                nome_meta, valor_meta = campos
                 metadados[nome_meta.strip()] = valor_meta.strip()
 
     def converter_numeros_por_extenso(texto):
