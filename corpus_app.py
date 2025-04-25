@@ -1,4 +1,4 @@
-import streamlit as st 
+import streamlit as st
 import pandas as pd
 import re
 import io
@@ -135,28 +135,36 @@ with tabs[1]:
             metadados_por_texto[row['ID Texto']] = metadados
 
     # ==================== FUNÇÕES DE PROCESSAMENTO ====================
+
     def converter_numeros_por_extenso(texto):
-        if not isinstance(texto, str):
-            return texto
-            
-        palavras = texto.split()
-        for i, palavra in enumerate(palavras):
+        unidades = {
+            "zero": 0, "dois": 2, "duas": 2, "três": 3, "quatro": 4, "cinco": 5,
+            "seis": 6, "sete": 7, "oito": 8, "nove": 9
+        }
+        dezenas = {
+            "dez": 10, "onze": 11, "doze": 12, "treze": 13, "quatorze": 14, "quinze": 15,
+            "dezesseis": 16, "dezessete": 17, "dezoito": 18, "dezenove": 19, "vinte": 20
+        }
+        centenas = {
+            "cem": 100, "cento": 100, "duzentos": 200, "trezentos": 300, "quatrocentos": 400,
+            "quinhentos": 500, "seiscentos": 600, "setecentos": 700, "oitocentos": 800, "novecentos": 900
+        }
+        multiplicadores = {
+            "mil": 1000, "milhão": 1000000, "milhões": 1000000, "bilhão": 1000000000,
+            "bilhões": 1000000000
+        }
+
+        def processar_palavra(texto):
             try:
-                numero = w2n.word_to_num(palavra)
-                palavras[i] = str(numero)
+                return str(w2n.word_to_num(texto))
             except:
-                continue
-        return ' '.join(palavras)
+                return texto
 
     def processar_palavras_com_se(texto):
-        if not isinstance(texto, str):
-            return texto
+        # Ajuste na expressão regular
         return re.sub(r"(\b\w+)-se\b", r"se \1", texto)
 
     def processar_pronomes_pospostos(texto):
-        if not isinstance(texto, str):
-            return texto
-            
         texto = re.sub(r'\b(\w+)-se\b', r'se \1', texto)
         texto = re.sub(r'\b(\w+)-([oa]s?)\b', r'\2 \1', texto)
         texto = re.sub(r'\b(\w+)-(lhe|lhes)\b', r'\2 \1', texto)
@@ -213,7 +221,6 @@ with tabs[1]:
             for k, v in metadados_por_texto.get(id_val, {}).items():
                 if v:
                     metadata += f" *{k.replace(' ', '_')}_{v.replace(' ', '_')}"
-            
             corpus_final += f"{metadata}\n{texto_corrigido}\n"
 
         estatisticas = f"Textos processados: {total_textos}\nSiglas substituídas: {total_siglas}\n"
