@@ -1,4 +1,4 @@
-import streamlit as st 
+import streamlit as st
 import pandas as pd
 import re
 import io
@@ -68,52 +68,45 @@ with tabs[1]:
     st.sidebar.markdown("""   
     # ℹ️ Sobre a ferramenta
 
-    Bem-vindo ao IRaText — ferramenta para preparar e gerar seu corpus textual compatível com o IRaMuTeQ...
+    Bem-vindo ao IRaText — ferramenta para preparar e gerar seu corpus textual compatível com o IRaMuTeQ. Com ele, você realiza duas etapas essenciais para análise de dados qualitativos de forma eficiente.
+    ### 📝 **Análise preliminar dos textos:**
+    Utiliza Reconhecimento de Entidades Nomeadas (REN) para identificar e classificar automaticamente termos como nomes, siglas e outras entidades no texto, facilitando a organização das informações para o preenchimento da planilha.
+    ### 🛠️ **Geração do corpus textual:**
+    Processa textos com expressões regulares, ajustando palavras e formatos. Inclui: (1) normalização de números por extenso, (2) tratamento de flexões verbo-pronominais, (3) substituição de siglas e entidades nomeadas, (4) remoção de caracteres especiais e (5) geração de metadados. Ao final, exibe o corpus gerado e as estatísticas de processamento antes de salvá-lo.
     """)
 
+    # Interface para entrada de dados
     st.subheader("📝 Inserir Textos para Processamento")
+    textos_input = st.text_area("Cole seus textos aqui (1 por linha)", height=200)
 
-    entrada_em_lote = st.text_area(
-        "Cole abaixo os textos (1 por linha, ou separados por `---`, por exemplo):", 
-        height=300,
-        placeholder="Exemplo:\nTexto 1...\nTexto 2...\nTexto 3..."
-    )
+    textos = []
+    if textos_input.strip():
+        linhas = textos_input.strip().split("\n")
+        for i, linha in enumerate(linhas):
+            textos.append({"id": f"texto_{i+1}", "texto": linha})
 
-    delimitador = st.radio("Como os textos estão separados?", options=["Quebra de linha", "Delimitador personalizado"])
-    if delimitador == "Delimitador personalizado":
-        separador_custom = st.text_input("Informe o delimitador", value="---")
-        textos_brutos = entrada_em_lote.split(separador_custom)
-    else:
-        textos_brutos = entrada_em_lote.strip().split("\n")
-
-    textos = [{"id": f"texto_{i+1}", "texto": txt.strip()} for i, txt in enumerate(textos_brutos) if txt.strip()]
-
+    # Dicionário de entidades nomeadas
     st.subheader("📚 Dicionário de Entidades Nomeadas")
+    entidades_input = st.text_area("Cole as entidades aqui (uma por linha)", height=150)
     entidades = []
-    num_entidades = st.number_input("Quantidade de entidades nomeadas", min_value=0, max_value=100, value=0)
+    if entidades_input.strip():
+        linhas = entidades_input.strip().split("\n")
+        for linha in linhas:
+            normalizada = linha.strip().replace(" ", "_")
+            entidades.append({"Entidades nomeadas": linha.strip(), "Palavra normalizada": normalizada})
 
-    for i in range(num_entidades):
-        col1, col2 = st.columns(2)
-        with col1:
-            entidade = st.text_input(f"Entidade nomeada {i+1}", key=f"ent_{i}")
-        with col2:
-            normalizado = st.text_input(f"Forma normalizada {i+1}", key=f"norm_{i}")
-        if entidade and normalizado:
-            entidades.append({"Entidades nomeadas": entidade, "Palavra normalizada": normalizado})
-
+    # Dicionário de siglas
     st.subheader("🔠 Dicionário de Siglas")
+    siglas_input = st.text_area("Cole as siglas aqui no formato SIGLA: significado", height=150)
     siglas = []
-    num_siglas = st.number_input("Quantidade de siglas", min_value=0, max_value=100, value=0)
+    if siglas_input.strip():
+        linhas = siglas_input.strip().split("\n")
+        for linha in linhas:
+            if ":" in linha:
+                sigla, significado = map(str.strip, linha.split(":", 1))
+                siglas.append({"Sigla": sigla, "Significado": significado})
 
-    for i in range(num_siglas):
-        col1, col2 = st.columns(2)
-        with col1:
-            sigla = st.text_input(f"Sigla {i+1}", key=f"sigla_{i}")
-        with col2:
-            significado = st.text_input(f"Significado {i+1}", key=f"sign_{i}")
-        if sigla and significado:
-            siglas.append({"Sigla": sigla, "Significado": significado})
-
+    # Metadados adicionais
     st.subheader("📊 Metadados Adicionais (opcional)")
     metadados = {}
     num_metadados = st.number_input("Quantidade de campos de metadados", min_value=0, max_value=10, value=0)
@@ -128,13 +121,22 @@ with tabs[1]:
             metadados[nome_meta] = valor_meta
 
     def converter_numeros_por_extenso(texto):
-        unidades = {"zero": 0, "dois": 2, "duas": 2, "três": 3, "quatro": 4, "cinco": 5,
-                    "seis": 6, "sete": 7, "oito": 8, "nove": 9}
-        dezenas = {"dez": 10, "onze": 11, "doze": 12, "treze": 13, "quatorze": 14, "quinze": 15,
-                   "dezesseis": 16, "dezessete": 17, "dezoito": 18, "dezenove": 19, "vinte": 20}
-        centenas = {"cem": 100, "cento": 100, "duzentos": 200, "trezentos": 300, "quatrocentos": 400,
-                    "quinhentos": 500, "seiscentos": 600, "setecentos": 700, "oitocentos": 800, "novecentos": 900}
-        multiplicadores = {"mil": 1000, "milhão": 1000000, "milhões": 1000000, "bilhão": 1000000000, "bilhões": 1000000000}
+        unidades = {
+            "zero": 0, "dois": 2, "duas": 2, "três": 3, "quatro": 4, "cinco": 5,
+            "seis": 6, "sete": 7, "oito": 8, "nove": 9
+        }
+        dezenas = {
+            "dez": 10, "onze": 11, "doze": 12, "treze": 13, "quatorze": 14, "quinze": 15,
+            "dezesseis": 16, "dezessete": 17, "dezoito": 18, "dezenove": 19, "vinte": 20
+        }
+        centenas = {
+            "cem": 100, "cento": 100, "duzentos": 200, "trezentos": 300, "quatrocentos": 400,
+            "quinhentos": 500, "seiscentos": 600, "setecentos": 700, "oitocentos": 800, "novecentos": 900
+        }
+        multiplicadores = {
+            "mil": 1000, "milhão": 1000000, "milhões": 1000000, "bilhão": 1000000000,
+            "bilhões": 1000000000
+        }
 
         def processar_palavra(palavra):
             try:
@@ -160,25 +162,38 @@ with tabs[1]:
         return " ".join(resultado)
 
     def processar_palavras_com_se(texto):
-        return re.sub(r"(\b\w+)-se\b", r"se \\1", texto)
+        return re.sub(r"(\b\w+)-se\b", r"se \1", texto)
 
     def processar_pronomes_pospostos(texto):
-        texto = re.sub(r'\b(\w+)-se\b', r'se \\1', texto)
-        texto = re.sub(r'\b(\w+)-([oa]s?)\b', r'\\2 \\1', texto)
-        texto = re.sub(r'\b(\w+)-(lhe|lhes)\b', r'\\2 \\1', texto)
-        texto = re.sub(r'\b(\w+)-(me|te|nos|vos)\b', r'\\2 \\1', texto)
-        texto = re.sub(r'\b(\w+)[áéíóúâêô]?-([oa]s?)\b', r'\\2 \\1', texto)
-        texto = re.sub(r'\b(\w+)[áéíóúâêô]-(lo|la|los|las)-ia\b', r'\\2 \\1ia', texto)
+        texto = re.sub(r'\b(\w+)-se\b', r'se \1', texto)
+        texto = re.sub(r'\b(\w+)-([oa]s?)\b', r'\2 \1', texto)
+        texto = re.sub(r'\b(\w+)-(lhe|lhes)\b', r'\2 \1', texto)
+        texto = re.sub(r'\b(\w+)-(me|te|nos|vos)\b', r'\2 \1', texto)
+        texto = re.sub(r'\b(\w+)[áéíóúâêô]?-([oa]s?)\b', r'\2 \1', texto)
+        texto = re.sub(r'\b(\w+)[áéíóúâêô]-(lo|la|los|las)-ia\b', r'\2 \1ia', texto)
         return texto
 
     def gerar_corpus(textos, entidades, siglas, metadados):
-        dict_entidades = {str(row["Entidades nomeadas"]).lower(): str(row["Palavra normalizada"]).lower() for row in entidades}
-        dict_siglas = {str(row["Sigla"]).lower(): str(row["Significado"]) for row in siglas}
-        caracteres_especiais = {"-": "Hífen", ";": "Ponto e vírgula", '"': "Aspas duplas", "'": "Aspas simples",
-                                "…": "Reticências", "–": "Travessão", "(": "Parêntese esquerdo", ")": "Parêntese direito",
-                                "/": "Barra", "%": "Porcentagem"}
+        dict_entidades = {
+            str(row["Entidades nomeadas"]).lower(): str(row["Palavra normalizada"]).lower()
+            for row in entidades
+        }
+
+        dict_siglas = {
+            str(row["Sigla"]).lower(): str(row["Significado"])
+            for row in siglas
+        }
+
+        caracteres_especiais = {
+            "-": "Hífen", ";": "Ponto e vírgula", '"': "Aspas duplas", "'": "Aspas simples",
+            "…": "Reticências", "–": "Travessão", "(": "Parêntese esquerdo", ")": "Parêntese direito",
+            "/": "Barra", "%": "Porcentagem"
+        }
         contagem_caracteres = {k: 0 for k in caracteres_especiais}
-        total_textos, total_siglas, total_entidades, total_remocoes = 0, 0, 0, 0
+        total_textos = 0
+        total_siglas = 0
+        total_entidades = 0
+        total_remocoes = 0
         corpus_final = ""
 
         for texto_info in textos:
@@ -206,7 +221,10 @@ with tabs[1]:
             for char in caracteres_especiais:
                 count = texto_corrigido.count(char)
                 if count:
-                    texto_corrigido = texto_corrigido.replace(char, "_por_cento" if char == "%" else "_")
+                    if char == "%":
+                        texto_corrigido = texto_corrigido.replace(char, "_por_cento")
+                    else:
+                        texto_corrigido = texto_corrigido.replace(char, "_")
                     contagem_caracteres[char] += count
                     total_remocoes += count
 
@@ -219,8 +237,10 @@ with tabs[1]:
 
             corpus_final += f"{metadata}\n{texto_corrigido}\n"
 
-        estatisticas = f"Textos processados: {total_textos}\nSiglas removidas/substituídas: {total_siglas}\n"
-        estatisticas += f"Entidades nomeadas substituídas: {total_entidades}\nCaracteres especiais removidos: {total_remocoes}\n"
+        estatisticas = f"Textos processados: {total_textos}\n"
+        estatisticas += f"Siglas removidas/substituídas: {total_siglas}\n"
+        estatisticas += f"Entidades nomeadas substituídas: {total_entidades}\n"
+        estatisticas += f"Caracteres especiais removidos: {total_remocoes}\n"
         for char, nome in caracteres_especiais.items():
             if contagem_caracteres[char] > 0:
                 estatisticas += f" - {nome} ({char}) : {contagem_caracteres[char]}\n"
@@ -233,6 +253,7 @@ with tabs[1]:
 
             if corpus.strip():
                 st.success("Corpus gerado com sucesso!")
+
                 st.subheader("📄 Corpus Textual Gerado")
                 st.text_area("Veja o corpus gerado antes de baixar", corpus, height=300)
                 st.text_area("📊 Estatísticas do processamento", estatisticas, height=250)
