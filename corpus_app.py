@@ -112,7 +112,7 @@ with tabs[1]:
 
     campos_metadados = []
     for i in range(num_campos_metadados):
-        campo = st.text_input(f"Variável {i+1} (ex: 'Objetivo', 'Método')", 
+        campo = st.text_input(f"Variável {i+1}", 
                              key=f"meta_campo_{i}")
         if campo:
             campos_metadados.append(campo.strip())
