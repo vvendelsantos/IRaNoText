@@ -139,33 +139,29 @@ with tabs[1]:
         if not isinstance(texto, str):
             return texto
             
-        unidades = {
-            "zero": 0, "dois": 2, "duas": 2, "três": 3, "quatro": 4, "cinco": 5,
-            "seis": 6, "sete": 7, "oito": 8, "nove": 9
-        }
-        dezenas = {
-            "dez": 10, "onze": 11, "doze": 12, "treze": 13, "quatorze": 14, "quinze": 15,
-            "dezesseis": 16, "dezessete": 17, "dezoito": 18, "dezenove": 19, "vinte": 20
-        }
-        centenas = {
-            "cem": 100, "cento": 100, "duzentos": 200, "trezentos": 300, "quatrocentos": 400,
-            "quinhentos": 500, "seiscentos": 600, "setecentos": 700, "oitocentos": 800, "novecentos": 900
-        }
-        multiplicadores = {
-            "mil": 1000, "milhão": 1000000, "milhões": 1000000, "bilhão": 1000000000,
-            "bilhões": 1000000000
+        numeros = {
+            "zero": "0", "um": "1", "uma": "1", "dois": "2", "duas": "2", 
+            "três": "3", "quatro": "4", "cinco": "5", "seis": "6", 
+            "sete": "7", "oito": "8", "nove": "9", "dez": "10",
+            "onze": "11", "doze": "12", "treze": "13", "quatorze": "14", 
+            "quinze": "15", "dezesseis": "16", "dezessete": "17", 
+            "dezoito": "18", "dezenove": "19", "vinte": "20",
+            "trinta": "30", "quarenta": "40", "cinquenta": "50", 
+            "sessenta": "60", "setenta": "70", "oitenta": "80", 
+            "noventa": "90", "cem": "100", "cento": "100",
+            "duzentos": "200", "trezentos": "300", "quatrocentos": "400",
+            "quinhentos": "500", "seiscentos": "600", "setecentos": "700",
+            "oitocentos": "800", "novecentos": "900", "mil": "1000"
         }
 
-        def processar_palavra(palavra):
-            try:
-                return str(w2n.word_to_num(palavra))
-            except:
-                return palavra
-
-        palavras = texto.split()
-        for i, palavra in enumerate(palavras):
-            palavras[i] = processar_palavra(palavra)
-        return ' '.join(palavras)
+        padrao = r"\b(" + "|".join(numeros.keys()) + r")\b"
+        
+        def substituir_numero(match):
+            return numeros[match.group(1).lower()]
+        
+        texto = re.sub(padrao, substituir_numero, texto, flags=re.IGNORECASE)
+        
+        return texto
 
     def processar_palavras_com_se(texto):
         if not isinstance(texto, str):
@@ -222,7 +218,10 @@ with tabs[1]:
             for char in caracteres_especiais:
                 count = texto_corrigido.count(char)
                 if count:
-                    texto_corrigido = texto_corrigido.replace(char, "_por_cento" if char == "%" else "_")
+                    if char in ['"', "'"]:
+                        texto_corrigido = texto_corrigido.replace(char, "")
+                    else:
+                        texto_corrigido = texto_corrigido.replace(char, "_por_cento" if char == "%" else "_")
                     contagem_caracteres[char] += count
                     total_remocoes += count
 
