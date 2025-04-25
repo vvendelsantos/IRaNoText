@@ -1,4 +1,4 @@
-import streamlit as st
+import streamlit as st 
 import pandas as pd
 import re
 import io
@@ -135,48 +135,47 @@ with tabs[1]:
             metadados_por_texto[row['ID Texto']] = metadados
 
     # ==================== FUNÇÕES DE PROCESSAMENTO ====================
-
     def converter_numeros_por_extenso(texto):
-        if not texto:
+        if not isinstance(texto, str):
             return texto
             
-        doc = nlp(texto.lower())
-        palavras = [token.text for token in doc]
-        
-        i = 0
-        resultado = []
-        n = len(palavras)
-        
-        while i < n:
-            palavra = palavras[i]
+        unidades = {
+            "zero": 0, "dois": 2, "duas": 2, "três": 3, "quatro": 4, "cinco": 5,
+            "seis": 6, "sete": 7, "oito": 8, "nove": 9
+        }
+        dezenas = {
+            "dez": 10, "onze": 11, "doze": 12, "treze": 13, "quatorze": 14, "quinze": 15,
+            "dezesseis": 16, "dezessete": 17, "dezoito": 18, "dezenove": 19, "vinte": 20
+        }
+        centenas = {
+            "cem": 100, "cento": 100, "duzentos": 200, "trezentos": 300, "quatrocentos": 400,
+            "quinhentos": 500, "seiscentos": 600, "setecentos": 700, "oitocentos": 800, "novecentos": 900
+        }
+        multiplicadores = {
+            "mil": 1000, "milhão": 1000000, "milhões": 1000000, "bilhão": 1000000000,
+            "bilhões": 1000000000
+        }
+
+        def processar_palavra(palavra):
             try:
-                # Tenta converter a palavra atual
-                num = w2n.word_to_num(palavra)
-                resultado.append(str(num))
-                i += 1
+                return str(w2n.word_to_num(palavra))
             except:
-                # Se não for número, verifica combinações (ex: "vinte e cinco")
-                if i + 2 < n and palavras[i+1] == "e":
-                    try:
-                        comb = f"{palavra} {palavras[i+1]} {palavras[i+2]}"
-                        num = w2n.word_to_num(comb)
-                        resultado.append(str(num))
-                        i += 3
-                        continue
-                    except:
-                        pass
-                # Se não conseguir converter, mantém a palavra original
-                resultado.append(palavra)
-                i += 1
-                
-        return " ".join(resultado)
+                return palavra
+
+        palavras = texto.split()
+        for i, palavra in enumerate(palavras):
+            palavras[i] = processar_palavra(palavra)
+        return ' '.join(palavras)
 
     def processar_palavras_com_se(texto):
+        if not isinstance(texto, str):
+            return texto
         return re.sub(r"(\b\w+)-se\b", r"se \1", texto)
 
     def processar_pronomes_pospostos(texto):
-        if texto is None:
+        if not isinstance(texto, str):
             return texto
+            
         texto = re.sub(r'\b(\w+)-se\b', r'se \1', texto)
         texto = re.sub(r'\b(\w+)-([oa]s?)\b', r'\2 \1', texto)
         texto = re.sub(r'\b(\w+)-(lhe|lhes)\b', r'\2 \1', texto)
@@ -187,19 +186,18 @@ with tabs[1]:
 
     def gerar_corpus(textos, entidades, siglas, metadados_por_texto):
         dict_entidades = {e["Entidades nomeadas"].lower(): e["Palavra normalizada"].lower() for e in entidades}
-        dict_siglas = {s["Sigla"].upper(): s["Significado"] for s in siglas}  # Alterado para upper case
-        
-        # Lista expandida de caracteres especiais
+        dict_siglas = {s["Sigla"].lower(): s["Significado"] for s in siglas}
         caracteres_especiais = {
-            "-": "Hífen", ";": "Ponto e vírgula", '"': "Aspas duplas", "'": "Aspas simples",
-            "…": "Reticências", "–": "Travessão", "(": "Parêntese esquerdo", ")": "Parêntese direito",
-            "/": "Barra", "%": "Porcentagem", "!": "Exclamação", "?": "Interrogação",
-            ":": "Dois pontos", ",": "Vírgula", ".": "Ponto", "[": "Colchete esquerdo",
-            "]": "Colchete direito", "{": "Chave esquerda", "}": "Chave direita",
-            "&": "E comercial", "*": "Asterisco", "@": "Arroba", "#": "Cerquilha",
-            "$": "Cifrão", "+": "Mais", "=": "Igual", "<": "Menor que", ">": "Maior que",
-            "\\": "Barra invertida", "|": "Barra vertical", "~": "Til", "`": "Acento grave",
-            "^": "Circunflexo", "_": "Sublinhado"
+            '"': "",  # Aspas duplas
+            "'": "",  # Aspas simples
+            "-": "Hífen", 
+            ";": "Ponto e vírgula", 
+            "…": "Reticências", 
+            "–": "Travessão", 
+            "(": "Parêntese esquerdo", 
+            ")": "Parêntese direito", 
+            "/": "Barra", 
+            "%": "_por_cento"  # Substituir "%" por "_por_cento"
         }
 
         contagem_caracteres = {k: 0 for k in caracteres_especiais}
@@ -212,52 +210,30 @@ with tabs[1]:
             if not texto.strip():
                 continue
 
-            # Processamento do texto
             texto_corrigido = texto.lower()
-            texto_corrigido = converter_numeros_por_extenso(texto_corrigido)
-            texto_corrigido = processar_palavras_com_se(texto_corrigido)
-            texto_corrigido = processar_pronomes_pospostos(texto_corrigido)
-            total_textos += 1
 
-            # Substituição de siglas
-            for sigla, significado in dict_siglas.items():
-                # Remove siglas entre parênteses
-                texto_corrigido = re.sub(rf"\s*\({re.escape(sigla)}\)\s*", " ", texto_corrigido)
-                # Substitui siglas soltas
-                texto_corrigido = re.sub(rf"\b{re.escape(sigla)}\b", significado, texto_corrigido)
-                total_siglas += texto_corrigido.count(significado)
-
-            # Substituição de entidades
-            for termo, substituto in dict_entidades.items():
-                if termo.lower() in texto_corrigido.lower():
-                    texto_corrigido = re.sub(rf"\b{re.escape(termo.lower())}\b", substituto, texto_corrigido)
-                    total_entidades += 1
-
-            # Remoção de caracteres especiais
-            for char, desc in caracteres_especiais.items():
+            # Remover caracteres especiais (mantendo a substituição do % para "_por_cento")
+            for char, substituto in caracteres_especiais.items():
                 count = texto_corrigido.count(char)
-                if count > 0:
-                    texto_corrigido = texto_corrigido.replace(char, " ")
+                if count:
+                    texto_corrigido = texto_corrigido.replace(char, substituto)
                     contagem_caracteres[char] += count
                     total_remocoes += count
 
-            # Normalização de espaços
             texto_corrigido = re.sub(r"\s+", " ", texto_corrigido.strip())
 
-            # Adiciona metadados
             metadata = f"**** *ID_{id_val}"
             for k, v in metadados_por_texto.get(id_val, {}).items():
                 if v:
-                    metadata += f" *{k.replace(' ', '_')}_{v.replace(' ', '_').replace('-', '_')}"
+                    metadata += f" *{k.replace(' ', '_')}_{v.replace(' ', '_')}"
+            
+            corpus_final += f"{metadata}\n{texto_corrigido}\n"
 
-            corpus_final += f"{metadata}\n{texto_corrigido}\n\n"
-
-        # Estatísticas
         estatisticas = f"Textos processados: {total_textos}\nSiglas substituídas: {total_siglas}\n"
         estatisticas += f"Entidades substituídas: {total_entidades}\nCaracteres especiais removidos: {total_remocoes}\n"
         for c, label in caracteres_especiais.items():
             if contagem_caracteres[c] > 0:
-                estatisticas += f" - {label} ({c}): {contagem_caracteres[c]}\n"
+                estatisticas += f" - {label} ({c}) : {contagem_caracteres[c]}\n"
 
         return corpus_final, estatisticas
 
@@ -267,21 +243,25 @@ with tabs[1]:
             if corpus.strip():
                 st.success("Corpus gerado com sucesso!")
                 st.subheader("📄 Corpus Textual Gerado")
-                st.text_area("Veja o Corpus Gerado", corpus, height=400)
-                
-                # Botão de download
-                buffer = io.StringIO()
-                buffer.write(corpus)
-                st.download_button(
-                    label="⬇️ Baixar Corpus",
-                    data=buffer.getvalue(),
-                    file_name="corpus_textual.txt",
-                    mime="text/plain"
-                )
-                
-                st.subheader("📊 Estatísticas do Corpus")
-                st.text_area("Estatísticas", estatisticas, height=200)
+                st.text_area("Veja o corpus gerado antes de baixar", corpus, height=300)
+                st.text_area("📊 Estatísticas do processamento", estatisticas, height=250)
+
+                buf = io.BytesIO()
+                buf.write(corpus.encode("utf-8"))
+                st.download_button("💾 SALVAR CORPUS TEXTUAL", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
             else:
-                st.warning("Não há dados suficientes para gerar o corpus.")
+                st.warning("Nenhum corpus gerado.")
         else:
-            st.warning("Por favor, insira textos antes de gerar o corpus.")
+            st.warning("Por favor, insira pelo menos um texto para processar.")
+
+with tabs[2]:
+    st.header("🚧 EM CONSTRUÇÃO")
+    st.info("Novos recursos ainda estão em desenvolvimento.")
+
+# Rodapé
+st.markdown("""  
+---  
+**👨‍💻 Autor:** José Wendel dos Santos  
+**🏛️ Instituição:** Universidade Federal de Sergipe (UFS)  
+**📧 Contato:** eng.wendel@live.com
+""")
