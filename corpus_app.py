@@ -6,7 +6,7 @@ import spacy
 from word2number import w2n
 
 # Carregar modelo do spaCy
-nlp = spacy.load("pt_core_news_sm")
+nlp = spacy.load("pt_core_news_lg")
 
 # Funções da parte 1
 def detectar_siglas(texto):
@@ -56,89 +56,64 @@ with tabs[0]:
 with tabs[1]:
     st.header("")
 
-    st.subheader("📝 Inserir Textos para Processamento")
+    # CSS para justificar texto na sidebar
+    st.markdown("""
+        <style>
+        [data-testid="stSidebar"] div.stMarkdown p {
+            text-align: justify;
+        }
+        </style>
+    """, unsafe_allow_html=True)
 
-    textos = []
-    input_textos_brutos = st.text_area("Cole aqui os textos (um por linha):", height=200)
-    if input_textos_brutos.strip():
-        linhas = input_textos_brutos.strip().split("\n")
-        for i, linha in enumerate(linhas):
-            textos.append({"id": f"texto_{i+1}", "texto": linha})
+    st.sidebar.markdown("""   
+    # ℹ️ Sobre a ferramenta
 
-    st.subheader("📚 Dicionário de Entidades Nomeadas")
-    entidades_brutas = st.text_area("Cole aqui as entidades (uma por linha):", height=150)
-    entidades = []
-    if entidades_brutas.strip():
-        for linha in entidades_brutas.strip().split("\n"):
-            entidade = linha.strip()
-            if entidade:
-                forma_normalizada = entidade.replace(" ", "_")
-                entidades.append({"Entidades nomeadas": entidade, "Palavra normalizada": forma_normalizada})
+    Bem-vindo ao IRaText — ferramenta para preparar e gerar seu corpus textual compatível com o IRaMuTeQ. Com ele, você realiza duas etapas essenciais para análise de dados qualitativos de forma eficiente.
+    ### 📝 **Análise preliminar dos textos:**
+    Utiliza Reconhecimento de Entidades Nomeadas (REN) para identificar e classificar automaticamente termos como nomes, siglas e outras entidades no texto, facilitando a organização das informações para o preenchimento da planilha.
+    ### 🛠️ **Geração do corpus textual:**
+    Processa textos em uma planilha com expressões regulares, ajustando palavras e formatos. Inclui: (1) normalização de números por extenso, (2) tratamento de flexões verbo-pronominais, (3) substituição de siglas e entidades nomeadas, (4) remoção de caracteres especiais e (5) geração de metadados. Ao final, exibe o corpus gerado e as estatísticas de processamento antes de salvá-lo.
 
-    st.subheader("🔠 Dicionário de Siglas")
-    siglas = []
-    num_siglas = st.number_input("Quantidade de siglas", min_value=0, max_value=100, value=0)
+    ⚠️ Sua planilha deve conter **três abas** com os seguintes nomes e finalidades:
 
-    for i in range(num_siglas):
-        col1, col2 = st.columns(2)
+    1. **`textos_selecionados`** : textos a serem normalizados e processados. 
+    2. **`dic_entidades_nomeadas`** : entidades nomeadas e suas formas normalizadas.  
+    3. **`dic_siglas`** : Lista de siglas e seus significados.
+    """)
+
+    with st.container():
+        col1, col2, col3 = st.columns(3)
         with col1:
-            sigla = st.text_input(f"Sigla {i+1}", key=f"sigla_{i}")
+            with open("gerar_corpus_iramuteq.xlsx", "rb") as exemplo:
+                st.download_button(
+                    label="📥 Baixar planilha",
+                    data=exemplo,
+                    file_name="gerar_corpus_iramuteq.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    use_container_width=True
+                )
         with col2:
-            significado = st.text_input(f"Significado {i+1}", key=f"sign_{i}")
-        if sigla and significado:
-            significado_formatado = significado.lower().replace(" ", "_")
-            siglas.append({"Sigla": sigla, "Significado": significado_formatado})
+            with open("textos_selecionados.xlsx", "rb") as textos:
+                st.download_button(
+                    label="📥 Baixar textos para análise",
+                    data=textos,
+                    file_name="textos_selecionados.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    use_container_width=True
+                )
+        with col3:
+            with open("corpus_textual_artigos.txt", "rb") as artigos:
+                st.download_button(
+                    label="📥 Corpus Textual - Artigos",
+                    data=artigos,
+                    file_name="corpus_textual_artigos.txt",
+                    mime="text/plain",
+                    use_container_width=True
+                )
 
-    # ==================== SEÇÃO ATUALIZADA DE METADADOS ====================
-    st.subheader("📊 Metadados por Texto")
+    file = st.file_uploader("Envie sua planilha preenchida", type=["xlsx"])
 
-    # 1. Definir estrutura de metadados (campos comuns a todos textos)
-    st.markdown("**1. Definir Campos de Metadados**")
-    num_campos_metadados = st.number_input("Quantidade de campos de metadados para todos os textos", 
-                                         min_value=0, max_value=10, value=0, 
-                                         key="meta_global_n")
-
-    campos_metadados = []
-    for i in range(num_campos_metadados):
-        campo = st.text_input(f"Nome do campo {i+1} (ex: 'Autor', 'Data')", 
-                             key=f"meta_campo_{i}")
-        if campo:
-            campos_metadados.append(campo.strip())
-
-    # 2. Preencher valores para cada texto
-    metadados_por_texto = {}
-    if campos_metadados and textos:
-        st.markdown("**2. Preencher Valores para Cada Texto**")
-        
-        # Cria tabela editável
-        dados = []
-        for texto in textos:
-            row = {"ID Texto": texto['id']}
-            for campo in campos_metadados:
-                row[campo] = ""
-            dados.append(row)
-        
-        df_metadados = pd.DataFrame(dados)
-        df_editado = st.data_editor(
-            df_metadados,
-            column_config={"ID Texto": st.column_config.Column(disabled=True)},
-            hide_index=True,
-            use_container_width=True
-        )
-
-        # Converte para o formato original
-        for _, row in df_editado.iterrows():
-            metadados = {}
-            for campo in campos_metadados:
-                if pd.notna(row[campo]) and row[campo].strip():
-                    metadados[campo] = row[campo].strip()
-            metadados_por_texto[row['ID Texto']] = metadados
-
-    # ==================== FUNÇÕES DE PROCESSAMENTO ====================
     def converter_numeros_por_extenso(texto):
-        if not isinstance(texto, str):
-            return texto
-            
         unidades = {
             "zero": 0, "dois": 2, "duas": 2, "três": 3, "quatro": 4, "cinco": 5,
             "seis": 6, "sete": 7, "oito": 8, "nove": 9
@@ -163,19 +138,26 @@ with tabs[1]:
                 return palavra
 
         palavras = texto.split()
-        for i, palavra in enumerate(palavras):
-            palavras[i] = processar_palavra(palavra)
-        return ' '.join(palavras)
+        resultado = []
+        for palavra in palavras:
+            palavra_lower = palavra.lower()
+            if palavra_lower in unidades:
+                resultado.append(str(unidades[palavra_lower]))
+            elif palavra_lower in dezenas:
+                resultado.append(str(dezenas[palavra_lower]))
+            elif palavra_lower in centenas:
+                resultado.append(str(centenas[palavra_lower]))
+            elif palavra_lower in multiplicadores:
+                resultado.append(str(multiplicadores[palavra_lower]))
+            else:
+                resultado.append(processar_palavra(palavra))
+
+        return " ".join(resultado)
 
     def processar_palavras_com_se(texto):
-        if not isinstance(texto, str):
-            return texto
         return re.sub(r"(\b\w+)-se\b", r"se \1", texto)
 
     def processar_pronomes_pospostos(texto):
-        if not isinstance(texto, str):
-            return texto
-            
         texto = re.sub(r'\b(\w+)-se\b', r'se \1', texto)
         texto = re.sub(r'\b(\w+)-([oa]s?)\b', r'\2 \1', texto)
         texto = re.sub(r'\b(\w+)-(lhe|lhes)\b', r'\2 \1', texto)
@@ -184,75 +166,105 @@ with tabs[1]:
         texto = re.sub(r'\b(\w+)[áéíóúâêô]-(lo|la|los|las)-ia\b', r'\2 \1ia', texto)
         return texto
 
-    def gerar_corpus(textos, entidades, siglas, metadados_por_texto):
-        dict_entidades = {e["Entidades nomeadas"].lower(): e["Palavra normalizada"].lower() for e in entidades}
-        dict_siglas = {s["Sigla"].lower(): s["Significado"] for s in siglas}
-        caracteres_especiais = {
-            '"': "",  # Aspas duplas
-            "'": "",  # Aspas simples
-            "-": "Hífen", 
-            ";": "Ponto e vírgula", 
-            "…": "Reticências", 
-            "–": "Travessão", 
-            "(": "Parêntese esquerdo", 
-            ")": "Parêntese direito", 
-            "/": "Barra", 
-            "%": "_por_cento"  # Substituir "%" por "_por_cento"
+    def gerar_corpus(df_textos, df_entidades, df_siglas):
+        dict_entidades = {
+            str(row["Entidades nomeadas"]).lower(): str(row["Palavra normalizada"]).lower()
+            for _, row in df_entidades.iterrows()
+            if pd.notna(row["Entidades nomeadas"]) and pd.notna(row["Palavra normalizada"])
         }
 
+        dict_siglas = {
+            str(row["Sigla"]).lower(): str(row["Significado"])
+            for _, row in df_siglas.iterrows()
+            if pd.notna(row["Sigla"]) and pd.notna(row["Significado"])
+        }
+
+        caracteres_especiais = {
+            "-": "Hífen", ";": "Ponto e vírgula", '"': "Aspas duplas", "'": "Aspas simples", "…": "Reticências", "–": "Travessão", "(": "Parêntese esquerdo", ")": "Parêntese direito", "/": "Barra", "%": "Porcentagem", "[": "Colchete esquerdo", "]": "Colchete direito","{": "Chave esquerda", "}": "Chave direita", "&": "E comercial", "*": "Asterisco","@": "Arroba", "#": "Cerquilha", "$": "Cifrão", "+": "Mais", "=": "Igual","<": "Menor que", ">": "Maior que", "\\": "Barra invertida", "|": "Barra vertical",       "~": "Til", "`": "Acento grave", "^": "Circunflexo"
+        }
         contagem_caracteres = {k: 0 for k in caracteres_especiais}
-        total_textos = total_siglas = total_entidades = total_remocoes = 0
+        total_textos = 0
+        total_siglas = 0
+        total_entidades = 0
+        total_remocoes = 0
         corpus_final = ""
 
-        for texto_info in textos:
-            texto = texto_info["texto"]
-            id_val = texto_info["id"]
+        for _, row in df_textos.iterrows():
+            texto = str(row.get("textos selecionados", ""))
+            id_val = row.get("id", "")
             if not texto.strip():
                 continue
 
             texto_corrigido = texto.lower()
+            texto_corrigido = converter_numeros_por_extenso(texto_corrigido)
+            texto_corrigido = processar_palavras_com_se(texto_corrigido)
+            texto_corrigido = processar_pronomes_pospostos(texto_corrigido)
+            total_textos += 1
 
-            # Remover caracteres especiais (mantendo a substituição do % para "_por_cento")
-            for char, substituto in caracteres_especiais.items():
+            for sigla, significado in dict_siglas.items():
+                texto_corrigido = re.sub(rf"\({sigla}\)", "", texto_corrigido)
+                texto_corrigido = re.sub(rf"\b{sigla}\b", significado, texto_corrigido, flags=re.IGNORECASE)
+                total_siglas += 1
+
+            for termo, substituto in dict_entidades.items():
+                if termo in texto_corrigido:
+                    texto_corrigido = re.sub(rf"\b{termo}\b", substituto, texto_corrigido, flags=re.IGNORECASE)
+                    total_entidades += 1
+
+            for char in caracteres_especiais:
                 count = texto_corrigido.count(char)
                 if count:
-                    texto_corrigido = texto_corrigido.replace(char, substituto)
+                    if char == "%":
+                        texto_corrigido = texto_corrigido.replace(char, "_por_cento")
+                    else:
+                        texto_corrigido = texto_corrigido.replace(char, "_")
                     contagem_caracteres[char] += count
                     total_remocoes += count
 
             texto_corrigido = re.sub(r"\s+", " ", texto_corrigido.strip())
 
             metadata = f"**** *ID_{id_val}"
-            for k, v in metadados_por_texto.get(id_val, {}).items():
-                if v:
-                    metadata += f" *{k.replace(' ', '_')}_{v.replace(' ', '_')}"
-            
+            for col in row.index:
+                if col.lower() not in ["id", "textos selecionados"]:
+                    metadata += f" *{col.replace(' ', '_')}_{str(row[col]).replace(' ', '_')}"
+
             corpus_final += f"{metadata}\n{texto_corrigido}\n"
 
-        estatisticas = f"Textos processados: {total_textos}\nSiglas substituídas: {total_siglas}\n"
-        estatisticas += f"Entidades substituídas: {total_entidades}\nCaracteres especiais removidos: {total_remocoes}\n"
-        for c, label in caracteres_especiais.items():
-            if contagem_caracteres[c] > 0:
-                estatisticas += f" - {label} ({c}) : {contagem_caracteres[c]}\n"
+        estatisticas = f"Textos processados: {total_textos}\n"
+        estatisticas += f"Siglas removidas/substituídas: {total_siglas}\n"
+        estatisticas += f"Entidades nomeadas substituídas: {total_entidades}\n"
+        estatisticas += f"Caracteres especiais removidos: {total_remocoes}\n"
+        for char, nome in caracteres_especiais.items():
+            if contagem_caracteres[char] > 0:
+                estatisticas += f" - {nome} ({char}) : {contagem_caracteres[char]}\n"
 
         return corpus_final, estatisticas
 
-    if st.button("🚀 GERAR CORPUS TEXTUAL"):
-        if textos:
-            corpus, estatisticas = gerar_corpus(textos, entidades, siglas, metadados_por_texto)
-            if corpus.strip():
-                st.success("Corpus gerado com sucesso!")
-                st.subheader("📄 Corpus Textual Gerado")
-                st.text_area("Veja o corpus gerado antes de baixar", corpus, height=300)
-                st.text_area("📊 Estatísticas do processamento", estatisticas, height=250)
+    if file:
+        try:
+            xls = pd.ExcelFile(file)
+            df_textos = xls.parse("textos_selecionados")
+            df_entidades = xls.parse("dic_entidades_nomeadas")
+            df_siglas = xls.parse("dic_siglas")
+            df_textos.columns = [col.strip().lower() for col in df_textos.columns]
 
-                buf = io.BytesIO()
-                buf.write(corpus.encode("utf-8"))
-                st.download_button("💾 SALVAR CORPUS TEXTUAL", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
-            else:
-                st.warning("Nenhum corpus gerado.")
-        else:
-            st.warning("Por favor, insira pelo menos um texto para processar.")
+            if st.button("🚀 GERAR CORPUS TEXTUAL"):
+                corpus, estatisticas = gerar_corpus(df_textos, df_entidades, df_siglas)
+
+                if corpus.strip():
+                    st.success("Corpus gerado com sucesso!")
+
+                    st.subheader("📄 Corpus Textual Gerado")
+                    st.text_area("Veja o corpus gerado antes de baixar", corpus, height=300)
+                    st.text_area("📊 Estatísticas do processamento", estatisticas, height=250)
+
+                    buf = io.BytesIO()
+                    buf.write(corpus.encode("utf-8"))
+                    st.download_button("💾 SALVAR CORPUS TEXTUAL", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
+                else:
+                    st.warning("Nenhum corpus gerado.")
+        except Exception as e:
+            st.error(f"Erro ao processar o arquivo: {e}")
 
 with tabs[2]:
     st.header("🚧 EM CONSTRUÇÃO")
@@ -263,5 +275,5 @@ st.markdown("""
 ---  
 **👨‍💻 Autor:** José Wendel dos Santos  
 **🏛️ Instituição:** Universidade Federal de Sergipe (UFS)  
-**📧 Contato:** eng.wendel@live.com
+**📧 Contato:** eng.wendel@gmail.com
 """)
