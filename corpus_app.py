@@ -1,4 +1,4 @@
-import streamlit as st 
+import streamlit as st
 import pandas as pd
 import re
 import io
@@ -135,10 +135,8 @@ with tabs[1]:
             metadados_por_texto[row['ID Texto']] = metadados
 
     # ==================== FUNÇÕES DE PROCESSAMENTO ====================
+
     def converter_numeros_por_extenso(texto):
-        if not isinstance(texto, str):
-            return texto
-            
         unidades = {
             "zero": 0, "dois": 2, "duas": 2, "três": 3, "quatro": 4, "cinco": 5,
             "seis": 6, "sete": 7, "oito": 8, "nove": 9
@@ -156,26 +154,18 @@ with tabs[1]:
             "bilhões": 1000000000
         }
 
-        def processar_palavra(palavra):
+        def processar_palavra(texto):
             try:
-                return str(w2n.word_to_num(palavra))
+                return str(w2n.word_to_num(texto))
             except:
-                return palavra
-
-        palavras = texto.split()
-        for i, palavra in enumerate(palavras):
-            palavras[i] = processar_palavra(palavra)
-        return ' '.join(palavras)
+                return texto
 
     def processar_palavras_com_se(texto):
-        if not isinstance(texto, str):
-            return texto
         return re.sub(r"(\b\w+)-se\b", r"se \1", texto)
 
     def processar_pronomes_pospostos(texto):
-        if not isinstance(texto, str):
-            return texto
-            
+        if texto is None:
+            return texto  # Retorna o texto original se for None
         texto = re.sub(r'\b(\w+)-se\b', r'se \1', texto)
         texto = re.sub(r'\b(\w+)-([oa]s?)\b', r'\2 \1', texto)
         texto = re.sub(r'\b(\w+)-(lhe|lhes)\b', r'\2 \1', texto)
@@ -232,7 +222,7 @@ with tabs[1]:
             for k, v in metadados_por_texto.get(id_val, {}).items():
                 if v:
                     metadata += f" *{k.replace(' ', '_')}_{v.replace(' ', '_')}"
-            
+
             corpus_final += f"{metadata}\n{texto_corrigido}\n"
 
         estatisticas = f"Textos processados: {total_textos}\nSiglas substituídas: {total_siglas}\n"
@@ -249,25 +239,10 @@ with tabs[1]:
             if corpus.strip():
                 st.success("Corpus gerado com sucesso!")
                 st.subheader("📄 Corpus Textual Gerado")
-                st.text_area("Veja o corpus gerado antes de baixar", corpus, height=300)
-                st.text_area("📊 Estatísticas do processamento", estatisticas, height=250)
-
-                buf = io.BytesIO()
-                buf.write(corpus.encode("utf-8"))
-                st.download_button("💾 SALVAR CORPUS TEXTUAL", data=buf.getvalue(), file_name="corpus_IRaMuTeQ.txt", mime="text/plain")
+                st.text_area("Veja o Corpus Gerado", corpus, height=400)
+                st.subheader("📊 Estatísticas do Corpus")
+                st.text_area("Estatísticas", estatisticas, height=200)
             else:
-                st.warning("Nenhum corpus gerado.")
+                st.warning("Não há dados suficientes para gerar o corpus.")
         else:
-            st.warning("Por favor, insira pelo menos um texto para processar.")
-
-with tabs[2]:
-    st.header("🚧 EM CONSTRUÇÃO")
-    st.info("Novos recursos ainda estão em desenvolvimento.")
-
-# Rodapé
-st.markdown("""  
----  
-**👨‍💻 Autor:** José Wendel dos Santos  
-**🏛️ Instituição:** Universidade Federal de Sergipe (UFS)  
-**📧 Contato:** eng.wendel@live.com
-""")
+            st.warning("Por favor, insira textos antes de gerar o corpus.")
