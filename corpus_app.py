@@ -1,4 +1,4 @@
-"# 🟢 CÓDIGO ATUALIZADO: METADADOS POR TEXTO INDIVIDUAL 🟢
+# 🟢 CÓDIGO ATUALIZADO: METADADOS POR TEXTO INDIVIDUAL 🟢
 
 import streamlit as st 
 import pandas as pd
