@@ -7,4 +7,3 @@ pt_core_news_lg @ https://github.com/explosion/spacy-models/releases/download/pt
 unidecode
 streamlit-extras>=0.3.0
 word2number==1.1
-gensim
