@@ -1,4 +1,4 @@
-import streamlit as st
+import streamlit as st 
 import pandas as pd
 import re
 import io
@@ -77,34 +77,39 @@ with tabs[1]:
 
     # Interface para entrada de dados
     st.subheader("📝 Inserir Textos para Processamento")
-    textos_input = st.text_area("Cole seus textos aqui (1 por linha)", height=200)
 
+    # Adicionar múltiplos textos com IDs
     textos = []
-    if textos_input.strip():
-        linhas = textos_input.strip().split("\n")
+    input_textos_brutos = st.text_area("Cole aqui os textos (um por linha):", height=200)
+    if input_textos_brutos.strip():
+        linhas = input_textos_brutos.strip().split("\n")
         for i, linha in enumerate(linhas):
             textos.append({"id": f"texto_{i+1}", "texto": linha})
 
     # Dicionário de entidades nomeadas
     st.subheader("📚 Dicionário de Entidades Nomeadas")
-    entidades_input = st.text_area("Cole as entidades aqui (uma por linha)", height=150)
+    entidades_brutas = st.text_area("Cole aqui as entidades (uma por linha):", height=150)
     entidades = []
-    if entidades_input.strip():
-        linhas = entidades_input.strip().split("\n")
-        for linha in linhas:
-            normalizada = linha.strip().replace(" ", "_")
-            entidades.append({"Entidades nomeadas": linha.strip(), "Palavra normalizada": normalizada})
+    if entidades_brutas.strip():
+        for linha in entidades_brutas.strip().split("\n"):
+            entidade = linha.strip()
+            if entidade:
+                forma_normalizada = entidade.replace(" ", "_")
+                entidades.append({"Entidades nomeadas": entidade, "Palavra normalizada": forma_normalizada})
 
     # Dicionário de siglas
     st.subheader("🔠 Dicionário de Siglas")
-    siglas_input = st.text_area("Cole as siglas aqui no formato SIGLA: significado", height=150)
     siglas = []
-    if siglas_input.strip():
-        linhas = siglas_input.strip().split("\n")
-        for linha in linhas:
-            if ":" in linha:
-                sigla, significado = map(str.strip, linha.split(":", 1))
-                siglas.append({"Sigla": sigla, "Significado": significado})
+    num_siglas = st.number_input("Quantidade de siglas", min_value=0, max_value=100, value=0)
+
+    for i in range(num_siglas):
+        col1, col2 = st.columns(2)
+        with col1:
+            sigla = st.text_input(f"Sigla {i+1}", key=f"sigla_{i}")
+        with col2:
+            significado = st.text_input(f"Significado {i+1}", key=f"sign_{i}")
+        if sigla and significado:
+            siglas.append({"Sigla": sigla, "Significado": significado})
 
     # Metadados adicionais
     st.subheader("📊 Metadados Adicionais (opcional)")
@@ -162,15 +167,15 @@ with tabs[1]:
         return " ".join(resultado)
 
     def processar_palavras_com_se(texto):
-        return re.sub(r"(\b\w+)-se\b", r"se \1", texto)
+        return re.sub(r"(\b\w+)-se\b", r"se ", texto)
 
     def processar_pronomes_pospostos(texto):
-        texto = re.sub(r'\b(\w+)-se\b', r'se \1', texto)
-        texto = re.sub(r'\b(\w+)-([oa]s?)\b', r'\2 \1', texto)
-        texto = re.sub(r'\b(\w+)-(lhe|lhes)\b', r'\2 \1', texto)
-        texto = re.sub(r'\b(\w+)-(me|te|nos|vos)\b', r'\2 \1', texto)
-        texto = re.sub(r'\b(\w+)[áéíóúâêô]?-([oa]s?)\b', r'\2 \1', texto)
-        texto = re.sub(r'\b(\w+)[áéíóúâêô]-(lo|la|los|las)-ia\b', r'\2 \1ia', texto)
+        texto = re.sub(r'\b(\w+)-se\b', r'se ', texto)
+        texto = re.sub(r'\b(\w+)-([oa]s?)\b', r' ', texto)
+        texto = re.sub(r'\b(\w+)-(lhe|lhes)\b', r' ', texto)
+        texto = re.sub(r'\b(\w+)-(me|te|nos|vos)\b', r' ', texto)
+        texto = re.sub(r'\b(\w+)[áéíóúâêô]?-([oa]s?)\b', r' ', texto)
+        texto = re.sub(r'\b(\w+)[áéíóúâêô]-(lo|la|los|las)-ia\b', r' ia', texto)
         return texto
 
     def gerar_corpus(textos, entidades, siglas, metadados):
@@ -209,13 +214,13 @@ with tabs[1]:
             total_textos += 1
 
             for sigla, significado in dict_siglas.items():
-                texto_corrigido = re.sub(rf"\\({sigla}\\)", "", texto_corrigido)
-                texto_corrigido = re.sub(rf"\\b{sigla}\\b", significado, texto_corrigido, flags=re.IGNORECASE)
+                texto_corrigido = re.sub(rf"\({sigla}\)", "", texto_corrigido)
+                texto_corrigido = re.sub(rf"\b{sigla}\b", significado, texto_corrigido, flags=re.IGNORECASE)
                 total_siglas += 1
 
             for termo, substituto in dict_entidades.items():
                 if termo in texto_corrigido:
-                    texto_corrigido = re.sub(rf"\\b{termo}\\b", substituto, texto_corrigido, flags=re.IGNORECASE)
+                    texto_corrigido = re.sub(rf"\b{termo}\b", substituto, texto_corrigido, flags=re.IGNORECASE)
                     total_entidades += 1
 
             for char in caracteres_especiais:
