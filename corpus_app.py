@@ -259,7 +259,7 @@ with tabs[1]:
             if corpus.strip():
                 st.success("Corpus gerado com sucesso!")
                 st.subheader("📄 CORPUS TEXTUAL GERADO")
-                st.text_area("🔍 Revise o corpus textual gerado antes de baixar", corpus, height=300)
+                st.text_area("🔍 Revise antes de salvar", corpus, height=300)
                 st.text_area("📊 Estatísticas do processamento", estatisticas, height=250)
 
                 buf = io.BytesIO()
