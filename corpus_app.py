@@ -41,7 +41,6 @@ st.title("IRaText: Gerador de Corpus Textual")
 tabs = st.tabs([
     "📝 ANÁLISE PRELIMINAR DOS TEXTOS",
     "🛠️ GERAÇÃO DO CORPUS TEXTUAL",
-    "🚧 EM CONSTRUÇÃO"
 ])
 
 with tabs[0]:
@@ -274,10 +273,6 @@ with tabs[1]:
                 st.warning("Nenhum corpus gerado.")
         else:
             st.warning("Por favor, insira pelo menos um texto para processar.")
-
-with tabs[2]:
-    st.header("🚧 EM CONSTRUÇÃO")
-    st.info("Novos recursos ainda estão em desenvolvimento.")
 
 # Rodapé
 st.markdown("""  
