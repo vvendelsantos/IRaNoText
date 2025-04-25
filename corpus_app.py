@@ -109,7 +109,8 @@ with tabs[1]:
         with col2:
             significado = st.text_input(f"Significado {i+1}", key=f"sign_{i}")
         if sigla and significado:
-            siglas.append({"Sigla": sigla, "Significado": significado})
+    significado_formatado = significado.lower().replace(" ", "_")
+    siglas.append({"Sigla": sigla, "Significado": significado_formatado})
 
     # Metadados adicionais
     st.subheader("📊 Metadados Adicionais (opcional)")
