@@ -102,9 +102,10 @@ with tabs[1]:
                 nome = st.text_input(f"Nome do metadado {j+1}", key=f"meta_nome_{i}_{j}")
             with col2:
                 valor = st.text_input(f"Valor do metadado {j+1}", key=f"meta_valor_{i}_{j}")
-            if nome:
+            if nome and valor:
                 metadados_individuais[nome] = valor
         metadados_por_texto[texto["id"]] = metadados_individuais
+        st.write(f"Metadados para {texto['id']}: {metadados_individuais}")  # Exibindo os metadados
 
     # ==================== FUNÇÕES DE PROCESSAMENTO ====================
 
