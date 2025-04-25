@@ -1,4 +1,4 @@
-import streamlit as st 
+import streamlit as st
 import pandas as pd
 import re
 import io
@@ -55,7 +55,6 @@ with tabs[0]:
 
 with tabs[1]:
     st.header("")
-
     st.subheader("📝 Inserir Textos para Processamento")
 
     textos = []
@@ -136,9 +135,6 @@ with tabs[1]:
 
     # ==================== FUNÇÕES DE PROCESSAMENTO ====================
     def converter_numeros_por_extenso(texto):
-        if not isinstance(texto, str):
-            return texto
-            
         unidades = {
             "zero": 0, "dois": 2, "duas": 2, "três": 3, "quatro": 4, "cinco": 5,
             "seis": 6, "sete": 7, "oito": 8, "nove": 9
@@ -156,26 +152,20 @@ with tabs[1]:
             "bilhões": 1000000000
         }
 
-        def processar_palavra(palavra):
+        def processar_palavra(texto):
             try:
-                return str(w2n.word_to_num(palavra))
+                return str(w2n.word_to_num(texto))
             except:
-                return palavra
-
-        palavras = texto.split()
-        for i, palavra in enumerate(palavras):
-            palavras[i] = processar_palavra(palavra)
-        return ' '.join(palavras)
+                return texto
 
     def processar_palavras_com_se(texto):
-        if not isinstance(texto, str):
+        try:
+            return re.sub(r"(\b\w+)-se\b", r"se \1", texto)
+        except Exception as e:
+            st.error(f"Erro ao processar o texto: {str(e)}")
             return texto
-        return re.sub(r"(\b\w+)-se\b", r"se \1", texto)
 
     def processar_pronomes_pospostos(texto):
-        if not isinstance(texto, str):
-            return texto
-            
         texto = re.sub(r'\b(\w+)-se\b', r'se \1', texto)
         texto = re.sub(r'\b(\w+)-([oa]s?)\b', r'\2 \1', texto)
         texto = re.sub(r'\b(\w+)-(lhe|lhes)\b', r'\2 \1', texto)
@@ -232,7 +222,7 @@ with tabs[1]:
             for k, v in metadados_por_texto.get(id_val, {}).items():
                 if v:
                     metadata += f" *{k.replace(' ', '_')}_{v.replace(' ', '_')}"
-            
+
             corpus_final += f"{metadata}\n{texto_corrigido}\n"
 
         estatisticas = f"Textos processados: {total_textos}\nSiglas substituídas: {total_siglas}\n"
