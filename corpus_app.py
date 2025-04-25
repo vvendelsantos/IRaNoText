@@ -8,7 +8,7 @@ import spacy
 from word2number import w2n
 
 # Carregar modelo do spaCy
-nlp = spacy.load(""pt_core_news_sm"")
+nlp = spacy.load("pt_core_news_sm")
 
 # Funções da parte 1
 def detectar_siglas(texto):
