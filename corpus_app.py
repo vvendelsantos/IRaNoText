@@ -277,5 +277,5 @@ st.markdown("""
 ---  
 **👨‍💻 Autor:** José Wendel dos Santos  
 **🏛️ Instituição:** Universidade Federal de Sergipe (UFS)  
-**📧 Contato:** eng.wendel@gmail.com
+**📧 Contato:** eng.wendel@live.com
 """)
