@@ -283,6 +283,7 @@ st.markdown("""
 SANTOS, J. W. *IRaText: gerador de corpus textual para IRaMuTeQ*. Disponível em: [URL]. Acesso em: [dia, mês, ano].
 
 
-
-© 2025 José Wendel dos Santos. Todos os direitos reservados.
-""")
+<div style='text-align: center; margin-top: 20px; font-size: 0.9em;'>
+    © 2025 José Wendel dos Santos. Todos os direitos reservados.
+</div>
+""", unsafe_allow_html=True)
