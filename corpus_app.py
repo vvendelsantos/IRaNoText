@@ -276,12 +276,11 @@ st.markdown("""
 **👨‍💻 Desenvolvido por:** José Wendel dos Santos  
 **📧 Contato:** eng.wendel@live.com
 
-
-
-**🛡️ Termo de uso:** Este software é disponibilizado gratuitamente para uso acadêmico e de pesquisa.  
-É proibida a comercialização ou distribuição sem autorização prévia. © 2025 José Wendel dos Santos. Todos os direitos reservados.
-
+**🛡️ Termo de uso:** Este software é disponibilizado gratuitamente para uso acadêmico e de pesquisa. É proibida a comercialização ou distribuição sem autorização prévia. 
 **📚 Como citar:**  
 SANTOS, J. W. *IRaText: gerador de corpus textual para IRaMuTeQ*. Disponível em: [URL]. Acesso em: [dia, mês, ano].
 
+
+
+© 2025 José Wendel dos Santos. Todos os direitos reservados.
 """)
