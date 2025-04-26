@@ -25,7 +25,7 @@ st.markdown(
     """
     <style>
     .main .block-container {
-        background-color: rgba(60, 60, 60, 0.9);
+        background-color: rgba(14, 17, 23, 0.9);
         padding: 2rem;
         border-radius: 10px;
     }
