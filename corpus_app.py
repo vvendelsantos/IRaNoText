@@ -15,6 +15,8 @@ st.sidebar.markdown("""
         <p>Envie textos para análise automatizada com foco em siglas e entidades nomeadas, incluindo nomes próprios, localizações geográficas e instituições. Além disso, recomendamos que você incorpore manualmente quaisquer termos compostos adicionais relevantes que possam ser padronizados em seu corpus textual.</p>
         <h3>🛠️ <strong>Geração do corpus textual:</strong></h3>
         <p>Insera os textos que deseja processar, defina os dicionários de entidades nomeadas, siglas e as variáveis associadas. O processamento utilizará expressões regulares para executar as seguintes funções: (1) conversão automática de números por extenso em algarismos, (2) normalização linguística avançada (incluindo tratamento de pronomes pospostos e flexões verbo-pronominais), (3) substituição sistemática de entidades e siglas com base em dicionários personalizados, (4) remoção inteligente de caracteres incompatíveis com o IRaMuTeQ e (5) geração automatizada de metadados customizáveis para análise estatística textual. Ao final, o corpus textual processado é exibido juntamente com estatísticas detalhadas, permitindo ao usuário revisar os dados antes de salvá-los.</p>
+        <h3>📚 <strong> Como citar:</strong></h3>
+      <p>SANTOS, J. W. (2025) *IRaText: gerador de corpus textual para IRaMuTeQ*. Disponível em: [URL]. Acesso em: [dia, mês, ano].</p>
     </div>
 """, unsafe_allow_html=True)
 
@@ -275,16 +277,11 @@ st.markdown("""
 ---  
 **👨‍💻 Desenvolvido por:** José Wendel dos Santos  
 **📧 Contato:** eng.wendel@live.com
-
-**🛡️ Termo de uso:** Este software é disponibilizado gratuitamente para uso acadêmico.
-É proibida a comercialização ou distribuição sem autorização prévia. 
-
-
-**📚 Como citar:**  
-SANTOS, J. W. *IRaText: gerador de corpus textual para IRaMuTeQ*. Disponível em: [URL]. Acesso em: [dia, mês, ano].
-
+---
 
 <div style='text-align: center; margin-top: 20px; font-size: 0.9em;'>
+    
+    Este software é disponibilizado gratuitamente para uso acadêmico. É proibida a comercialização ou distribuição sem autorização prévia. 
     © 2025 José Wendel dos Santos. Todos os direitos reservados.
 </div>
 """, unsafe_allow_html=True)
