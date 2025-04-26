@@ -276,7 +276,8 @@ st.markdown("""
 **👨‍💻 Desenvolvido por:** José Wendel dos Santos  
 **📧 Contato:** eng.wendel@live.com
 
-**🛡️ Termo de uso:** Este software é disponibilizado gratuitamente para uso acadêmico. É proibida a comercialização ou distribuição sem autorização prévia. 
+**🛡️ Termo de uso:** Este software é disponibilizado gratuitamente para uso acadêmico.
+É proibida a comercialização ou distribuição sem autorização prévia. 
 
 
 **📚 Como citar:**  
