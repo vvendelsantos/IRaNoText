@@ -9,7 +9,7 @@ from word2number import w2n
 st.sidebar.markdown("""   
    <div style='text-align: justify'>
         <h1>ℹ️ Sobre a ferramenta</h1>
-        <p>Bem-vindo ao IRaText, uma ferramenta desenvolvida para preparar e gerar seu corpus textual compatível com o IRaMuTeQ.</p>
+        <p>O IRaText apresenta originalidade tanto na concepção quanto na implementação técnica. A ferramenta foi criada para suprir uma lacuna existente no processo de preparação de textos para o software IRaMuTeQ, otimizando a compatibilidade textual de forma automatizada e inteligente — um avanço que elimina horas de trabalho manual dos usuários.</p>
         <h2>🗺️ Fluxo de uso</h2>
         <h3>📝 <strong>Análise preliminar dos textos:</strong></h3>
         <p>Envie textos para análise automatizada com foco em siglas e entidades nomeadas, incluindo nomes próprios, localizações geográficas e instituições. Além disso, recomendamos que você incorpore manualmente quaisquer termos compostos adicionais relevantes que possam ser padronizados em seu corpus textual.</p>
