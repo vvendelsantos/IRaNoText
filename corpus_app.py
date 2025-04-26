@@ -32,7 +32,7 @@ def detectar_palavras_compostas(texto):
     return list(set(compostas))
 
 # ========================== ABAS ==========================
-st.title("IRaText: Gerador de Corpus Textual")
+st.title("IRaText: gerador de corpus textual para IRaMuTeQ")
 
 tabs = st.tabs([
     "📝 ANÁLISE PRELIMINAR DOS TEXTOS",
@@ -273,7 +273,15 @@ with tabs[1]:
 # Rodapé
 st.markdown("""  
 ---  
-**👨‍💻 Autor:** José Wendel dos Santos  
-**🏛️ Instituição:** Universidade Federal de Sergipe (UFS)  
+**👨‍💻 Desenvolvido por:** José Wendel dos Santos  
 **📧 Contato:** eng.wendel@live.com
+
+
+
+**🛡️ Termo de uso:** Este software é disponibilizado gratuitamente para uso acadêmico e de pesquisa.  
+É proibida a comercialização ou distribuição sem autorização prévia. © 2025 José Wendel dos Santos. Todos os direitos reservados.
+
+**📚 Como citar:**  
+SANTOS, J. W. *IRaText: gerador de corpus textual para IRaMuTeQ*. Disponível em: [URL]. Acesso em: [dia, mês, ano].
+
 """)
