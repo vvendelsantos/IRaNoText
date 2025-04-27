@@ -298,7 +298,7 @@ with tabs[2]:
     # Tutorial Item 1
     col1, col2 = st.columns([1, 2])
     with col1:
-        st.image("https://drive.google.com/file/d/1DVBUal_aBTcs6PmbYoUf_P4IrqdkoIIQ/view?usp=sharing", caption="Passo 1: Inserção do Texto")
+        st.image("https://drive.google.com/uc?export=view&id=1DVBUal_aBTcs6PmbYoUf_P4IrqdkoIIQ", caption="Passo 1: Inserção do Texto")
     with col2:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
