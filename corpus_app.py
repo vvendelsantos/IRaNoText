@@ -33,7 +33,7 @@ st.markdown(
 st.sidebar.markdown("""   
    <div style='text-align: justify'>
         <h1>ℹ️ Sobre a ferramenta</h1>
-        <p>O IRaText apresenta originalidade tanto na concepção quanto na implementação técnica. A ferramenta foi criada para suprir uma lacuna existente no processo de preparação de textos para o software IRaMuTeQ, otimizando a compatibilidade textual de forma automatizada e inteligente — um avanço que elimina horas de trabalho manual dos usuários.</p>
+        <p>O IRaNoText apresenta originalidade tanto na concepção quanto na implementação técnica. A ferramenta foi criada para suprir uma lacuna existente no processo de preparação de textos para o software IRaMuTeQ, otimizando a compatibilidade textual de forma automatizada e inteligente — um avanço que elimina horas de trabalho manual dos usuários.</p>
         <h2>💡 Funcionalidades</h2>
         <h3>📝 <strong>Análise preliminar dos textos:</strong></h3>
         <p>Envie seus textos para uma análise automatizada inteligente, focada na identificação de siglas e entidades nomeadas — como nomes próprios, locais geográficos e instituições. Além disso, personalize a análise incorporando manualmente termos compostos relevantes para o seu projeto de pesquisa, garantindo um mapeamento lexical ainda mais preciso.</p>
@@ -297,12 +297,12 @@ with tabs[1]:
 # Rodapé
 st.markdown("""  
 ---  
-**👨‍💻 Autor:** José Wendel dos Santos  
+**👨‍💻 Autor:** Me. José Wendel dos Santos | Prof. Dr. Luciano Fernandes Monteiro 
 **🏛️ Instituição:** Universidade Federal de Sergipe (UFS)  
 **📧 Contato:** eng.wendel@gmail.com
 
 <div style='text-align: center; margin-top: 20px; font-size: 0.9em; color: #b0b0b0;'>
-    Este software é um complemento independente e não é afiliado oficialmente ao IRaMuTeQ. Acesse o 
-    <a href="http://www.iramuteq.org/" target="_blank" style="color: #4a90e2; text-decoration: none;">site oficial do IRaMuTeQ</a>.
+    Este software é um complemento independente e não é afiliado oficialmente ao IRaMuTeQ. Acesse o
+    <a href="http://www.iramuteq.org/" target="_blank" style="color: #4a90e2; text-decoration: none;">site oficial</a>.
 </div>
 """, unsafe_allow_html=True)
