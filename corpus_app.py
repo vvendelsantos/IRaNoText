@@ -300,7 +300,7 @@ st.markdown("""
 **👨‍💻 Autor:** José Wendel dos Santos  
 **🏛️ Instituição:** Universidade Federal de Sergipe (UFS)  
 **📧 Contato:** eng.wendel@gmail.com
----
+
 <div style='text-align: center; margin-top: 20px; font-size: 0.9em;'>
 Este software é um complemento independente e não é afiliado oficialmente ao IRaMuTeQ. Acesse site oficial do IRaMuTeQ <http://www.iramuteq.org/>
 </div>
