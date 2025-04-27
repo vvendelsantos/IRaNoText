@@ -56,6 +56,7 @@ st.title("IRaNoText: Interface de Reconhecimento Automatizado e Normalização T
 tabs = st.tabs([
     "📝 ANÁLISE PRELIMINAR DOS TEXTOS",
     "🛠️ GERAÇÃO DO CORPUS TEXTUAL",
+    "📚 TUTORIAL PASSO A PASSO"  # Nova aba de tutorial
 ])
 
 with tabs[0]:
@@ -283,6 +284,113 @@ with tabs[1]:
                 st.warning("Nenhum corpus gerado.")
         else:
             st.warning("Por favor, insira pelo menos um texto para processar.")
+
+# Nova aba de tutorial
+with tabs[2]:
+    st.header("📚 Tutorial Passo a Passo do IRaNoText")
+    st.markdown("""
+    <div style='text-align: justify; margin-bottom: 20px;'>
+        Este tutorial irá guiá-lo através das principais funcionalidades do IRaNoText. 
+        Siga os passos abaixo para aproveitar ao máximo a ferramenta.
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Tutorial Item 1
+    col1, col2 = st.columns([1, 2])
+    with col1:
+        st.image("https://via.placeholder.com/300x200?text=Passo+1", caption="Passo 1: Inserção do Texto")
+    with col2:
+        st.markdown("""
+        <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
+            <h3 style='color: #4a90e2;'>1. Inserção do Texto</h3>
+            <p>Cole ou digite seu texto na área designada. Você pode inserir um ou vários textos, 
+            um por linha. Esta é a matéria-prima que será processada pela ferramenta.</p>
+            <p><strong>Dica:</strong> Certifique-se de que o texto esteja limpo e formatado 
+            corretamente antes de iniciar a análise.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Tutorial Item 2
+    col1, col2 = st.columns([1, 2])
+    with col1:
+        st.image("https://via.placeholder.com/300x200?text=Passo+2", caption="Passo 2: Análise Automática")
+    with col2:
+        st.markdown("""
+        <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
+            <h3 style='color: #4a90e2;'>2. Análise Automática</h3>
+            <p>Clique no botão "ANALISAR TEXTOS" para que o sistema identifique automaticamente 
+            entidades nomeadas e siglas presentes no texto.</p>
+            <p><strong>Dica:</strong> Revise cuidadosamente as sugestões do sistema, pois ele pode 
+            não capturar todos os termos específicos do seu domínio.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Tutorial Item 3
+    col1, col2 = st.columns([1, 2])
+    with col1:
+        st.image("https://via.placeholder.com/300x200?text=Passo+3", caption="Passo 3: Dicionários Personalizados")
+    with col2:
+        st.markdown("""
+        <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
+            <h3 style='color: #4a90e2;'>3. Dicionários Personalizados</h3>
+            <p>Adicione seus próprios dicionários de entidades nomeadas e siglas. Para entidades, 
+            insira uma por linha. Para siglas, especifique a sigla e seu significado.</p>
+            <p><strong>Dica:</strong> Quanto mais completo seu dicionário, melhor será o processamento.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Tutorial Item 4
+    col1, col2 = st.columns([1, 2])
+    with col1:
+        st.image("https://via.placeholder.com/300x200?text=Passo+4", caption="Passo 4: Metadados")
+    with col2:
+        st.markdown("""
+        <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
+            <h3 style='color: #4a90e2;'>4. Definição de Metadados</h3>
+            <p>Especifique as variáveis que deseja associar a cada texto. Estas serão incluídas 
+            como metadados no corpus final, permitindo análises mais ricas no IRaMuTeQ.</p>
+            <p><strong>Dica:</strong> Pense nas variáveis que serão úteis para sua análise (ex.: gênero, idade, etc.).</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Tutorial Item 5
+    col1, col2 = st.columns([1, 2])
+    with col1:
+        st.image("https://via.placeholder.com/300x200?text=Passo+5", caption="Passo 5: Geração do Corpus")
+    with col2:
+        st.markdown("""
+        <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
+            <h3 style='color: #4a90e2;'>5. Geração do Corpus</h3>
+            <p>Clique em "GERAR CORPUS TEXTUAL" para processar seus textos. O sistema realizará:</p>
+            <ul>
+                <li>Conversão de números por extenso</li>
+                <li>Normalização linguística</li>
+                <li>Substituição de entidades e siglas</li>
+                <li>Remoção de caracteres incompatíveis</li>
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Tutorial Item 6
+    col1, col2 = st.columns([1, 2])
+    with col1:
+        st.image("https://via.placeholder.com/300x200?text=Passo+6", caption="Passo 6: Revisão e Download")
+    with col2:
+        st.markdown("""
+        <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
+            <h3 style='color: #4a90e2;'>6. Revisão e Download</h3>
+            <p>Revise o corpus gerado e as estatísticas de processamento. Quando satisfeito, 
+            clique no botão para baixar o arquivo no formato compatível com o IRaMuTeQ.</p>
+            <p><strong>Dica:</strong> Sempre revise o corpus antes de usar no IRaMuTeQ para 
+            garantir que todas as transformações foram aplicadas corretamente.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div style='margin-top: 30px; text-align: center;'>
+        <p>Para dúvidas ou sugestões, entre em contato: <a href="mailto:iranotext@gmail.com">iranotext@gmail.com</a></p>
+    </div>
+    """, unsafe_allow_html=True)
 
 st.markdown("""  
 ---  
