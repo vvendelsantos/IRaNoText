@@ -289,13 +289,37 @@ with tabs[1]:
 with tabs[2]:
     st.header("")
     st.markdown("""
+    <style>
+    /* Centraliza a seta de ampliação da imagem */
+    .stImage > div > div > button {
+        left: 50% !important;
+        top: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        right: unset !important;
+        bottom: unset !important;
+    }
+    /* Opcional: estiliza o botão para melhor visibilidade */
+    .stImage > div > div > button {
+        background-color: rgba(0,0,0,0.3) !important;
+        border-radius: 50% !important;
+        width: 40px !important;
+        height: 40px !important;
+    }
+    /* Opcional: estiliza o ícone da lupa */
+    .stImage > div > div > button svg {
+        width: 20px !important;
+        height: 20px !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
     <div style='text-align: justify; margin-bottom: 20px;'>
         Este tutorial irá guiá-lo através das principais funcionalidades do IRaNoText. 
         Siga os passos abaixo para aproveitar ao máximo a ferramenta.
     </div>
     """, unsafe_allow_html=True)
-    
-   
+       
     col1, col2 = st.columns([1, 2])
     with col1:
         st.image("https://i.imgur.com/NY6du6U.png", caption="Passo 1: Inserção do texto")
