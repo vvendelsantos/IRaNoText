@@ -298,7 +298,7 @@ with tabs[2]:
     # Tutorial Item 1
     col1, col2 = st.columns([1, 2])
     with col1:
-        st.image("https://imgur.com/a/xFA8x5l", caption="Passo 1: Inserção do Texto")
+        st.image("https://i.imgur.com/SuYbinF.png", caption="Passo 1: Inserção do Texto")
     with col2:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
@@ -313,7 +313,7 @@ with tabs[2]:
     # Tutorial Item 2
     col1, col2 = st.columns([1, 2])
     with col1:
-        st.image("https://imgur.com/a/2vcGaF0", caption="Passo 2: Análise Automática")
+        st.image("https://i.imgur.com/Wrmo9Rf.png", caption="Passo 2: Análise Automática")
     with col2:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
@@ -328,7 +328,7 @@ with tabs[2]:
     # Tutorial Item 3
     col1, col2 = st.columns([1, 2])
     with col1:
-        st.image("https://imgur.com/a/tw8kZRX", caption="Passo 3: Dicionários Personalizados")
+        st.image("https://i.imgur.com/JjdgULO.png", caption="Passo 3: Dicionários Personalizados")
     with col2:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
@@ -342,7 +342,7 @@ with tabs[2]:
     # Tutorial Item 4
     col1, col2 = st.columns([1, 2])
     with col1:
-        st.image("https://imgur.com/a/QZNJDZt", caption="Passo 4: Metadados")
+        st.image("https://i.imgur.com/inajuKm.png", caption="Passo 4: Metadados")
     with col2:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
@@ -356,7 +356,7 @@ with tabs[2]:
     # Tutorial Item 5
     col1, col2 = st.columns([1, 2])
     with col1:
-        st.image("https://imgur.com/a/yhhHrVJ", caption="Passo 5: Geração do Corpus")
+        st.image("https://i.imgur.com/9V9Othz.png", caption="Passo 5: Geração do Corpus")
     with col2:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
@@ -374,7 +374,7 @@ with tabs[2]:
     # Tutorial Item 6
     col1, col2 = st.columns([1, 2])
     with col1:
-        st.image("https://imgur.com/a/z6piiof", caption="Passo 6: Revisão e Download")
+        st.image("https://i.imgur.com/j7giFNs.png", caption="Passo 6: Revisão e Download")
     with col2:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
