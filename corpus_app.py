@@ -367,7 +367,23 @@ with tabs[2]:
             <p>Após baixar o arquivo .txt gerado, abra-o em um editor de texto. Verifique se todas as transformações foram aplicadas corretamente e se o corpus textual está em conformidade com as exigências do IRaMuTeQ antes de importá-lo.
             </div>
         """, unsafe_allow_html=True)
-    
+
+st.markdown("""
+    <div style='margin-top: 30px; text-align: center;'>
+        <p>Agora que seu corpus foi processado, você pode realizar diversas análises no IRaMuTeQ para explorar e interpretar seus dados textuais. 
+        As análises disponíveis são:</p>
+        <ul>
+            <li><strong>Lexicográficas:</strong> Estuda o uso das palavras e suas relações dentro do texto, identificando padrões linguísticos e temáticos.</li>
+            <li><strong>Especificidades:</strong> Analisa a frequência e a especificidade de termos dentro de um corpus, ajudando a identificar características particulares de um texto ou conjunto de textos.</li>
+            <li><strong>Análise Fatorial de Correspondências (AFC):</strong> Realiza uma análise multivariada para identificar associações entre variáveis e revelar padrões no corpus.</li>
+            <li><strong>Distância Labbé:</strong> Mede a distância semântica entre palavras, permitindo identificar o grau de proximidade entre termos dentro do texto.</li>
+            <li><strong>Classificação Hierárquica Descendente (CHD):</strong> Identifica as palavras mais representativas e organiza-as hierarquicamente, ajudando a entender a estrutura de significados no texto.</li>
+            <li><strong>Análise de Similitude:</strong> Compara a similaridade entre diferentes textos do seu corpus, identificando semelhanças e diferenças significativas.</li>
+        </ul>
+        <p>Com essas ferramentas, você poderá explorar seu corpus de maneira aprofundada e extrair insights valiosos para suas análises.</p>
+    </div>
+""", unsafe_allow_html=True)
+
 st.markdown("""  
 ---  
 <div style='text-align: center; margin-top: 20px; font-size: 0.9em; color: #b0b0b0; line-height: 1.4;'>
