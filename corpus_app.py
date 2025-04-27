@@ -288,21 +288,41 @@ with tabs[1]:
 
 with tabs[2]:
     st.header("")
-    st.markdown("""
+    st.markdown(
+    """
     <style>
-    .stImage {
-        position: relative;
+    /* Estilo para centralizar o botão de ampliação */
+    div[data-testid="stImage"] div div button {
+        left: 50% !important;
+        top: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        right: auto !important;
+        bottom: auto !important;
     }
     
-    .stImage .stImageZoomIcon {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
+    /* Melhora a aparência do botão */
+    div[data-testid="stImage"] div div button {
+        background-color: rgba(0,0,0,0.5) !important;
+        border-radius: 50% !important;
+        width: 40px !important;
+        height: 40px !important;
+        opacity: 0.8 !important;
+        transition: opacity 0.2s !important;
     }
-</style>
-    """, unsafe_allow_html=True)
     
+    div[data-testid="stImage"] div div button:hover {
+        opacity: 1 !important;
+    }
+    
+    div[data-testid="stImage"] div div button svg {
+        width: 20px !important;
+        height: 20px !important;
+        color: white !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)  
     st.markdown("""
     <div style='text-align: justify; margin-bottom: 20px;'>
         Este tutorial irá guiá-lo através das principais funcionalidades do IRaNoText. 
