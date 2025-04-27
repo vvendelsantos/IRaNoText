@@ -335,11 +335,11 @@ with tabs[2]:
    
     col1, col2 = st.columns([1, 2])
     with col1:
-        st.image("https://i.imgur.com/1dfAmZB.png", caption="Passo 4: Metadados")
+        st.image("https://i.imgur.com/MjcnMec.png", caption="Passo 4: Variáveis")
     with col2:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
-            <h3 style='color: #4a90e2;'>4. Definição de Metadados</h3>
+            <h3 style='color: #4a90e2;'>4. Definição de variáveis</h3>
             <p>Especifique as variáveis que deseja associar a cada texto. Estas serão incluídas 
             como metadados no corpus final, permitindo análises mais ricas no IRaMuTeQ.</p>
             <p><strong>Dica:</strong> Pense nas variáveis que serão úteis para sua análise (ex.: gênero, idade, etc.).</p>
