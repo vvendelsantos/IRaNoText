@@ -56,7 +56,7 @@ st.title("IRaNoText: Interface de Reconhecimento Automatizado e Normalização T
 tabs = st.tabs([
     "📝 ANÁLISE PRELIMINAR DOS TEXTOS",
     "🛠️ GERAÇÃO DO CORPUS TEXTUAL",
-    "📚 TUTORIAL PASSO A PASSO"  # Nova aba de tutorial
+    "📚 TUTORIAL"  # Nova aba de tutorial
 ])
 
 with tabs[0]:
