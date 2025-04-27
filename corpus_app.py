@@ -16,18 +16,13 @@ st.markdown(
         background-repeat: no-repeat;
         background-attachment: fixed;
     }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
-st.markdown(
-    """
-    <style>
+    
     .main .block-container {
         background-color: rgba(14, 17, 23, 1);
         padding: 2rem;
         border-radius: 10px;
+        min-height: 100vh; /* <- Aqui é o segredo */
+        padding-bottom: 5rem; /* espaço extra no fundo */
     }
     </style>
     """,
