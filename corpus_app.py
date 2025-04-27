@@ -367,8 +367,8 @@ with tabs[2]:
             <p>Após baixar o arquivo .txt gerado, abra-o em um editor de texto. Verifique se todas as transformações foram aplicadas corretamente e se o corpus textual está em conformidade com as exigências do IRaMuTeQ antes de importá-lo.
             </div>
         """, unsafe_allow_html=True)
-
-st.markdown("""
+    
+    st.markdown("""
     <div style='margin-top: 30px; text-align: justify;'>
         <p>Agora que seu corpus textual foi processado, você pode realizar diversas análises no IRaMuTeQ para explorar e interpretar seus dados qualitativos. 
         As análises disponíveis são:</p>
@@ -382,7 +382,7 @@ st.markdown("""
         </ul>
         <p>Consulte o manual do IRaMuTeQ para explorar todos os recursos!</p>
     </div>
-""", unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
 st.markdown("""  
 ---  
