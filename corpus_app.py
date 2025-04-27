@@ -75,14 +75,14 @@ with tabs[0]:
             with col1:
                 st.markdown("### 🕵️‍♂️ ENTIDADES NOMEADAS")
                 if compostas:
-                    st.text_area("Copie e cole no Excel", "\n".join(sorted(compostas)), height=300)
+                    st.text_area("Adicione no seu dicionário de entidades nomeadas", "\n".join(sorted(compostas)), height=300)
                 else:
                     st.info("Nenhuma entidade nomeada encontrada.")
 
             with col2:
                 st.markdown("### 🔠 SIGLAS DETECTADAS")
                 if siglas:
-                    st.text_area("Copie e cole no Excel", "\n".join(sorted(siglas)), height=300)
+                    st.text_area("Adicione no seu dicionário de siglas", "\n".join(sorted(siglas)), height=300)
                 else:
                     st.info("Nenhuma sigla encontrada.")
         else:
@@ -101,7 +101,7 @@ with tabs[1]:
             textos.append({"id": f"texto_{i+1}", "texto": linha})
 
     st.subheader("📚 DICIONÁRIO DE ENTIDADES NOMEADAS")
-    entidades_brutas = st.text_area("Cole aqui ou digite as entidades (uma por linha):", height=200)
+    entidades_brutas = st.text_area("Cole aqui ou digite as entidades nomeadas (uma por linha):", height=200)
     entidades = []
     if entidades_brutas.strip():
         for linha in entidades_brutas.strip().split("\n"):
