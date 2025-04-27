@@ -316,21 +316,19 @@ with tabs[2]:
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
             <h3 style='color: #4a90e2;'>2. Análise automática</h3>
             <p>Clique no botão "🔍 ANALISAR TEXTOS" para que o sistema identifique automaticamente 
-            entidades nomeadas e siglas presentes no texto. Revise cuidadosamente as sugestões do sistema, pois ele pode 
-            não capturar todos os termos específicos do seu domínio.</p>
+            entidades nomeadas e siglas presentes no texto. Revise as sugestões, pois o sistema pode não capturar todos os termos específicos da sua área.</p>
         </div>
         """, unsafe_allow_html=True)
     
   
     col1, col2 = st.columns([1, 2])
     with col1:
-        st.image("https://i.imgur.com/q9ccWLu.png", caption="Passo 3: Dicionário de entidades nomeadas")
+        st.image("https://i.imgur.com/q9ccWLu.png", caption="Passo 3: Dicionários personalizados")
     with col2:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
             <h3 style='color: #4a90e2;'>3. Dicionários personalizados</h3>
-            <p>Adicione seus próprios dicionários de entidades nomeadas e siglas. Para entidades, 
-            insira uma por linha. Para siglas, especifique a sigla e seu significado. uanto mais completo seu dicionário, melhor será o processamento.</p>    
+            <p>Cole seu texto na área indicada. Complete os dicionários com as entidades e siglas sugeridas, além de outras que considerar relevantes. Para entidades nomeadas, insira uma por linha. Para siglas, informe a quantidade e depois cadastre cada sigla com seu respectivo significado.</p>    
         </div>
         """, unsafe_allow_html=True)
     
