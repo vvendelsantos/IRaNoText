@@ -301,7 +301,8 @@ st.markdown("""
 **🏛️ Instituição:** Universidade Federal de Sergipe (UFS)  
 **📧 Contato:** eng.wendel@gmail.com
 
-<div style='text-align: center; margin-top: 20px; font-size: 0.9em;'>
-Este software é um complemento independente e não é afiliado oficialmente ao IRaMuTeQ. Acesse site oficial do IRaMuTeQ <http://www.iramuteq.org/>
+<div style='text-align: center; margin-top: 20px; font-size: 0.9em; color: #b0b0b0;'>
+    Este software é um complemento independente e não é afiliado oficialmente ao IRaMuTeQ. Acesse o 
+    <a href="http://www.iramuteq.org/" target="_blank" style="color: #4a90e2; text-decoration: none;">site oficial do IRaMuTeQ</a>.
 </div>
 """, unsafe_allow_html=True)
