@@ -303,8 +303,7 @@ with tabs[2]:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
             <h3 style='color: #4a90e2;'>1. Inserção do Texto</h3>
-            <p>Cole ou digite seu texto na área designada. Você pode inserir um ou vários textos, 
-            um por linha. Clique em "🔍 ANALISAR TEXTOS" para detectar siglas e entidades nomeadas.</p>
+            <p>Cole ou digite seu texto na área designada. É possível adicionar um ou mais textos, sendo que cada um deve estar em uma linha separada. Após isso, clique em '🔍 ANALISAR TEXTOS' para identificar siglas e entidades nomeadas automaticamente.</p>
             </div>
         """, unsafe_allow_html=True)
     
