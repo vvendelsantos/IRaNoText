@@ -5,7 +5,6 @@ import io
 import spacy
 from word2number import w2n
 
-# Adicione este código no início do seu script, logo após os imports
 st.markdown(
     """
     <style>
@@ -29,7 +28,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Sidebar
 st.sidebar.markdown("""   
    <div style='text-align: justify'>
         <h1>ℹ️ Sobre a ferramenta</h1>
@@ -42,10 +40,8 @@ st.sidebar.markdown("""
         </div>
 """, unsafe_allow_html=True)
 
-# Carregar modelo do spaCy
 nlp = spacy.load("pt_core_news_sm")
 
-# Funções da parte 1
 def detectar_siglas(texto):
     tokens = re.findall(r"\b[A-Z]{2,}\b", texto)
     return sorted(set(tokens))
@@ -55,7 +51,6 @@ def detectar_palavras_compostas(texto):
     compostas = [ent.text for ent in doc.ents if len(ent.text.split()) > 1]
     return list(set(compostas))
 
-# ========================== ABAS ==========================
 st.title("IRaNoText: Interface de Reconhecimento Automatizado e Normalização Textual")
 
 tabs = st.tabs([
@@ -125,10 +120,9 @@ with tabs[1]:
             significado_formatado = significado.lower().replace(" ", "_")
             siglas.append({"Sigla": sigla, "Significado": significado_formatado})
 
-    # ==================== SEÇÃO ATUALIZADA DE METADADOS ====================
+    
     st.subheader("📊 VARIÁVEIS POR TEXTO")
 
-    # 1. Definir estrutura de metadados (campos comuns a todos textos)
     st.markdown("**1. Definir campos de variáveis**")
     num_campos_metadados = st.number_input("Quantidade de campos de variáveis para todos os textos", 
                                          min_value=0, max_value=10, value=0, 
@@ -141,12 +135,10 @@ with tabs[1]:
         if campo:
             campos_metadados.append(campo.strip())
 
-    # 2. Preencher valores para cada texto
     metadados_por_texto = {}
     if campos_metadados and textos:
         st.markdown("**2. Preencher as opções das variáveis para cada texto**")
         
-        # Cria tabela editável
         dados = []
         for texto in textos:
             row = {"ID Texto": texto['id']}
@@ -162,7 +154,6 @@ with tabs[1]:
             use_container_width=True
         )
 
-        # Converte para o formato original
         for _, row in df_editado.iterrows():
             metadados = {}
             for campo in campos_metadados:
@@ -170,7 +161,6 @@ with tabs[1]:
                     metadados[campo] = row[campo].strip()
             metadados_por_texto[row['ID Texto']] = metadados
 
-    # ==================== FUNÇÕES DE PROCESSAMENTO ====================
     def converter_numeros_por_extenso(texto):
         if not isinstance(texto, str):
             return texto
@@ -294,7 +284,6 @@ with tabs[1]:
         else:
             st.warning("Por favor, insira pelo menos um texto para processar.")
 
-# Rodapé
 st.markdown("""  
 ---  
 <div style='text-align: center; margin-top: 20px; font-size: 0.9em; color: #b0b0b0; line-height: 1.4;'>
