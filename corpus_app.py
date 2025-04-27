@@ -21,13 +21,14 @@ st.markdown(
         background-color: rgba(14, 17, 23, 1);
         padding: 2rem;
         border-radius: 10px;
-        min-height: 250vh; /* <- Aqui é o segredo */
-        padding-bottom: 5rem; /* espaço extra no fundo */
+        /* min-height REMOVIDO */
+        padding-bottom: 5rem; /* espaço extra só no final */
     }
     </style>
     """,
     unsafe_allow_html=True
 )
+
 # Sidebar
 st.sidebar.markdown("""   
    <div style='text-align: justify'>
