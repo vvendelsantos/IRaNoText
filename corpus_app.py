@@ -369,7 +369,7 @@ with tabs[2]:
         """, unsafe_allow_html=True)
 
 st.markdown("""
-    <div style='margin-top: 30px; text-align: center;'>
+    <div style='margin-top: 30px; text-align: justify;'>
         <p>Agora que seu corpus foi processado, você pode realizar diversas análises no IRaMuTeQ para explorar e interpretar seus dados textuais. 
         As análises disponíveis são:</p>
         <ul>
