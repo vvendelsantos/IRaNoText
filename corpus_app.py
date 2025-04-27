@@ -288,48 +288,14 @@ with tabs[1]:
 
 with tabs[2]:
     st.header("")
-    st.markdown(
-    """
-    <style>
-    /* Estilo para centralizar o botão de ampliação */
-    div[data-testid="stImage"] div div button {
-        left: 50% !important;
-        top: 50% !important;
-        transform: translate(-50%, -50%) !important;
-        right: auto !important;
-        bottom: auto !important;
-    }
-    
-    /* Melhora a aparência do botão */
-    div[data-testid="stImage"] div div button {
-        background-color: rgba(0,0,0,0.5) !important;
-        border-radius: 50% !important;
-        width: 40px !important;
-        height: 40px !important;
-        opacity: 0.8 !important;
-        transition: opacity 0.2s !important;
-    }
-    
-    div[data-testid="stImage"] div div button:hover {
-        opacity: 1 !important;
-    }
-    
-    div[data-testid="stImage"] div div button svg {
-        width: 20px !important;
-        height: 20px !important;
-        color: white !important;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)  
     st.markdown("""
     <div style='text-align: justify; margin-bottom: 20px;'>
         Este tutorial irá guiá-lo através das principais funcionalidades do IRaNoText. 
         Siga os passos abaixo para aproveitar ao máximo a ferramenta.
     </div>
     """, unsafe_allow_html=True)
-       
+    
+   
     col1, col2 = st.columns([1, 2])
     with col1:
         st.image("https://i.imgur.com/NY6du6U.png", caption="Passo 1: Inserção do texto")
