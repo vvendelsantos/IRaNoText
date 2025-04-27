@@ -370,17 +370,17 @@ with tabs[2]:
 
 st.markdown("""
     <div style='margin-top: 30px; text-align: justify;'>
-        <p>Agora que seu corpus foi processado, você pode realizar diversas análises no IRaMuTeQ para explorar e interpretar seus dados textuais. 
+        <p>Agora que seu corpus textual foi processado, você pode realizar diversas análises no IRaMuTeQ para explorar e interpretar seus dados qualitativos. 
         As análises disponíveis são:</p>
         <ul>
-            <li><strong>Lexicográficas:</strong> Estuda o uso das palavras e suas relações dentro do texto, identificando padrões linguísticos e temáticos.</li>
-            <li><strong>Especificidades:</strong> Analisa a frequência e a especificidade de termos dentro de um corpus, ajudando a identificar características particulares de um texto ou conjunto de textos.</li>
-            <li><strong>Análise Fatorial de Correspondências (AFC):</strong> Realiza uma análise multivariada para identificar associações entre variáveis e revelar padrões no corpus.</li>
-            <li><strong>Distância Labbé:</strong> Mede a distância semântica entre palavras, permitindo identificar o grau de proximidade entre termos dentro do texto.</li>
+            <li><strong>Análise lexicográfica:</strong> Estuda o uso das palavras e suas relações dentro do texto, identificando padrões linguísticos e temáticos.</li>
+            <li><strong>Especificidades:</strong> Realiza uma análise multivariada para identificar associações entre variáveis e revelar padrões no corpus textual.</li>
+            <li><strong>Análise Fatorial de Correspondência (AFC):</strong> Explora as relações entre palavras e variáveis em mapas bidimensionais, ajudando a identificar as características particulares de um texto ou conjunto de textos.</li>
+            <li><strong>Distância Labbé:</strong> Mede a distância semântica entre palavras, permitindo identificar o grau de similaridade entre termos dentro do texto.</li>
             <li><strong>Classificação Hierárquica Descendente (CHD):</strong> Identifica as palavras mais representativas e organiza-as hierarquicamente, ajudando a entender a estrutura de significados no texto.</li>
-            <li><strong>Análise de Similitude:</strong> Compara a similaridade entre diferentes textos do seu corpus, identificando semelhanças e diferenças significativas.</li>
+            <li><strong>Análise de Similitude:</strong> Explora a relação entre palavras dentro de um corpus, identificando quais termos são semanticamente semelhantes ou frequentemente ocorrem próximos uns dos outros.</li>
         </ul>
-        <p>Com essas ferramentas, você poderá explorar seu corpus de maneira aprofundada e extrair insights valiosos para suas análises.</p>
+        <p>Consulte o manual do IRaMuTeQ para explorar todos os recursos!</p>
     </div>
 """, unsafe_allow_html=True)
 
