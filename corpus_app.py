@@ -297,9 +297,11 @@ with tabs[1]:
 # Rodapé
 st.markdown("""  
 ---  
-**👨‍💻 Desenvolvedores:** Me. José Wendel dos Santos | Prof. Dr. Luciano Fernandes Monteiro
-**🏛️ Instituição:** Universidade Federal de Sergipe (UFS)  
-**📧 Contato:** iranotext@gmail.com
+<div style='text-align: center; margin-top: 20px; font-size: 0.9em; color: #b0b0b0;'>
+    <p>👨‍💻 <strong>Desenvolvedores:</strong> Me. José Wendel dos Santos | Prof. Dr. Luciano Fernandes Monteiro</p>
+    <p>🏛️ <strong>Instituição:</strong> Universidade Federal de Sergipe (UFS)</p>
+    <p>📧 <strong>Contato:</strong> <a href="mailto:iranotext@gmail.com" style="color: #4a90e2; text-decoration: none;">iranotext@gmail.com</a></p>
+</div>
 
 <div style='text-align: center; margin-top: 20px; font-size: 0.9em; color: #b0b0b0;'>
     Este software é um complemento independente e não é afiliado oficialmente ao IRaMuTeQ. Acesse o
