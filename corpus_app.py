@@ -335,7 +335,7 @@ with tabs[2]:
    
     col1, col2 = st.columns([1, 2])
     with col1:
-        st.image("https://i.imgur.com/MjcnMec.png", caption="Passo 4: Variáveis")
+        st.image("https://i.imgur.com/MjcnMec.png", caption="Passo 4: Definição de variáveis")
     with col2:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
@@ -347,28 +347,25 @@ with tabs[2]:
     
     col1, col2 = st.columns([1, 2])
     with col1:
-        st.image("https://i.imgur.com/QeUZn0U.png", caption="Passo 5: Geração do Corpus")
+        st.image("https://i.imgur.com/QeUZn0U.png", caption="Passo 5: Geração do corpus textual")
     with col2:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
-            <h3 style='color: #4a90e2;'>5. Geração do Corpus</h3>
-            <p>Clique em "🚀 GERAR CORPUS TEXTUAL" para processar seus textos. Revise o corpus textual gerado e as estatísticas de processamento. Quando satisfeito(a), clique no botão para salvar o arquivo no formato compatível com o IRaMuTeQ.</p>
+            <h3 style='color: #4a90e2;'>5. Geração do corpus textual</h3>
+            <p>Clique em '🚀 GERAR CORPUS TEXTUAL' para processar seus textos. Revise o corpus textual gerado e as estatísticas de processamento. Quando estiver satisfeito(a), salve o arquivo em uma pasta específica para suas análises no IRaMuTeQ.</p>
             </div>
         """, unsafe_allow_html=True)
     
 
     col1, col2 = st.columns([1, 2])
     with col1:
-        st.image("https://i.imgur.com/Qc8ullJ.png", caption="Passo 6: Revisão e Download")
+        st.image("https://i.imgur.com/Qc8ullJ.png", caption="Passo 6: Arquivo para importação")
     with col2:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
-            <h3 style='color: #4a90e2;'>6. Revisão e Download</h3>
-            <p>Revise o corpus gerado e as estatísticas de processamento. Quando satisfeito, 
-            clique no botão para baixar o arquivo no formato compatível com o IRaMuTeQ.</p>
-            <p><strong>Dica:</strong> Sempre revise o corpus antes de usar no IRaMuTeQ para 
-            garantir que todas as transformações foram aplicadas corretamente.</p>
-        </div>
+            <h3 style='color: #4a90e2;'>6. Arquivo para importação</h3>
+            <p>Após baixar o arquivo .txt gerado, abra-o em um editor de texto. Verifique se todas as transformações foram aplicadas corretamente e se o corpus textual está em conformidade com as exigências do IRaMuTeQ antes de importá-lo.
+            </div>
         """, unsafe_allow_html=True)
     
 st.markdown("""  
