@@ -101,7 +101,7 @@ with tabs[1]:
             textos.append({"id": f"texto_{i+1}", "texto": linha})
 
     st.subheader("📚 DICIONÁRIO DE ENTIDADES NOMEADAS")
-    entidades_brutas = st.text_area("Cole aqui ou digite as entidades (uma por linha):", height=150)
+    entidades_brutas = st.text_area("Cole aqui ou digite as entidades (uma por linha):", height=200)
     entidades = []
     if entidades_brutas.strip():
         for linha in entidades_brutas.strip().split("\n"):
