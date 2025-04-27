@@ -303,10 +303,17 @@ with tabs[1]:
 # Rodapé
 st.markdown("""  
 ---  
-**👨‍💻 Desenvolvido por:** José Wendel dos Santos  
-**📧 Contato:** eng.wendel@live.com
+
+
+
+
+
+
+
+
+
 
 <div style='text-align: center; margin-top: 20px; font-size: 0.9em;'>
-É proibida a comercialização ou distribuição sem autorização prévia.
+
 </div>
 """, unsafe_allow_html=True)
