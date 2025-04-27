@@ -297,7 +297,7 @@ with tabs[1]:
 # Rodapé
 st.markdown("""  
 ---  
-**👨‍💻 Autor:** Me. José Wendel dos Santos | Prof. Dr. Luciano Fernandes Monteiro 
+**👨‍💻 Desenvolvedores:** Me. José Wendel dos Santos | Prof. Dr. Luciano Fernandes Monteiro
 **🏛️ Instituição:** Universidade Federal de Sergipe (UFS)  
 **📧 Contato:** iranotext@gmail.com
 
