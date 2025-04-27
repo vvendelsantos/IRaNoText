@@ -302,23 +302,22 @@ with tabs[2]:
     with col2:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
-            <h3 style='color: #4a90e2;'>1. Inserção do Texto</h3>
-            <p>Cole ou digite seu texto na área designada. É possível adicionar um ou mais textos, sendo que cada um deve estar em uma linha separada. Após isso, clique em '🔍 ANALISAR TEXTOS' para identificar siglas e entidades nomeadas automaticamente.</p>
+            <h3 style='color: #4a90e2;'>1. Inserção do texto</h3>
+            <p>Cole ou digite seu texto na área designada. Você pode inserir um ou vários textos, um por linha. Certifique-se de que o texto esteja sem formatação antes de iniciar a análise.</p>
             </div>
         """, unsafe_allow_html=True)
     
     
     col1, col2 = st.columns([1, 2])
     with col1:
-        st.image("https://i.imgur.com/Wrmo9Rf.png", caption="Passo 2: Análise Automática")
+        st.image("https://i.imgur.com/Wrmo9Rf.png", caption="Passo 2: Análise automática")
     with col2:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
-            <h3 style='color: #4a90e2;'>2. Análise Automática</h3>
-            <p>Clique no botão "ANALISAR TEXTOS" para que o sistema identifique automaticamente 
-            entidades nomeadas e siglas presentes no texto.</p>
-            <p><strong>Dica:</strong> Revise cuidadosamente as sugestões do sistema, pois ele pode 
-            não capturar todos os termos específicos do seu domínio.</p>
+            <h3 style='color: #4a90e2;'>2. Análise automática</h3>
+            <p>Clique no botão "🔍 ANALISAR TEXTOS" para que o sistema identifique automaticamente 
+            entidades nomeadas e siglas presentes no texto. Revise cuidadosamente as sugestões do sistema, pois ele pode 
+            não capturar todos os termos específicos do seu domínio</p>
         </div>
         """, unsafe_allow_html=True)
     
