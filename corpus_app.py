@@ -56,7 +56,7 @@ st.title("IRaNoText: Interface de Reconhecimento Automatizado e Normalização T
 tabs = st.tabs([
     "📝 ANÁLISE PRELIMINAR DOS TEXTOS",
     "🛠️ GERAÇÃO DO CORPUS TEXTUAL",
-    "📚 TUTORIAL"  # Nova aba de tutorial
+    "📚 INSTRUÇÕES DE USO"
 ])
 
 with tabs[0]:
@@ -287,7 +287,7 @@ with tabs[1]:
 
 # Nova aba de tutorial
 with tabs[2]:
-    st.header("📚 Tutorial Passo a Passo do IRaNoText")
+    st.header("🧩 INSTRUÇÕES DE USO")
     st.markdown("""
     <div style='text-align: justify; margin-bottom: 20px;'>
         Este tutorial irá guiá-lo através das principais funcionalidades do IRaNoText. 
