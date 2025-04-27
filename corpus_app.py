@@ -290,27 +290,17 @@ with tabs[2]:
     st.header("")
     st.markdown("""
     <style>
-    /* Centraliza a seta de ampliação da imagem */
-    .stImage > div > div > button {
-        left: 50% !important;
-        top: 50% !important;
-        transform: translate(-50%, -50%) !important;
-        right: unset !important;
-        bottom: unset !important;
+    .stImage {
+        position: relative;
     }
-    /* Opcional: estiliza o botão para melhor visibilidade */
-    .stImage > div > div > button {
-        background-color: rgba(0,0,0,0.3) !important;
-        border-radius: 50% !important;
-        width: 40px !important;
-        height: 40px !important;
+    
+    .stImage .stImageZoomIcon {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
     }
-    /* Opcional: estiliza o ícone da lupa */
-    .stImage > div > div > button svg {
-        width: 20px !important;
-        height: 20px !important;
-    }
-    </style>
+</style>
     """, unsafe_allow_html=True)
     
     st.markdown("""
