@@ -298,7 +298,7 @@ with tabs[2]:
    
     col1, col2 = st.columns([1, 2])
     with col1:
-        st.image("https://i.imgur.com/SuYbinF.png", caption="Passo 1: Inserção do texto")
+        st.image("LINK 1", caption="Passo 1: Inserção do texto")
     with col2:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
@@ -310,7 +310,7 @@ with tabs[2]:
     
     col1, col2 = st.columns([1, 2])
     with col1:
-        st.image("https://i.imgur.com/Wrmo9Rf.png", caption="Passo 2: Análise automática")
+        st.image("LINK 2", caption="Passo 2: Análise automática")
     with col2:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
@@ -324,7 +324,7 @@ with tabs[2]:
   
     col1, col2 = st.columns([1, 2])
     with col1:
-        st.image("https://i.imgur.com/JjdgULO.png", caption="Passo 3: Dicionário de entidades nomeadas")
+        st.image("LINK 3", caption="Passo 3: Dicionário de entidades nomeadas")
     with col2:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
@@ -337,7 +337,7 @@ with tabs[2]:
    
     col1, col2 = st.columns([1, 2])
     with col1:
-        st.image("https://i.imgur.com/inajuKm.png", caption="Passo 4: Metadados")
+        st.image("LINK 4", caption="Passo 4: Metadados")
     with col2:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
@@ -351,7 +351,7 @@ with tabs[2]:
     
     col1, col2 = st.columns([1, 2])
     with col1:
-        st.image("https://i.imgur.com/9V9Othz.png", caption="Passo 5: Geração do Corpus")
+        st.image("LINK 5", caption="Passo 5: Geração do Corpus")
     with col2:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
@@ -369,7 +369,7 @@ with tabs[2]:
 
     col1, col2 = st.columns([1, 2])
     with col1:
-        st.image("https://i.imgur.com/j7giFNs.png", caption="Passo 6: Revisão e Download")
+        st.image("LINK 6", caption="Passo 6: Revisão e Download")
     with col2:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
