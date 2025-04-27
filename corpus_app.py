@@ -75,14 +75,14 @@ with tabs[0]:
             with col1:
                 st.markdown("### 🕵️‍♂️ ENTIDADES NOMEADAS")
                 if compostas:
-                    st.text_area("Copie e cole no Excel", "\n".join(sorted(compostas)), height=250)
+                    st.text_area("Copie e cole no Excel", "\n".join(sorted(compostas)), height=300)
                 else:
                     st.info("Nenhuma entidade nomeada encontrada.")
 
             with col2:
                 st.markdown("### 🔠 SIGLAS DETECTADAS")
                 if siglas:
-                    st.text_area("Copie e cole no Excel", "\n".join(sorted(siglas)), height=250)
+                    st.text_area("Copie e cole no Excel", "\n".join(sorted(siglas)), height=300)
                 else:
                     st.info("Nenhuma sigla encontrada.")
         else:
