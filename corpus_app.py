@@ -340,10 +340,8 @@ with tabs[2]:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
             <h3 style='color: #4a90e2;'>4. Definição de variáveis</h3>
-            <p>Especifique as variáveis que deseja associar a cada texto. Estas serão incluídas 
-            como metadados no corpus final, permitindo análises mais ricas no IRaMuTeQ.</p>
-            <p><strong>Dica:</strong> Pense nas variáveis que serão úteis para sua análise (ex.: gênero, idade, etc.).</p>
-        </div>
+            <p>Especifique as variáveis que deseja associar a cada texto. Elas serão incluídas como metadados no corpus textual, permitindo análises mais abrangentes no IRaMuTeQ. Atenção: não utilize acentuação!</p>
+            </div>
         """, unsafe_allow_html=True)
     
     
@@ -354,7 +352,7 @@ with tabs[2]:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
             <h3 style='color: #4a90e2;'>5. Geração do Corpus</h3>
-            <p>Clique em "GERAR CORPUS TEXTUAL" para processar seus textos. O sistema realizará:</p>
+            <p>Clique em "🚀 GERAR CORPUS TEXTUAL" para processar seus textos. Revise o corpus textual gerado e as estatísticas de processamento. Quando satisfeito(a), clique no botão para salvar o arquivo no formato compatível com o IRaMuTeQ.</p>
             <ul>
                 <li>Conversão de números por extenso</li>
                 <li>Normalização linguística</li>
