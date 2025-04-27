@@ -1,10 +1,8 @@
 streamlit==1.33.0
 pandas==2.2.1
-openpyxl==3.1.2
 spacy==3.7.2
 pt_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/pt_core_news_sm-3.7.0/pt_core_news_sm-3.7.0.tar.gz
 pt_core_news_lg @ https://github.com/explosion/spacy-models/releases/download/pt_core_news_lg-3.7.0/pt_core_news_lg-3.7.0.tar.gz
 unidecode
 streamlit-extras>=0.3.0
 word2number==1.1
-
