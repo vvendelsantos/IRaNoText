@@ -285,7 +285,7 @@ with tabs[1]:
         else:
             st.warning("Por favor, insira pelo menos um texto para processar.")
 
-# Nova aba de tutorial
+
 with tabs[2]:
     st.header("")
     st.markdown("""
@@ -295,22 +295,20 @@ with tabs[2]:
     </div>
     """, unsafe_allow_html=True)
     
-    # Tutorial Item 1
+   
     col1, col2 = st.columns([1, 2])
     with col1:
-        st.image("https://i.imgur.com/SuYbinF.png", caption="Passo 1: Inserção do Texto")
+        st.image("https://i.imgur.com/SuYbinF.png", caption="Passo 1: Inserção do texto")
     with col2:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
             <h3 style='color: #4a90e2;'>1. Inserção do Texto</h3>
             <p>Cole ou digite seu texto na área designada. Você pode inserir um ou vários textos, 
-            um por linha. Esta é a matéria-prima que será processada pela ferramenta.</p>
-            <p><strong>Dica:</strong> Certifique-se de que o texto esteja limpo e formatado 
-            corretamente antes de iniciar a análise.</p>
-        </div>
+            um por linha. Clique em "🔍 ANALISAR TEXTOS" para detectar siglas e entidades nomeadas.</p>
+            </div>
         """, unsafe_allow_html=True)
     
-    # Tutorial Item 2
+    
     col1, col2 = st.columns([1, 2])
     with col1:
         st.image("https://i.imgur.com/Wrmo9Rf.png", caption="Passo 2: Análise Automática")
@@ -325,7 +323,7 @@ with tabs[2]:
         </div>
         """, unsafe_allow_html=True)
     
-    # Tutorial Item 3
+  
     col1, col2 = st.columns([1, 2])
     with col1:
         st.image("https://i.imgur.com/JjdgULO.png", caption="Passo 3: Dicionários Personalizados")
@@ -339,7 +337,7 @@ with tabs[2]:
         </div>
         """, unsafe_allow_html=True)
     
-    # Tutorial Item 4
+   
     col1, col2 = st.columns([1, 2])
     with col1:
         st.image("https://i.imgur.com/inajuKm.png", caption="Passo 4: Metadados")
@@ -353,7 +351,7 @@ with tabs[2]:
         </div>
         """, unsafe_allow_html=True)
     
-    # Tutorial Item 5
+    
     col1, col2 = st.columns([1, 2])
     with col1:
         st.image("https://i.imgur.com/9V9Othz.png", caption="Passo 5: Geração do Corpus")
@@ -371,7 +369,7 @@ with tabs[2]:
         </div>
         """, unsafe_allow_html=True)
     
-    # Tutorial Item 6
+
     col1, col2 = st.columns([1, 2])
     with col1:
         st.image("https://i.imgur.com/j7giFNs.png", caption="Passo 6: Revisão e Download")
