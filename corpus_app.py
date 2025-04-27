@@ -287,7 +287,7 @@ with tabs[1]:
 
 # Nova aba de tutorial
 with tabs[2]:
-    st.header("🧩 INSTRUÇÕES DE USO")
+    st.header("")
     st.markdown("""
     <div style='text-align: justify; margin-bottom: 20px;'>
         Este tutorial irá guiá-lo através das principais funcionalidades do IRaNoText. 
