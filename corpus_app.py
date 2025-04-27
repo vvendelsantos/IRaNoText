@@ -299,7 +299,7 @@ st.markdown("""
 ---  
 **👨‍💻 Autor:** Me. José Wendel dos Santos | Prof. Dr. Luciano Fernandes Monteiro 
 **🏛️ Instituição:** Universidade Federal de Sergipe (UFS)  
-**📧 Contato:** eng.wendel@gmail.com
+**📧 Contato:** iranotext@gmail.com
 
 <div style='text-align: center; margin-top: 20px; font-size: 0.9em; color: #b0b0b0;'>
     Este software é um complemento independente e não é afiliado oficialmente ao IRaMuTeQ. Acesse o
