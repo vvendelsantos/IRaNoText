@@ -298,7 +298,7 @@ with tabs[2]:
     # Tutorial Item 1
     col1, col2 = st.columns([1, 2])
     with col1:
-        st.image("https://via.placeholder.com/300x200?text=Passo+1", caption="Passo 1: Inserção do Texto")
+        st.image("https://drive.google.com/file/d/1DVBUal_aBTcs6PmbYoUf_P4IrqdkoIIQ/view?usp=sharing", caption="Passo 1: Inserção do Texto")
     with col2:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
@@ -386,12 +386,6 @@ with tabs[2]:
         </div>
         """, unsafe_allow_html=True)
     
-    st.markdown("""
-    <div style='margin-top: 30px; text-align: center;'>
-        <p>Para dúvidas ou sugestões, entre em contato: <a href="mailto:iranotext@gmail.com">iranotext@gmail.com</a></p>
-    </div>
-    """, unsafe_allow_html=True)
-
 st.markdown("""  
 ---  
 <div style='text-align: center; margin-top: 20px; font-size: 0.9em; color: #b0b0b0; line-height: 1.4;'>
