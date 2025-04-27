@@ -64,7 +64,7 @@ tabs = st.tabs([
 
 with tabs[0]:
     st.header("")
-    texto_input = st.text_area("", height=250)
+    texto_input = st.text_area("", height=350)
 
     if st.button("🔍 ANALISAR TEXTOS"):
         if texto_input.strip():
