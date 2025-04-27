@@ -1,0 +1,15 @@
+Esta aplicação web utiliza o Streamlit (v1.33.0), licenciado sob a Apache License 2.0.
+Copyright (c) 2019-2024 Streamlit Inc. (https://streamlit.io)
+
+Esta aplicação web inclui Python, sob a licença da Python Software Foundation.
+Copyright © 2001-2024 Python Software Foundation. All Rights Reserved.
+
+Esta aplicação web utiliza spaCy (v3.7.2), licenciado sob a MIT License.
+Copyright (c) 2016-2024 ExplosionAI GmbH.
+
+Esta aplicação web utiliza word2number (v1.1), licenciado sob a MIT License.  
+Copyright (c) 2016 Akshay Nagpal
+
+Esta aplicação web utiliza o modelo de linguagem pré-treinado pt_core_news_sm (versão 3.7.0), licenciado sob a 
+Copyright (c) 2016-2024 ExplosionAI GmbH
+Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0).
