@@ -317,21 +317,20 @@ with tabs[2]:
             <h3 style='color: #4a90e2;'>2. Análise automática</h3>
             <p>Clique no botão "🔍 ANALISAR TEXTOS" para que o sistema identifique automaticamente 
             entidades nomeadas e siglas presentes no texto. Revise cuidadosamente as sugestões do sistema, pois ele pode 
-            não capturar todos os termos específicos do seu domínio</p>
+            não capturar todos os termos específicos do seu domínio.</p>
         </div>
         """, unsafe_allow_html=True)
     
   
     col1, col2 = st.columns([1, 2])
     with col1:
-        st.image("https://i.imgur.com/JjdgULO.png", caption="Passo 3: Dicionários Personalizados")
+        st.image("https://i.imgur.com/JjdgULO.png", caption="Passo 3: Dicionário de entidades nomeadas")
     with col2:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
-            <h3 style='color: #4a90e2;'>3. Dicionários Personalizados</h3>
+            <h3 style='color: #4a90e2;'>3. Dicionários personalizados</h3>
             <p>Adicione seus próprios dicionários de entidades nomeadas e siglas. Para entidades, 
-            insira uma por linha. Para siglas, especifique a sigla e seu significado.</p>
-            <p><strong>Dica:</strong> Quanto mais completo seu dicionário, melhor será o processamento.</p>
+            insira uma por linha. Para siglas, especifique a sigla e seu significado. uanto mais completo seu dicionário, melhor será o processamento.</p>    
         </div>
         """, unsafe_allow_html=True)
     
