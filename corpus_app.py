@@ -21,7 +21,7 @@ st.markdown(
         background-color: rgba(14, 17, 23, 1);
         padding: 2rem;
         border-radius: 10px;
-        min-height: 150vh; /* <- Aqui é o segredo */
+        min-height: 120vh; /* <- Aqui é o segredo */
         padding-bottom: 5rem; /* espaço extra no fundo */
     }
     </style>
