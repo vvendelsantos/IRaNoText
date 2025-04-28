@@ -97,7 +97,7 @@ with tabs[1]:
         for i, linha in enumerate(linhas):
             textos.append({"id": f"texto_{i+1}", "texto": linha})
 
-    st.subheader("📚 DICIONÁRIO DE ENTIDADES NOMEADAS")
+    st.subheader("📚 DICIONÁRIO DE ENTIDADES NOMEADAS (ENs)")
     entidades_brutas = st.text_area("Cole aqui ou digite as entidades nomeadas (uma por linha):", height=200)
     entidades = []
     if entidades_brutas.strip():
@@ -322,11 +322,11 @@ with tabs[2]:
   
     col1, col2 = st.columns([1, 2])
     with col1:
-        st.image("https://i.imgur.com/llfE3QW.png", caption="Passo 3: Dicionário de entidades nomeadas")
+        st.image("https://i.imgur.com/llfE3QW.png", caption="Passo 3: Dicionário de ENs")
     with col2:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
-            <h3 style='color: #4a90e2;'>3. Dicionário de entidades nomeadas</h3>
+            <h3 style='color: #4a90e2;'>3. Dicionário de ENs</h3>
             <p>Cole seu texto revisado na área indicada. Adicione as entidades sugeridas no dicionário, além de outras que considerar relevantes (uma por linha).</p>    
         </div>
         """, unsafe_allow_html=True)
@@ -362,30 +362,30 @@ with tabs[2]:
     with col2:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
-            <h3 style='color: #4a90e2;'>6. Arquivo para importação</h3>
+            <h3 style='color: #4a90e2;'>6. Geração do corpus textual</h3>
             <p>Clique em '🚀 GERAR CORPUS TEXTUAL' para processar seus textos. Revise o corpus textual gerado e as estatísticas de processamento. Quando estiver satisfeito(a), salve o arquivo em uma pasta específica para suas análises no IRaMuTeQ.</p>
             </div>
         """, unsafe_allow_html=True)
 
     col1, col2 = st.columns([1, 2])
     with col1:
-        st.image("https://i.imgur.com/3E6qtj2.png", caption="Passo 7: Arquivo para importação")
+        st.image("https://i.imgur.com/3E6qtj2.png", caption="Passo 7: Corpus textual")
     with col2:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
-            <h3 style='color: #4a90e2;'>6. Arquivo para importação</h3>
-            <p>Após baixar o arquivo .txt gerado, abra-o em um editor de texto. Verifique se todas as transformações foram aplicadas corretamente e se o corpus textual está em conformidade com as exigências do IRaMuTeQ antes de importá-lo.
+            <h3 style='color: #4a90e2;'>7. Corpus textual</h3>
+            <p>Após baixar o arquivo .txt gerado, abra-o em um editor de texto. Verifique se todas as transformações foram aplicadas corretamente e se o corpus textual está em conformidade com as exigências do IRaMuTeQ antes de importá-lo.</p>
             </div>
         """, unsafe_allow_html=True)
 
     col1, col2 = st.columns([1, 2])
     with col1:
-        st.image("https://i.imgur.com/taD3GZM.png", caption="Passo 8: Arquivo para importação")
+        st.image("https://i.imgur.com/taD3GZM.png", caption="Passo 8: Importação no IRaMuTeQ")
     with col2:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
-            <h3 style='color: #4a90e2;'>6. Arquivo para importação</h3>
-            <p>Após baixar o arquivo .txt gerado, abra-o em um editor de texto. Verifique se todas as transformações foram aplicadas corretamente e se o corpus textual está em conformidade com as exigências do IRaMuTeQ antes de importá-lo.
+            <h3 style='color: #4a90e2;'>8. Importação no IRaMuTeQ</h3>
+            <p>Abra o software IRaMuTeQ em seu computador. No menu principal, acesse Arquivo > Abrir um corpus textual. Localize o arquivo .txt previamente gerado no IRaNoText e confirme a seleção.</p>
             </div>
         """, unsafe_allow_html=True)
     
