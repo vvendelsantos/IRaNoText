@@ -367,6 +367,28 @@ with tabs[2]:
             <p>Após baixar o arquivo .txt gerado, abra-o em um editor de texto. Verifique se todas as transformações foram aplicadas corretamente e se o corpus textual está em conformidade com as exigências do IRaMuTeQ antes de importá-lo.
             </div>
         """, unsafe_allow_html=True)
+
+    col1, col2 = st.columns([1, 2])
+    with col1:
+        st.image("https://i.imgur.com/Qc8ullJ.png", caption="Passo 7: Arquivo para importação")
+    with col2:
+        st.markdown("""
+        <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
+            <h3 style='color: #4a90e2;'>6. Arquivo para importação</h3>
+            <p>Após baixar o arquivo .txt gerado, abra-o em um editor de texto. Verifique se todas as transformações foram aplicadas corretamente e se o corpus textual está em conformidade com as exigências do IRaMuTeQ antes de importá-lo.
+            </div>
+        """, unsafe_allow_html=True)
+
+    col1, col2 = st.columns([1, 2])
+    with col1:
+        st.image("https://i.imgur.com/Qc8ullJ.png", caption="Passo 8: Arquivo para importação")
+    with col2:
+        st.markdown("""
+        <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
+            <h3 style='color: #4a90e2;'>6. Arquivo para importação</h3>
+            <p>Após baixar o arquivo .txt gerado, abra-o em um editor de texto. Verifique se todas as transformações foram aplicadas corretamente e se o corpus textual está em conformidade com as exigências do IRaMuTeQ antes de importá-lo.
+            </div>
+        """, unsafe_allow_html=True)
     
     st.markdown("""
     <div style='margin-top: 30px; text-align: justify;'>
