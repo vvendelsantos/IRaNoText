@@ -337,7 +337,7 @@ with tabs[2]:
         st.image("https://i.imgur.com/736PSFz.png", caption="Passo 4: Dicionário de siglas")
     with col2:
         st.markdown("""
-        <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 240px;'>
+        <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 250px;'>
             <h3 style='color: #4a90e2;'>4. Dicionário de siglas</h3>
             <p>Informe a quantidade de siglas e cadastre seus significados. Durante o processamento, o IRaNoText remove siglas entre parênteses e substitui siglas isoladas pelo respectivo significado em formato de palavra única. O tratamento evita que informações relevantes se tornem 'ruído' ou termos soltos sem valor para a análise.</p>
             </div>
