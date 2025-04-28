@@ -349,7 +349,7 @@ with tabs[2]:
         st.image("https://i.imgur.com/e5dMw18.png", caption="Passo 5: Variáveis e modalidades")
     with col2:
         st.markdown("""
-        <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 250px;'>
+        <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 260px;'>
             <h3 style='color: #4a90e2;'>5. Variáveis e modalidades</h3>
             <p>Especifique as variáveis que deseja associar a cada texto. Elas serão incluídas como metadados no corpus textual, permitindo análises mais detalhadas no IRaMuTeQ. Escolha variáveis diretamente relacionadas ao problema ou à hipótese em investigação. Cada variável deve ter, no mínimo, três modalidades. Por exemplo: Fonte de dados (Espacenet, Patentscope, Web of Science).</p>
             </div>
@@ -361,7 +361,7 @@ with tabs[2]:
         st.image("https://i.imgur.com/fVGGTqB.png", caption="Passo 6: Geração do corpus textual")
     with col2:
         st.markdown("""
-        <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
+        <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 220px;'>
             <h3 style='color: #4a90e2;'>6. Geração do corpus textual</h3>
             <p>Clique em '🚀 GERAR CORPUS TEXTUAL' para processar seus textos. Revise o corpus textual gerado e as estatísticas de processamento. Quando estiver satisfeito(a), salve o arquivo em uma pasta específica para suas análises no IRaMuTeQ.</p>
             </div>
@@ -372,7 +372,7 @@ with tabs[2]:
         st.image("https://i.imgur.com/3E6qtj2.png", caption="Passo 7: Corpus textual")
     with col2:
         st.markdown("""
-        <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
+        <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 210px;'>
             <h3 style='color: #4a90e2;'>7. Corpus textual</h3>
             <p>Após baixar o arquivo .txt gerado, abra-o em um editor de texto. Verifique se todas as transformações foram aplicadas corretamente e se o corpus textual está em conformidade com as exigências do IRaMuTeQ antes de importá-lo.</p>
             </div>
@@ -385,7 +385,7 @@ with tabs[2]:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
             <h3 style='color: #4a90e2;'>8. Importação no IRaMuTeQ</h3>
-            <p>Abra o software IRaMuTeQ em seu computador. No menu principal, acesse Arquivo > Abrir um corpus textual. Localize o arquivo .txt previamente gerado no IRaNoText e confirme a seleção.</p>
+            <p>Abra o software IRaMuTeQ em seu computador. No menu principal, acesse Arquivo > Abrir um corpus textual. Localize o arquivo .txt gerado no IRaNoText e confirme a seleção.</p>
             </div>
         """, unsafe_allow_html=True)
     
