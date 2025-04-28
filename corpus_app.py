@@ -315,7 +315,7 @@ with tabs[2]:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
             <h3 style='color: #4a90e2;'>2. Análise automática</h3>
-            <p>Clique no botão "🔍 ANALISAR TEXTOS" para que o sistema identifique automaticamente entidades nomeadas e siglas presentes no texto. Revise as sugestões, pois o sistema pode não capturar todos os termos específicos da sua área.</p>
+            <p>Clique em '🔍 ANALISAR TEXTOS' para identificar automaticamente entidades e siglas no texto. Revise as sugestões, pois o sistema pode não capturar todos os termos específicos da sua área.</p>
         </div>
         """, unsafe_allow_html=True)
     
