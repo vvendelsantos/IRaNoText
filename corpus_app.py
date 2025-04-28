@@ -313,7 +313,7 @@ with tabs[2]:
         st.image("https://i.imgur.com/yLmiVB5.png", caption="Passo 2: Análise exploratória")
     with col2:
         st.markdown("""
-        <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 500px;'>
+        <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 150px;'>
             <h3 style='color: #4a90e2;'>2. Análise exploratória</h3>
             <p>O IRaNoText identifica automaticamente entidades nomeadas e siglas no texto. Revise as sugestões, pois ele pode não capturar todos os termos específicos da sua área.</p>
         </div>
