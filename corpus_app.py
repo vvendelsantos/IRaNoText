@@ -303,7 +303,7 @@ with tabs[2]:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
             <h3 style='color: #4a90e2;'>1. Inserção do texto</h3>
-            <p>Cole ou digite seu texto na área designada. Você pode inserir um ou vários textos, um por linha. Certifique-se de que o texto esteja sem formatação antes de iniciar a análise. A presença de formatação (como negrito, itálico ou marcadores) pode interferir no processamento dos dados.</p>
+            <p>Cole ou digite seu texto na área designada, um por linha. Certifique-se de que esteja sem formatação, pois o uso de negrito, itálico ou marcadores pode interferir no processamento.</p>
             </div>
         """, unsafe_allow_html=True)
     
