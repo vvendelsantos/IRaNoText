@@ -383,7 +383,7 @@ with tabs[2]:
         st.image("https://i.imgur.com/taD3GZM.png", caption="Passo 8: Importação no IRaMuTeQ")
     with col2:
         st.markdown("""
-        <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
+        <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 185px;'>
             <h3 style='color: #4a90e2;'>8. Importação no IRaMuTeQ</h3>
             <p>Abra o software IRaMuTeQ em seu computador. No menu principal, acesse Arquivo > Abrir um corpus textual. Localize o arquivo .txt gerado no IRaNoText e confirme a seleção.</p>
             </div>
