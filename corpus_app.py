@@ -298,7 +298,7 @@ with tabs[2]:
    
     col1, col2 = st.columns([1, 2])
     with col1:
-        st.image("https://i.imgur.com/NY6du6U.png", caption="Passo 1: Inserção do texto")
+        st.image("https://i.imgur.com/0xPuvoc.png", caption="Passo 1: Inserção do texto")
     with col2:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
@@ -310,7 +310,7 @@ with tabs[2]:
     
     col1, col2 = st.columns([1, 2])
     with col1:
-        st.image("https://i.imgur.com/FTIOglk.png", caption="Passo 2: Análise automática")
+        st.image("https://i.imgur.com/yLmiVB5.png", caption="Passo 2: Análise automática")
     with col2:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
@@ -323,7 +323,7 @@ with tabs[2]:
   
     col1, col2 = st.columns([1, 2])
     with col1:
-        st.image("https://i.imgur.com/q9ccWLu.png", caption="Passo 3: Dicionários personalizados")
+        st.image("https://i.imgur.com/llfE3QW.png", caption="Passo 3: Dicionários personalizados")
     with col2:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
@@ -335,7 +335,7 @@ with tabs[2]:
    
     col1, col2 = st.columns([1, 2])
     with col1:
-        st.image("https://i.imgur.com/MjcnMec.png", caption="Passo 4: Definição de variáveis")
+        st.image("https://i.imgur.com/736PSFz.png", caption="Passo 4: Definição de variáveis")
     with col2:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
@@ -347,7 +347,7 @@ with tabs[2]:
     
     col1, col2 = st.columns([1, 2])
     with col1:
-        st.image("https://i.imgur.com/QeUZn0U.png", caption="Passo 5: Geração do corpus textual")
+        st.image("https://i.imgur.com/e5dMw18.png", caption="Passo 5: Geração do corpus textual")
     with col2:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
@@ -359,7 +359,7 @@ with tabs[2]:
 
     col1, col2 = st.columns([1, 2])
     with col1:
-        st.image("https://i.imgur.com/Qc8ullJ.png", caption="Passo 6: Arquivo para importação")
+        st.image("https://i.imgur.com/fVGGTqB.png", caption="Passo 6: Arquivo para importação")
     with col2:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
@@ -370,7 +370,7 @@ with tabs[2]:
 
     col1, col2 = st.columns([1, 2])
     with col1:
-        st.image("https://i.imgur.com/Qc8ullJ.png", caption="Passo 7: Arquivo para importação")
+        st.image("https://i.imgur.com/3E6qtj2.png", caption="Passo 7: Arquivo para importação")
     with col2:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
@@ -381,7 +381,7 @@ with tabs[2]:
 
     col1, col2 = st.columns([1, 2])
     with col1:
-        st.image("https://i.imgur.com/Qc8ullJ.png", caption="Passo 8: Arquivo para importação")
+        st.image("https://i.imgur.com/taD3GZM.png", caption="Passo 8: Arquivo para importação")
     with col2:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
