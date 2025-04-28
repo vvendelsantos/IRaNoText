@@ -346,12 +346,12 @@ with tabs[2]:
     
     col1, col2 = st.columns([1, 2])
     with col1:
-        st.image("https://i.imgur.com/e5dMw18.png", caption="Passo 5: Variáveis")
+        st.image("https://i.imgur.com/e5dMw18.png", caption="Passo 5: Variáveis e modalidades")
     with col2:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
-            <h3 style='color: #4a90e2;'>5. Variáveis</h3>
-            <p>Especifique as variáveis que deseja associar a cada texto. Elas serão incluídas como metadados no corpus textual, permitindo análises mais abrangentes no IRaMuTeQ. Atenção: não utilize acentuação!</p>
+            <h3 style='color: #4a90e2;'>5. Variáveis e modalidades</h3>
+            <p>Especifique as variáveis que deseja associar a cada texto. Elas serão incluídas como metadados no corpus textual, permitindo análises mais detalhadas no IRaMuTeQ. Escolha variáveis diretamente relacionadas ao problema ou à hipótese em investigação. Cada variável deve ter, no mínimo, três modalidades. Por exemplo: Fonte de dados (Espacenet, Patentscope, Web of Science).</p>
             </div>
         """, unsafe_allow_html=True)
     
