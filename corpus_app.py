@@ -322,24 +322,24 @@ with tabs[2]:
   
     col1, col2 = st.columns([1, 2])
     with col1:
-        st.image("https://i.imgur.com/llfE3QW.png", caption="Passo 3: Dicionários personalizados")
+        st.image("https://i.imgur.com/llfE3QW.png", caption="Passo 3: Dicionário de entidades nomeadas")
     with col2:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
-            <h3 style='color: #4a90e2;'>3. Dicionários personalizados</h3>
-            <p>Cole seu texto na área indicada. Complete os dicionários com as entidades e siglas sugeridas, além de outras que considerar relevantes. Para entidades nomeadas, insira uma por linha. Para siglas, informe a quantidade e depois cadastre cada sigla com seu respectivo significado.</p>    
+            <h3 style='color: #4a90e2;'>3. Dicionário de entidades nomeadas</h3>
+            <p>Cole seu texto revisado na área indicada. Adicione as entidades sugeridas no dicionário, além de outras que considerar relevantes (uma por linha).</p>    
         </div>
         """, unsafe_allow_html=True)
     
    
     col1, col2 = st.columns([1, 2])
     with col1:
-        st.image("https://i.imgur.com/736PSFz.png", caption="Passo 4: Definição de variáveis")
+        st.image("https://i.imgur.com/736PSFz.png", caption="Passo 4: Dicionário de siglas")
     with col2:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
-            <h3 style='color: #4a90e2;'>4. Definição de variáveis</h3>
-            <p>Especifique as variáveis que deseja associar a cada texto. Elas serão incluídas como metadados no corpus textual, permitindo análises mais abrangentes no IRaMuTeQ. Atenção: não utilize acentuação!</p>
+            <h3 style='color: #4a90e2;'>4. Dicionário de siglas</h3>
+            <p>Informe a quantidade de siglas a ser utilizada e, em seguida, cadastre cada sigla com seu respectivo significado.</p>
             </div>
         """, unsafe_allow_html=True)
     
