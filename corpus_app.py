@@ -301,7 +301,7 @@ with tabs[2]:
         st.image("https://i.imgur.com/0xPuvoc.png", caption="Passo 1: Inserção do texto")
     with col2:
         st.markdown("""
-        <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
+        <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 230px;'>
             <h3 style='color: #4a90e2;'>1. Inserção do texto</h3>
             <p>Cole seu texto na área designada. Certifique-se de que esteja sem formatação, pois o uso de negrito, itálico ou marcadores pode interferir no processamento. Em seguida, clique em '🔍 ANALISAR TEXTOS'.</p>
             </div>
