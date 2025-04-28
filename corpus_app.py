@@ -387,8 +387,8 @@ with tabs[2]:
 st.markdown("""  
 ---  
 <div style='text-align: center; margin-top: 20px; font-size: 0.9em; color: #b0b0b0; line-height: 1.4;'>
-    <p style="margin: 0;">👨‍💻 <strong>Desenvolvedores:</strong> Me. José Wendel dos Santos | Prof. Dr. Luciano Fernandes Monteiro</p>
-    <p style="margin: 0;">🏛️ <strong>Instituição:</strong> Universidade Federal de Sergipe (UFS)</p>
+    <p style="margin: 0;">© 2025 IRaNoText. Todos os direitos reservados. Licenciado sob a <a href="https://opensource.org/licenses/MIT" style="color: #4a90e2; text-decoration: none;">Licença MIT</a>.</p>
+    <p style="margin: 0;">Esta aplicação utiliza tecnologias licenciadas sob <a href="https://opensource.org/licenses/Apache-2.0" style="color: #4a90e2; text-decoration: none;">Apache 2.0</a>, <a href="https://opensource.org/licenses/MIT" style="color: #4a90e2; text-decoration: none;">MIT</a> e <a href="https://creativecommons.org/licenses/by-sa/4.0/" style="color: #4a90e2; text-decoration: none;">CC BY-SA 4.0</a>.</p>
     <p style="margin: 0;">📧 <strong>Contato:</strong> <a href="mailto:iranotext@gmail.com" style="color: #4a90e2; text-decoration: none;">iranotext@gmail.com</a></p>
 </div>
 <div style='text-align: center; margin-top: 20px; font-size: 0.9em; color: #b0b0b0;'>
