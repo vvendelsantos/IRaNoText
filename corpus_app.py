@@ -325,7 +325,7 @@ with tabs[2]:
         st.image("https://i.imgur.com/llfE3QW.png", caption="Passo 3: Dicionário de entidades nomeadas")
     with col2:
         st.markdown("""
-        <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
+        <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 230px;'>
             <h3 style='color: #4a90e2;'>3. Dicionário de entidades nomeadas</h3>
             <p>Na aba "🛠️ GERAÇÃO DO CORPUS TEXTUAL", cole seu texto revisado na área indicada. Adicione as entidades sugeridas no dicionário, além de outras que considerar relevantes (uma por linha).</p>    
         </div>
