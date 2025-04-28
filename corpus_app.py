@@ -339,7 +339,7 @@ with tabs[2]:
         st.markdown("""
         <div style='background-color: rgba(30, 30, 30, 0.7); padding: 15px; border-radius: 5px; height: 200px;'>
             <h3 style='color: #4a90e2;'>4. Dicionário de siglas</h3>
-            <p>Informe a quantidade de siglas a ser utilizada e, em seguida, cadastre cada sigla com seu respectivo significado.</p>
+            <p>Informe a quantidade de siglas a ser utilizada e, em seguida, cadastre cada sigla com seu respectivo significado. Durante o processamento, o IRaNoText remove as siglas entre parênteses e substitui a ocorrência isolada da sigla no texto pelo seu significado, formatado como uma única palavra. Muitas siglas carregam informações importantes e, se não forem tratadas, tornam-se "ruído" ou palavras soltas sem valor para a análise.</p>
             </div>
         """, unsafe_allow_html=True)
     
