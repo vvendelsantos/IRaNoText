@@ -10,7 +10,7 @@ st.markdown(
     <style>
     /* Garante fundo preto global (por trás da imagem) */
     html, body {
-        background-color: black !important;
+        background-color: rgba(14, 17, 23, 1) !important;
     }
 
     /* Aplica a imagem como fundo e garante preto no fundo onde a imagem for transparente */
