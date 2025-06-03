@@ -8,14 +8,21 @@ from word2number import w2n
 st.markdown(
     """
     <style>
+    /* Garante fundo preto global (por trás da imagem) */
+    html, body {
+        background-color: black !important;
+    }
+
+    /* Aplica a imagem como fundo e garante preto no fundo onde a imagem for transparente */
     .stApp {
         background-image: url("https://static.vecteezy.com/system/resources/previews/035/442/418/non_2x/abstract-monochrome-transparent-background-with-grey-chevron-landing-page-template-free-png.png");
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
         background-attachment: fixed;
+        background-color: black;  /* Isso garante que onde for transparente, será preto */
     }
-    
+
     .main .block-container {
         background-color: rgba(14, 17, 23, 1);
         padding: 2rem;
