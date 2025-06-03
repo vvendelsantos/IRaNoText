@@ -20,7 +20,7 @@ st.markdown(
         background-position: center;
         background-repeat: no-repeat;
         background-attachment: fixed;
-        background-color: black;  /* Isso garante que onde for transparente, será preto */
+        background-color: rgba(14, 17, 23, 1);  /* Isso garante que onde for transparente, será preto */
     }
 
     .main .block-container {
