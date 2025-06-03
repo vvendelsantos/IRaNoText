@@ -8,8 +8,9 @@ from word2number import w2n
 st.markdown(
     """
     <style>
-    /* Fundo principal com imagem */
+    /* Fundo principal com imagem e cor escura fixa atrás */
     .stApp {
+        background-color: rgba(14, 17, 23, 1) !important;  /* cor fixa atrás da imagem transparente */
         background-image: url("https://static.vecteezy.com/system/resources/previews/035/442/418/non_2x/abstract-monochrome-transparent-background-with-grey-chevron-landing-page-template-free-png.png");
         background-size: cover;
         background-position: center;
