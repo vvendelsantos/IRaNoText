@@ -8,21 +8,16 @@ from word2number import w2n
 st.markdown(
     """
     <style>
-    /* Garante fundo preto global (por trás da imagem) */
-    html, body {
-        background-color: rgba(14, 17, 23, 1) !important;
-    }
-
-    /* Aplica a imagem como fundo e garante preto no fundo onde a imagem for transparente */
+    /* Fundo principal com imagem */
     .stApp {
         background-image: url("https://static.vecteezy.com/system/resources/previews/035/442/418/non_2x/abstract-monochrome-transparent-background-with-grey-chevron-landing-page-template-free-png.png");
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
         background-attachment: fixed;
-        background-color: rgba(14, 17, 23, 1);  /* Isso garante que onde for transparente, será preto */
     }
 
+    /* Fundo escuro fixo no container principal */
     .main .block-container {
         background-color: rgba(14, 17, 23, 1);
         padding: 2rem;
@@ -30,25 +25,37 @@ st.markdown(
         padding-bottom: 5rem;
     }
 
-    /* Força texto branco em todos os elementos principais */
+    /* Fundo escuro fixo na sidebar */
+    [data-testid="stSidebar"] {
+        background-color: #262730 !important;
+        color: white !important;
+    }
+
+    /* Texto branco em toda app, incluindo sidebar */
     html, body, .stApp, .block-container, .stMarkdown, .markdown-text-container, div, p, span, h1, h2, h3, h4, h5, h6 {
         color: white !important;
     }
+
+    /* Para o texto dentro da sidebar ficar justificado */
+    [data-testid="stSidebar"] div[style*="text-align: justify"] {
+        text-align: justify !important;
+    }
     </style>
     """,
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )
 
-st.sidebar.markdown("""   
-   <div style='text-align: justify'>
-        <h1>ℹ️ Sobre a ferramenta</h1>
-        <p>O IRaNoText se destaca pela inovação tanto na concepção quanto na implementação técnica. Desenvolvido para preencher uma lacuna no processo de preparação de textos para o IRaMuTeQ, a ferramenta automatiza e otimiza a compatibilidade textual, reduzindo significativamente o tempo e o esforço manual dos usuários.</p>
-        <h2>💡 Funcionalidades</h2>
-        <h3>📝 <strong>Análise preliminar dos textos:</strong></h3>
-        <p>O IRaNoText executa uma análise automatizada avançada dos textos inseridos, com foco na identificação de siglas e entidades nomeadas, como nomes próprios, locais geográficos e instituições. Além disso, possibilita a inclusão manual de termos compostos relevantes, assegurando um mapeamento lexical mais preciso e adaptado às necessidades específicas de cada projeto de pesquisa.</p>
-        <h3>🛠️ <strong>Geração do corpus textual:</strong></h3>
-        <p>O IRaNoText permite a inserção de textos para processamento, a definição de dicionários personalizados de entidades e siglas, e a configuração de variáveis específicas para otimização da análise. O processamento inclui: (i) conversão automática de números por extenso em algarismos, (ii) normalização linguística avançada (incluindo tratamento de pronomes pospostos e flexões verbo-pronominais), (iii) substituição sistemática de entidades e siglas com base em dicionários personalizados, (iv) remoção inteligente de caracteres incompatíveis com o IRaMuTeQ e (v) geração automatizada de metadados customizáveis para análise estatística textual. Ao final do processo, o corpus textual final é gerado junto a estatísticas detalhadas sobre as transformações realizadas.</p> 
-        </div>
+# Seu conteúdo na sidebar
+st.sidebar.markdown("""
+<div style='text-align: justify'>
+    <h1>ℹ️ Sobre a ferramenta</h1>
+    <p>O IRaNoText se destaca pela inovação tanto na concepção quanto na implementação técnica. Desenvolvido para preencher uma lacuna no processo de preparação de textos para o IRaMuTeQ, a ferramenta automatiza e otimiza a compatibilidade textual, reduzindo significativamente o tempo e o esforço manual dos usuários.</p>
+    <h2>💡 Funcionalidades</h2>
+    <h3>📝 <strong>Análise preliminar dos textos:</strong></h3>
+    <p>O IRaNoText executa uma análise automatizada avançada dos textos inseridos, com foco na identificação de siglas e entidades nomeadas, como nomes próprios, locais geográficos e instituições. Além disso, possibilita a inclusão manual de termos compostos relevantes, assegurando um mapeamento lexical mais preciso e adaptado às necessidades específicas de cada projeto de pesquisa.</p>
+    <h3>🛠️ <strong>Geração do corpus textual:</strong></h3>
+    <p>O IRaNoText permite a inserção de textos para processamento, a definição de dicionários personalizados de entidades e siglas, e a configuração de variáveis específicas para otimização da análise. O processamento inclui: (i) conversão automática de números por extenso em algarismos, (ii) normalização linguística avançada (incluindo tratamento de pronomes pospostos e flexões verbo-pronominais), (iii) substituição sistemática de entidades e siglas com base em dicionários personalizados, (iv) remoção inteligente de caracteres incompatíveis com o IRaMuTeQ e (v) geração automatizada de metadados customizáveis para análise estatística textual. Ao final do processo, o corpus textual final é gerado junto a estatísticas detalhadas sobre as transformações realizadas.</p> 
+</div>
 """, unsafe_allow_html=True)
 
 nlp = spacy.load("pt_core_news_sm")
