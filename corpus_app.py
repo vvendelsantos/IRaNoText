@@ -20,8 +20,12 @@ st.markdown(
         background-color: rgba(14, 17, 23, 1);
         padding: 2rem;
         border-radius: 10px;
-        /* min-height REMOVIDO */
-        padding-bottom: 5rem; /* espaço extra só no final */
+        padding-bottom: 5rem;
+    }
+
+    /* Força texto branco em todos os elementos principais */
+    html, body, .stApp, .block-container, .stMarkdown, .markdown-text-container, div, p, span, h1, h2, h3, h4, h5, h6 {
+        color: white !important;
     }
     </style>
     """,
