@@ -70,7 +70,13 @@ def detectar_palavras_compostas(texto):
     compostas = [ent.text for ent in doc.ents if len(ent.text.split()) > 1]
     return list(set(compostas))
 
-st.title("IRaNoText: Interface de Reconhecimento Automatizado e Normalização Textual")
+st.markdown(
+    """
+    <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 24px;">
+        <img src="https://i.postimg.cc/s2f6djhW/Logo-Iranutext.png" alt="IRaNoText Banner" style="width: 736px; height: 160px; border-radius: 10px;">
+    </div>
+    """, unsafe_allow_html=True
+)
 
 tabs = st.tabs([
     "📝 ANÁLISE PRELIMINAR DOS TEXTOS",
